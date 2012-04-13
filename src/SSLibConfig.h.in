@@ -1,0 +1,7 @@
+
+
+
+
+// Version number from CMake
+#define SSLIB_VERSION_MAJOR @SSLIB_VERSION_MAJOR@
+#define SSLIB_VERSION_MINOR @SSLIB_VERSION_MINOR@
