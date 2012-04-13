@@ -1,0 +1,10 @@
+Overview
+========
+
+SSLib (Structure Searching Library) is a C++ library that contains methods for manipulating
+chemical structures centered around the activity of structure prediction.
+
+License
+=======
+
+GPL v2 or later. See COPYING.
