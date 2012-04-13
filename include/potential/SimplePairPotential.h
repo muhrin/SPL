@@ -18,8 +18,8 @@
 #include "IPotential.h"
 #include "SimplePairPotentialData.h"
 
-#include "../common/AbstractFmidCell.h"
-#include "../common/Structure.h"
+#include "common/AbstractFmidCell.h"
+#include "common/Structure.h"
 #include "../common/Utils.h"
 
 #include <sstream>

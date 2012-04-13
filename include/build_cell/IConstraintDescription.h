@@ -9,7 +9,7 @@
 #define I_CONSTRAINT_DESCRIPTION_H
 
 // INCLUDES ////////////
-#include "ConstraintDescriptionId.h"
+#include "build_cell/ConstraintDescriptionId.h"
 
 // FORWARD DECLARATIONS ///////
 

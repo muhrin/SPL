@@ -9,7 +9,7 @@
 #define STRUCTURE_H
 
 // INCLUDES ///////////////////////////////////////////////
-#include "../SSLib.h"
+#include "SSLib.h"
 #include "AtomGroup.h"
 
 #include <vector>

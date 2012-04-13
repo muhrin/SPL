@@ -11,7 +11,7 @@
 
 // INCLUDES /////////////////////////////////////////////
 
-#include "AtomSpeciesId.h"
+#include "common/AtomSpeciesId.h"
 
 #include <map>
 #include <string>

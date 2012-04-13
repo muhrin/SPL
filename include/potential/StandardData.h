@@ -10,7 +10,7 @@
 #define STANDARD_DATA_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "../common/Structure.h"
+#include "common/Structure.h"
 
 #include <armadillo>
 

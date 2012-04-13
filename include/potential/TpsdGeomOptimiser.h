@@ -13,7 +13,7 @@
 #include "IGeomOptimiser.h"
 #include "IPotential.h"
 
-#include "../common/Structure.h"
+#include "common/Structure.h"
 
 #include <armadillo>
 

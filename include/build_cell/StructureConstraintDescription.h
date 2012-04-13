@@ -9,7 +9,7 @@
 #define STRUCTURE_CONSTRAINT_DESCRIPTION_H
 
 // INCLUDES ///////////////////
-#include "AbstractConstraintDescription.h"
+#include "build_cell/AbstractConstraintDescription.h"
 
 // FORWARD DECLARES ///////////
 

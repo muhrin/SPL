@@ -9,7 +9,7 @@
 #define I_ATOM_CONSTRAINABLE_H
 
 // INCLUDES ///////////////////
-#include "ConstraintDescriptionId.h"
+#include "build_cell/ConstraintDescriptionId.h"
 
 #include <vector>
 

@@ -9,7 +9,7 @@
 #define STRUCTURE_DESCRIPTION_H
 
 // INCLUDES ///////////////////
-#include "AtomGroupDescription.h"
+#include "build_cell/AtomGroupDescription.h"
 
 // FORWARD DECLARES ///////////
 namespace sstbx { namespace build_cell {

@@ -9,10 +9,10 @@
 #define ATOM_GROUP_H_
 
 // INCLUDES ///////////////////////////////////
-#include "AtomSpeciesId.h"
-#include "event/AtomGroupEvent.h"
-#include "event/GenericEventSupport.h"
-#include "event/IGenericEventListener.h"
+#include "common/AtomSpeciesId.h"
+#include "common/event/AtomGroupEvent.h"
+#include "common/event/GenericEventSupport.h"
+#include "common/event/IGenericEventListener.h"
 
 
 #include <vector>

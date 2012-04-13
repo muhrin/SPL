@@ -11,7 +11,7 @@
 #define ABSTRACT_FMID_CELL_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "../SSLib.h"
+#include "SSLib.h"
 
 #include <vector>
 #include <math.h>
@@ -21,7 +21,7 @@
 #include <cctbx/uctbx.h>
 #include <cctbx/uctbx/fast_minimum_reduction.h>
 
-#include "Constants.h"
+#include "common/Constants.h"
 
 // DEFINES ////////////////////////////////////////////////
 #define ABSTRACT_FMID_CELL AbstractFmidCell<FloatType>

@@ -9,10 +9,10 @@
 #define ATOM_GROUP_DESCRIPTION_H
 
 // INCLUDES ///////////////////
-#include "../SSLib.h"
+#include "SSLib.h"
 #include "IAtomConstrainable.h"
 
-#include "ConstraintDescriptionId.h"
+#include "build_cell/ConstraintDescriptionId.h"
 
 #include <map>
 #include <vector>

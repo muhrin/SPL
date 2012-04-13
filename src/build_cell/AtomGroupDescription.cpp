@@ -5,7 +5,7 @@
  *      Author: Martin Uhrin
  */
 
-#include "AtomGroupDescription.h"
+#include "build_cell/AtomGroupDescription.h"
 
 #include <algorithm>
 

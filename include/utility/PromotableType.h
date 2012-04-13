@@ -11,7 +11,7 @@
 #define PROMOTABLE_TYPE_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "../SSLib.h"
+#include "SSLib.h"
 
 #include "MetaProgramming.h"
 

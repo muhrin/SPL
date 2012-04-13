@@ -73,7 +73,7 @@ private:
 #include<iostream>
 
 #include "RandomCellDescription.h"
-#include "../common/AbstractFmidCell.h"
+#include "common/AbstractFmidCell.h"
 #include "../common/UnitCellFactory.h"
 #include "../common/Utils.h"
 

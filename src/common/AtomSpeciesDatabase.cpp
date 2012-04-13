@@ -6,9 +6,9 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "AtomSpeciesDatabase.h"
+#include "common/AtomSpeciesDatabase.h"
 
-#include "AtomSpeciesId.h"
+#include "common/AtomSpeciesId.h"
 
 // NAMESPACES ////////////////////////////////
 

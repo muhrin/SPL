@@ -6,10 +6,10 @@
  */
 
 // INCLUDES /////////////////
-#include "../SSLib.h"
+#include "SSLib.h"
 
-#include "Atom.h"
-#include "AtomGroup.h"
+#include "common/Atom.h"
+#include "common/AtomGroup.h"
 #include "StructureTreeEvent.h"
 
 #include <set>

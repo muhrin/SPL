@@ -9,7 +9,7 @@
 #define ATOM_H
 
 // INCLUDES ///////////////////////////////////
-#include "AtomSpeciesId.h"
+#include "common/AtomSpeciesId.h"
 
 #include <armadillo>
 

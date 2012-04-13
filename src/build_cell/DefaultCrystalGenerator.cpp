@@ -10,16 +10,16 @@
 #include "DefaultCrystalGenerator.h"
 
 #include "AtomConstraintDescription.h"
-#include "AtomGroupDescription.h"
+#include "build_cell/AtomGroupDescription.h"
 #include "AtomsDescription.h"
 #include "ICellGenerator.h"
 #include "Minsep.h"
 #include "StructureBuilder.h"
 #include "StructureDescription.h"
 
-#include "../common/AbstractFmidCell.h"
-#include "../common/Atom.h"
-#include "../common/Structure.h"
+#include "common/AbstractFmidCell.h"
+#include "common/Atom.h"
+#include "common/Structure.h"
 #include "../common/Utils.h"
 
 namespace sstbx { namespace build_cell {

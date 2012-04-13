@@ -10,9 +10,9 @@
 #define SORTED_DISTANCE_COMPARATOR_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "AbstractComparator.h"
+#include "utility/AbstractComparator.h"
 
-#include "../common/AbstractFmidCell.h"
+#include "common/AbstractFmidCell.h"
 
 #include <vector>
 

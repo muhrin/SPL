@@ -11,7 +11,7 @@
 #define LOOPS_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "../SSLib.h"
+#include "SSLib.h"
 
 #include "MultiIdx.h"
 

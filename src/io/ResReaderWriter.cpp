@@ -9,12 +9,12 @@
 #include "ResReaderWriter.h"
 
 #include "AdditionalData.h"
-#include "../common/AbstractFmidCell.h"
-#include "../common/Atom.h"
-#include "../common/AtomSpeciesDatabase.h"
-#include "../common/AtomSpeciesId.h"
+#include "common/AbstractFmidCell.h"
+#include "common/Atom.h"
+#include "common/AtomSpeciesDatabase.h"
+#include "common/AtomSpeciesId.h"
 #include "../common/AtomSpeciesInfo.h"
-#include "../common/Structure.h"
+#include "common/Structure.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>

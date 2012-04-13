@@ -8,7 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "StructureWriterManager.h"
 
-#include "IStructureWriter.h"
+#include "io/IStructureWriter.h"
 
 #include <boost/foreach.hpp>
 

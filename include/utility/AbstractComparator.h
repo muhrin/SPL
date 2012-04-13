@@ -10,9 +10,9 @@
 #define ABSTRACT_COMPARATOR_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "../SSLib.h"
+#include "SSLib.h"
 
-#include "IStructureComparator.h"
+#include "utility/IStructureComparator.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace sstbx { namespace common {

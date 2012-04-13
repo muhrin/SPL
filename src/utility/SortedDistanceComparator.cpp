@@ -9,8 +9,8 @@
 
 #include "SortedDistanceComparator.h"
 
-#include "../common/AbstractFmidCell.h"
-#include "../common/Structure.h"
+#include "common/AbstractFmidCell.h"
+#include "common/Structure.h"
 
 #include <armadillo>
 

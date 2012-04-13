@@ -11,8 +11,8 @@
 
 // INCLUDES /////////////////////////////////////////////
 #include "StandardData.h"
-#include "../common/AtomSpeciesId.h"
-#include "../common/Structure.h"
+#include "common/AtomSpeciesId.h"
+#include "common/Structure.h"
 
 #include <armadillo>
 

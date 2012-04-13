@@ -8,13 +8,13 @@
 #include "StructureBuilder.h"
 
 #include "AtomsDescription.h"
-#include "AtomGroupDescription.h"
+#include "build_cell/AtomGroupDescription.h"
 #include "Minsep.h"
 #include "StructureDescription.h"
 
-#include "../common/Atom.h"
+#include "common/Atom.h"
 #include "../common/AtomGroup.h"
-#include "../common/Structure.h"
+#include "common/Structure.h"
 
 
 namespace sstbx { namespace build_cell {

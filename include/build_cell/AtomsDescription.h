@@ -10,8 +10,8 @@
 
 // INCLUDES ///////////////////
 #include "IAtomConstrainable.h"
-#include "AtomGroupDescription.h"
-#include "../common/AtomSpeciesId.h"
+#include "build_cell/AtomGroupDescription.h"
+#include "common/AtomSpeciesId.h"
 
 #include <map>
 #include <string>

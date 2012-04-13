@@ -13,9 +13,9 @@
 
 #include <armadillo>
 
-#include "event/AtomGroupEvent.h"
-#include "event/GenericEventSupport.h"
-#include "event/IGenericEventListener.h"
+#include "common/event/AtomGroupEvent.h"
+#include "common/event/GenericEventSupport.h"
+#include "common/event/IGenericEventListener.h"
 
 // FORWARD DECLARES ///////////////////////////
 namespace sstbx { namespace common {

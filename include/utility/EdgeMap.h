@@ -11,7 +11,7 @@
 #define EDGE_MAP_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "../SSLib.h"
+#include "SSLib.h"
 
 #include "IStructureComparator.h"
 #include "Loops.h"

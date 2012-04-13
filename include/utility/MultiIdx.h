@@ -11,8 +11,8 @@
 #define MULTI_IDX_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "../SSLib.h"
-#include "PromotableType.h"
+#include "SSLib.h"
+#include "utility/PromotableType.h"
 
 #include <limits>
 #include <stdexcept>

@@ -10,9 +10,9 @@
 #include "AtomsDescription.h"
 
 #include "AtomConstraintDescription.h"
-#include "AtomGroupDescription.h"
+#include "build_cell/AtomGroupDescription.h"
 
-#include "../common/AtomSpeciesId.h"
+#include "common/AtomSpeciesId.h"
 
 namespace sstbx { namespace build_cell {
 

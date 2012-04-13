@@ -11,7 +11,7 @@
 
 // INCLUDES /////////////////////////////////////////////
 
-#include "IStructureWriter.h"
+#include "io/IStructureWriter.h"
 
 #include <vector>
 

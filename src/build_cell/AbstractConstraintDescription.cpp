@@ -6,9 +6,9 @@
  */
 
 // INCLUEDES /////////////
-#include "AbstractConstraintDescription.h"
+#include "build_cell/AbstractConstraintDescription.h"
 
-#include "ConstraintDescriptionId.h"
+#include "build_cell/ConstraintDescriptionId.h"
 
 
 namespace sstbx { namespace build_cell {
