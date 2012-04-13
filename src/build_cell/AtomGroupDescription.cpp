@@ -9,8 +9,8 @@
 
 #include <algorithm>
 
-#include "AtomConstraintDescription.h"
-#include "AtomsDescription.h"
+#include "build_cell/AtomConstraintDescription.h"
+#include "build_cell/AtomsDescription.h"
 
 namespace sstbx { namespace build_cell {
 

@@ -7,20 +7,20 @@
 
 
 // INCLUDES //////////////////////////////////////
-#include "DefaultCrystalGenerator.h"
+#include "build_cell/DefaultCrystalGenerator.h"
 
-#include "AtomConstraintDescription.h"
+#include "build_cell/AtomConstraintDescription.h"
 #include "build_cell/AtomGroupDescription.h"
-#include "AtomsDescription.h"
-#include "ICellGenerator.h"
-#include "Minsep.h"
-#include "StructureBuilder.h"
-#include "StructureDescription.h"
+#include "build_cell/AtomsDescription.h"
+#include "build_cell/ICellGenerator.h"
+#include "build_cell/Minsep.h"
+#include "build_cell/StructureBuilder.h"
+#include "build_cell/StructureDescription.h"
 
 #include "common/AbstractFmidCell.h"
 #include "common/Atom.h"
 #include "common/Structure.h"
-#include "../common/Utils.h"
+#include "common/Utils.h"
 
 namespace sstbx { namespace build_cell {
 

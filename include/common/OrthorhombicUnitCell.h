@@ -11,7 +11,7 @@
 #define ORTHORHOMBIC_UNIT_CELL_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "AbstractFmidCell.h"
+#include "common/AbstractFmidCell.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 

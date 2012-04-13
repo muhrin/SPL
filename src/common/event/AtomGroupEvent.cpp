@@ -6,7 +6,7 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "AtomGroupEvent.h"
+#include "common/event/AtomGroupEvent.h"
 
 namespace sstbx { namespace common { namespace event {
 

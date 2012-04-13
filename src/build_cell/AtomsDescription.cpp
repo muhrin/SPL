@@ -7,9 +7,9 @@
 
 
 // INCLUDES /////////////////
-#include "AtomsDescription.h"
+#include "build_cell/AtomsDescription.h"
 
-#include "AtomConstraintDescription.h"
+#include "build_cell/AtomConstraintDescription.h"
 #include "build_cell/AtomGroupDescription.h"
 
 #include "common/AtomSpeciesId.h"

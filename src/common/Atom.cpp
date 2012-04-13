@@ -6,10 +6,10 @@
  */
 
 // INCLUDES ///////////////
-#include "Atom.h"
+#include "common/Atom.h"
 
-#include "AtomGroup.h"
-#include "StructureTreeEvent.h"
+#include "common/AtomGroup.h"
+#include "common/StructureTreeEvent.h"
 
 namespace sstbx { namespace common {
 

@@ -5,11 +5,11 @@
  *      Author: Martin Uhrin
  */
 
-#include "StructureDescription.h"
+#include "build_cell/StructureDescription.h"
 
-#include "AtomConstraintDescription.h"
-#include "AtomsDescription.h"
-#include "StructureConstraintDescription.h"
+#include "build_cell/AtomConstraintDescription.h"
+#include "build_cell/AtomsDescription.h"
+#include "build_cell/StructureConstraintDescription.h"
 
 namespace sstbx { namespace build_cell {
 

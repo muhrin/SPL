@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "StructureWriterManager.h"
+#include "io/StructureWriterManager.h"
 
 #include "io/IStructureWriter.h"
 

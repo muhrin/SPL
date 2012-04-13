@@ -10,7 +10,7 @@
 
 // INCLUDES ///////////////////////////////////////////////
 #include "SSLib.h"
-#include "AtomGroup.h"
+#include "common/AtomGroup.h"
 
 #include <vector>
 #include <map>

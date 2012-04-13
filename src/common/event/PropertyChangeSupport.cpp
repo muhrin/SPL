@@ -6,12 +6,12 @@
  */
 
 // INCLUDES ///////////////
-#include "PropertyChangeSupport.h"
+#include "common/event/PropertyChangeSupport.h"
 
 #include <algorithm>
 
-#include "IPropertyChangeListener.h"
-#include "PropertyChangeEvent.h"
+#include "common/event/IPropertyChangeListener.h"
+#include "common/event/PropertyChangeEvent.h"
 
 namespace sstbx { namespace common { namespace event {
 

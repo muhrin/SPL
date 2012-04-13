@@ -9,7 +9,7 @@
 #define RANDOM_CELL_GENERATOR_H
 
 // INCLUDES //////////////////////////////////////////////
-#include "ICellGenerator.h"
+#include "build_cell/ICellGenerator.h"
 
 // DEFINES ///////////////////////////////////////////////
 
@@ -74,8 +74,8 @@ private:
 
 #include "RandomCellDescription.h"
 #include "common/AbstractFmidCell.h"
-#include "../common/UnitCellFactory.h"
-#include "../common/Utils.h"
+#include "common/UnitCellFactory.h"
+#include "common/Utils.h"
 
 #define UNSET 0.0
 

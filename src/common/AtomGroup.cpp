@@ -10,7 +10,7 @@
 
 #include "common/Atom.h"
 #include "common/AtomGroup.h"
-#include "StructureTreeEvent.h"
+#include "common/StructureTreeEvent.h"
 
 #include <set>
 

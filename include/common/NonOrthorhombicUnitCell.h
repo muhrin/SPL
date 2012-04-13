@@ -14,8 +14,8 @@
 //#include <cctbx/uctbx/fast_minimum_reduction.h>
 //#include <scitbx/vec3.h>
 
-#include "AbstractFmidCell.h"
-#include "Utils.h"
+#include "common/AbstractFmidCell.h"
+#include "common/Utils.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 

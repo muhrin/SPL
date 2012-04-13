@@ -6,7 +6,7 @@
  */
 
 // INCLUDES ///////////////
-#include "PropertyChangeEvent.h"
+#include "common/event/PropertyChangeEvent.h"
 
 namespace sstbx { namespace common { namespace event {
 

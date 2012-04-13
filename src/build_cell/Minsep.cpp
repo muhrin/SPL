@@ -5,7 +5,7 @@
  *      Author: Martin Uhrin
  */
 
-#include "Minsep.h"
+#include "build_cell/Minsep.h"
 
 #include "build_cell/ConstraintDescriptionId.h"
 

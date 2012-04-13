@@ -5,15 +5,15 @@
  *      Author: Martin Uhrin
  */
 
-#include "StructureBuilder.h"
+#include "build_cell/StructureBuilder.h"
 
-#include "AtomsDescription.h"
+#include "build_cell/AtomsDescription.h"
 #include "build_cell/AtomGroupDescription.h"
-#include "Minsep.h"
-#include "StructureDescription.h"
+#include "build_cell/Minsep.h"
+#include "build_cell/StructureDescription.h"
 
 #include "common/Atom.h"
-#include "../common/AtomGroup.h"
+#include "common/AtomGroup.h"
 #include "common/Structure.h"
 
 

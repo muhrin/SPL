@@ -6,11 +6,11 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "Structure.h"
+#include "common/Structure.h"
 
-#include "AbstractFmidCell.h"
-#include "Atom.h"
-#include "StructureTreeEvent.h"
+#include "common/AbstractFmidCell.h"
+#include "common/Atom.h"
+#include "common/StructureTreeEvent.h"
 
 #include <vector>
 

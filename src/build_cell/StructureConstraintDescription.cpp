@@ -5,7 +5,7 @@
  *      Author: Martin Uhrin
  */
 
-#include "StructureConstraintDescription.h"
+#include "build_cell/StructureConstraintDescription.h"
 
 namespace sstbx { namespace build_cell {
 

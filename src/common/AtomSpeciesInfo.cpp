@@ -7,7 +7,7 @@
 
 
 // INCLUDES //////////////////////////////////////
-#include "AtomSpeciesInfo.h"
+#include "common/AtomSpeciesInfo.h"
 
 
 namespace sstbx { namespace common {

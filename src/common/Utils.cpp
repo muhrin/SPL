@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "Utils.h"
+#include "common/Utils.h"
 
 #include <armadillo>
 

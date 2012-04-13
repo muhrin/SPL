@@ -7,10 +7,10 @@
 
 
 // INCLUDES //////////////////////////////////////
-#include "UnitCellFactory.h"
+#include "common/UnitCellFactory.h"
 
-#include "NonOrthorhombicUnitCell.h"
-#include "OrthorhombicUnitCell.h"
+#include "common/NonOrthorhombicUnitCell.h"
+#include "common/OrthorhombicUnitCell.h"
 
 namespace sstbx { namespace common {
 

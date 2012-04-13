@@ -7,7 +7,7 @@
 
 // INCLUDES /////////////////////////////////////
 
-#include "SortedDistanceComparator.h"
+#include "utility/SortedDistanceComparator.h"
 
 #include "common/AbstractFmidCell.h"
 #include "common/Structure.h"

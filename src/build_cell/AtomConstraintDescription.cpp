@@ -5,7 +5,7 @@
  *      Author: Martin Uhrin
  */
 
-#include "AtomConstraintDescription.h"
+#include "build_cell/AtomConstraintDescription.h"
 
 #include "build_cell/ConstraintDescriptionId.h"
 

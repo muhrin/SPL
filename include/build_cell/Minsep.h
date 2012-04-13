@@ -9,7 +9,7 @@
 #define MINSEP_H
 
 // INCLUDES /////////////////////////////////////////////////////
-#include "AtomConstraintDescription.h"
+#include "build_cell/AtomConstraintDescription.h"
 
 // FORWARD DECLARES /////////////////////////////////////////////
 
