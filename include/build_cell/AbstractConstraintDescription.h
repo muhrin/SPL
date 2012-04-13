@@ -9,7 +9,7 @@
 #define ABSTRACT_CONSTRAINT_DESCRIPTION_H
 
 // INCLUDES ////////////
-#include "common/event/IConstraintDescription.h"
+#include "build_cell/IConstraintDescription.h"
 #include "build_cell/ConstraintDescriptionId.h"
 
 // FORWARD DECLARATIONS ///////
