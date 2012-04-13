@@ -7,8 +7,8 @@ set(SSLIB_VERSION_MAJOR 0)
 set(SSLIB_VERSION_MAJOR 1)
 
 configure_file (
-  "${PROJECT_SOURCE_DIR}/src/SSLib.h.in"
-  "${PROJECT_BINARY_DIR}/src/SSLib.h"
+  "${PROJECT_SOURCE_DIR}/src/SSLibConfig.h.in"
+  "${PROJECT_BINARY_DIR}/src/SSLibConfig.h"
   )
 
 

@@ -32,4 +32,4 @@ set(sslib_src
   utility/SortedDistanceComparator.cpp
 )
 
-add_library(sslib shared ${sslib_src})
+add_library(sslib SHARED ${sslib_src})
