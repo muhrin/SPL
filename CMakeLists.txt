@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 2.6)
 
 project(SSLib)
 
+# Tell CMake where to find modules
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules/;${CMAKE_MODULE_PATH}")
+
 set(SSLIB_VERSION_MAJOR 0)
 set(SSLIB_VERSION_MAJOR 1)
 
@@ -38,10 +41,4 @@ include_directories(include src)
 
 add_subdirectory(src lib)
 
-# Libraries we need to link to
-  target_link_libraries(engine
-    ${Boost_FILESYSTEM_LIBRARY_RELEASE}
-    ${Boost_SYSTEM_LIBRARY_RELEASE}	# filesystem depends on this
-  )
-
-set_property(TARGET SSLib PROPERTY PROJECT_LABEL "SSLib")
+set_property(TARGET PROPERTY PROJECT_LABEL "SSLib")
