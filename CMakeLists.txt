@@ -1,10 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 
 # Paths to libraries - change these! #########
-set(BOOST_ROOT "" CACHE FILEPATH "")
-set(ARMADILLO_ROOT "" CACHE FILEPATH "")
-
-
+set(BOOST_ROOT "/homes/muhrin/src/boost_1_48_0" CACHE FILEPATH "")
+set(ARMADILLO_ROOT "/homes/muhrin/src/armadillo-2.4.2" CACHE FILEPATH "")
 
 project(SSLib)
 
@@ -25,7 +23,6 @@ configure_file (
 # First add any user specified paths to the package search array
 set(CMAKE_PREFIX_PATH "${BOOST_ROOT}" "${ARMADILLO_ROOT}")
 
-
 # Boost #
 find_package(Boost 1.36.0 COMPONENTS system filesystem REQUIRED)
 # Armadillo #
@@ -44,7 +41,6 @@ endif()
 
 include_directories(include src)
 
-add_subdirectory(include)
 add_subdirectory(src lib)
 
 set_property(TARGET PROPERTY PROJECT_LABEL "SSLib")

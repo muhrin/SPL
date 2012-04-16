@@ -18,8 +18,8 @@
 
 #include <armadillo>
 
-#include <cctbx/uctbx.h>
-#include <cctbx/uctbx/fast_minimum_reduction.h>
+//#include <cctbx/uctbx.h>
+//#include <cctbx/uctbx/fast_minimum_reduction.h>
 
 #include "common/Constants.h"
 
@@ -51,7 +51,7 @@ public:
 
 	AbstractFmidCell(const FloatType (&latticeParams)[6]);
 
-	cctbx::uctbx::unit_cell * asCctbxUnitCell() const;
+	//cctbx::uctbx::unit_cell * asCctbxUnitCell() const;
 
 	/**
 	/* Get the minimum distance between two cartesian points respecting the boundary
@@ -201,13 +201,13 @@ AbstractFmidCell<FloatType>::AbstractFmidCell(const FloatType (&latticeParams)[6
 	myChangeOfBasisMtx.eye();
 }
 
-template <typename FloatType>
+/*template <typename FloatType>
 cctbx::uctbx::unit_cell * AbstractFmidCell<FloatType>::asCctbxUnitCell() const
 {
 	scitbx::af::double6 params;
 	memcpy(&params.elems, &myLatticeParams, 6 * sizeof(FloatType));
 	return new cctbx::uctbx::unit_cell(params);
-}
+}*/
 
 template <typename FloatType>
 FloatType AbstractFmidCell<FloatType>::getDistanceMinimumImg(
@@ -675,7 +675,7 @@ void AbstractFmidCell<FloatType>::initRest()
 template <typename FloatType>
 typename AbstractFmidCell<FloatType>::Mat33 AbstractFmidCell<FloatType>::compactNiggli()
 {
-	using namespace cctbx::uctbx;
+/*	using namespace cctbx::uctbx;
 
 	unit_cell * cell = asCctbxUnitCell();
 
@@ -686,12 +686,13 @@ typename AbstractFmidCell<FloatType>::Mat33 AbstractFmidCell<FloatType>::compact
 	const scitbx::mat3<int> & reductionMtx = minReduction.r_inv();
 
 	// TODO: Make this work!!
+*/
 
 	typename AbstractFmidCell<FloatType>::Mat33 changeOfBasisMtx;
 	// Account for:
 	// Armadillo	- column-major
 	// Cctbx		- row-major
-	for(size_t row = 0; row < 3; ++row)
+/*	for(size_t row = 0; row < 3; ++row)
 	{
 		for(size_t col = 0; col < 3; ++col)
 		{
@@ -705,6 +706,7 @@ typename AbstractFmidCell<FloatType>::Mat33 AbstractFmidCell<FloatType>::compact
 	// Finally set the new orthogonalisation matrix
 	myOrthoMtx *= changeOfBasisMtx;
 	init(myOrthoMtx);
+*/
 
 	return changeOfBasisMtx;
 }
