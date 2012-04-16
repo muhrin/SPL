@@ -44,7 +44,6 @@ endif()
 
 include_directories(include src)
 
-add_subdirectory(include)
 add_subdirectory(src lib)
 
 set_property(TARGET PROPERTY PROJECT_LABEL "SSLib")
