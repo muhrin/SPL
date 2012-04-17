@@ -39,8 +39,8 @@ endif()
     ${ARMADILLO_INCLUDE_DIRS}
   )
 
-include_directories(include src)
+include_directories(src)
 
-add_subdirectory(src lib)
+add_subdirectory(src ${PROJECT_SOURCE_DIR}/lib)
 
 set_property(TARGET PROPERTY PROJECT_LABEL "SSLib")
