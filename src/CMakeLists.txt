@@ -45,8 +45,6 @@ set(sslib_src_Source_Files__utility
 source_group("Source Files\\utility" FILES ${sslib_src_Source_Files__utility})
 
 set(sslib_src
-  SSLibConfig.h
-  SSLib.h
   ${sslib_src_Source_Files__build_cell}
   ${sslib_src_Source_Files__common}
   ${sslib_src_Source_Files__common__event}
