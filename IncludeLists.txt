@@ -1,0 +1,87 @@
+
+set(sslib_Header_Files__build_cell
+  include/build_cell/AbstractConstraintDescription.h
+  include/build_cell/AtomConstraintDescription.h
+  include/build_cell/AtomGroupDescription.h
+  include/build_cell/AtomsDescription.h
+  include/build_cell/CellConstraintDescription.h
+  include/build_cell/ConstraintDescriptionId.h
+  include/build_cell/DefaultCrystalGenerator.h
+  include/build_cell/IAtomConstrainable.h
+  include/build_cell/ICellGenerator.h
+  include/build_cell/IConstraintDescription.h
+  include/build_cell/IStructureGenerator.h
+  include/build_cell/Minsep.h
+  include/build_cell/RandomCellDescription.h
+  include/build_cell/RandomCellGenerator.h
+  include/build_cell/StructureBuilder.h
+  include/build_cell/StructureConstraintDescription.h
+  include/build_cell/StructureDescription.h
+)
+source_group("Header Files\\build_cell" FILES ${sslib_Header_Files__build_cell})
+
+set(sslib_Header_Files__common
+  include/common/AbstractFmidCell.h
+  include/common/Atom.h
+  include/common/AtomGroup.h
+  include/common/AtomSpeciesDatabase.h
+  include/common/AtomSpeciesId.h
+  include/common/AtomSpeciesInfo.h
+  include/common/Constants.h
+  include/common/NonOrthorhombicUnitCell.h
+  include/common/OrthorhombicUnitCell.h
+  include/common/Structure.h
+  include/common/StructureTreeEvent.h
+  include/common/UnitCellFactory.h
+  include/common/Utils.h
+)
+source_group("Header Files\\common" FILES ${sslib_Header_Files__common})
+
+set(sslib_Header_Files__io
+  include/io/AdditionalData.h
+  include/io/IStructureWriter.h
+  include/io/ResReaderWriter.h
+  include/io/StructureWriterManager.h
+)
+source_group("Header Files\\io" FILES ${sslib_Header_Files__io})
+
+set(sslib_Header_Files__potential
+  include/potential/IGeomOptimiser.h
+  include/potential/IParameterisable.h
+  include/potential/IPotential.h
+  include/potential/SimplePairPotential.h
+  include/potential/SimplePairPotentialData.h
+  include/potential/StandardData.h
+  include/potential/TpsdGeomOptimiser.h
+)
+source_group("Header Files\\potential" FILES ${sslib_Header_Files__potential})
+
+set(sslib_Header_Files__utility
+  include/utility/AbstractComparator.h
+  include/utility/EdgeMap.h
+  include/utility/IStructureComparator.h
+  include/utility/IStructureSet.h
+  include/utility/Loops.h
+  include/utility/MetaProgramming.h
+  include/utility/MultiArray.h
+  include/utility/MultiIdx.h
+  include/utility/PromotableType.h
+  include/utility/PropertiesMap.h
+  include/utility/SortedDistanceComparator.h
+  include/utility/UniqueStructureSet.h
+)
+source_group("Header Files\\utility" FILES ${sslib_Header_Files__utility})
+
+set(sslib_Header_Files__
+)
+source_group("Header Files" FILES ${sslib_Header_Files__})
+
+set(sslib_Header_Files
+  ${sslib_Header_Files__build_cell}
+  ${sslib_Header_Files__common}
+  ${sslib_Header_Files__io}
+  ${sslib_Header_Files__potential}
+  ${sslib_Header_Files__utility}
+  ${sslib_Header_Files__}
+)
+

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 
 # Paths to libraries - change these! #########
 set(BOOST_ROOT "/homes/muhrin/src/boost_1_48_0" CACHE FILEPATH "")
-set(ARMADILLO_ROOT "/homes/muhrin/src/armadillo-2.4.2" CACHE FILEPATH "")
+set(ARMADILLO_ROOT "C:/Users/martin/Documents/lib/armadillo-2.4.4" CACHE FILEPATH "")
 
 project(SSLib)
 
@@ -24,6 +24,7 @@ configure_file (
 set(CMAKE_PREFIX_PATH "${BOOST_ROOT}" "${ARMADILLO_ROOT}")
 
 # Boost #
+set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.36.0 COMPONENTS system filesystem REQUIRED)
 # Armadillo #
 find_package(Armadillo)
@@ -39,8 +40,18 @@ endif()
     ${ARMADILLO_INCLUDE_DIRS}
   )
 
-include_directories(src)
+include_directories(include src)
 
-add_subdirectory(src ${PROJECT_SOURCE_DIR}/lib)
+# Process header and source files
+include(IncludeLists.txt)
+include(SrcLists.txt)
 
 set_property(TARGET PROPERTY PROJECT_LABEL "SSLib")
+
+add_library(sslib SHARED ${sslib_Header_Files} ${sslib_Source_Files})
+
+# Libraries we need to link to
+target_link_libraries(sslib
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
+)

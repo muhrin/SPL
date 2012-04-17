@@ -1,0 +1,62 @@
+
+set(sslib_Source_Files__build_cell
+  src/build_cell/AbstractConstraintDescription.cpp
+  src/build_cell/AtomConstraintDescription.cpp
+  src/build_cell/AtomGroupDescription.cpp
+  src/build_cell/AtomsDescription.cpp
+  src/build_cell/CellConstraintDescription.cpp
+  src/build_cell/DefaultCrystalGenerator.cpp
+  src/build_cell/Minsep.cpp
+  src/build_cell/StructureBuilder.cpp
+  src/build_cell/StructureConstraintDescription.cpp
+  src/build_cell/StructureDescription.cpp
+)
+source_group("Source Files\\build_cell" FILES ${sslib_Source_Files__build_cell})
+
+set(sslib_Source_Files__common
+  src/common/Atom.cpp
+  src/common/AtomGroup.cpp
+  src/common/AtomSpeciesDatabase.cpp
+  src/common/AtomSpeciesInfo.cpp
+  src/common/Constants.cpp
+  src/common/Structure.cpp
+  src/common/StructureTreeEvent.cpp
+  src/common/UnitCellFactory.cpp
+  src/common/Utils.cpp
+)
+source_group("Source Files\\common" FILES ${sslib_Source_Files__common})
+
+set(sslib_Source_Files__common__event
+  src/common/event/AtomGroupEvent.cpp
+  src/common/event/PropertyChangeEvent.cpp
+  src/common/event/PropertyChangeSupport.cpp
+)
+source_group("Source Files\\common\\event" FILES ${sslib_Source_Files__common__event})
+
+set(sslib_Source_Files__io
+  src/io/AdditionalData.cpp
+  src/io/ResReaderWriter.cpp
+  src/io/StructureWriterManager.cpp
+)
+source_group("Source Files\\io" FILES ${sslib_Source_Files__io})
+
+set(sslib_Source_Files__utility
+  src/utility/SortedDistanceComparator.cpp
+)
+source_group("Source Files\\utility" FILES ${sslib_Source_Files__utility})
+
+set(sslib_Source_Files__
+  src/SSLibConfig.h
+  src/SSLib.h
+)
+source_group("Header Files" FILES ${sslib_Source_Files__})
+
+set(sslib_Source_Files
+  ${sslib_Source_Files__build_cell}
+  ${sslib_Source_Files__common}
+  ${sslib_Source_Files__common__event}
+  ${sslib_Source_Files__io}
+  ${sslib_Source_Files__utility}
+  ${sslib_Source_Files__}
+)
+
