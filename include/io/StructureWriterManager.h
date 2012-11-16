@@ -16,21 +16,19 @@
 #include <map>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx
-{
-	namespace common
-	{
-		class Structure;
-	}
-	namespace io
-	{
-		struct AdditionalData;
-		class IStructureWriter;
-	}
+namespace sstbx {
+namespace common {
+class AtomSpeciesDatabase;
+class Structure;
+}
+namespace io {
+class IStructureWriter;
+}
 }
 
 
-namespace sstbx { namespace io {
+namespace sstbx {
+namespace io {
 
 class StructureWriterManager
 {
@@ -40,16 +38,15 @@ public:
 	void deregisterWriter(IStructureWriter & writer);
 
 	
-	void writeStructure(
-		const ::sstbx::common::Structure & str,
+	bool writeStructure(
+		const common::Structure & str,
 		const ::boost::filesystem::path & path,
-		const AdditionalData * const data = NULL) const;
+    const common::AtomSpeciesDatabase & atomSpeciesDb) const;
 
 
 protected:
 
 	typedef ::std::map<std::string, IStructureWriter *> ExtensionsMap;
-	typedef ::std::pair<std::string, IStructureWriter *> ExtensionsMapPair;
 
 	ExtensionsMap	myExtensionsMap;
 };

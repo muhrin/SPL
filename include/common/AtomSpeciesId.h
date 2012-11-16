@@ -9,25 +9,39 @@
 #define ATOM_SPECIES_ID_H
 
 // INCLUDES ////////////
-
+#include "utility/Enum.h"
 
 // FORWARD DECLARATIONS ///////
 
-namespace sstbx { namespace common {
+namespace sstbx {
+namespace common {
 
-enum AtomSpeciesId
+struct AtomSpeciesId : public ::sstbx::utility::Enum<AtomSpeciesId>
 {
-	H,
-	NA,
-	CL,
-	CUSTOM_1,
-	CUSTOM_2,
-	CUSTOM_3,
-	CUSTOM_4,
-	CUSTOM_5
+public:
+
+  typedef ::sstbx::utility::Enum<AtomSpeciesId> Base;
+
+  // Adding this for compatibility with previous use of this type
+  typedef AtomSpeciesId Value;
+
+  static const Enumerator DUMMY;
+  static const Enumerator H;
+  static const Enumerator LI;
+  static const Enumerator BE;
+  static const Enumerator B;
+  static const Enumerator C;
+  static const Enumerator NA;
+  static const Enumerator CL;
+  static const Enumerator CUSTOM_1;
+  static const Enumerator CUSTOM_2;
+  static const Enumerator CUSTOM_3;
+  static const Enumerator CUSTOM_4;
+  static const Enumerator CUSTOM_5;
 };
 
-}}
+}
+}
 
 
 #endif /* ATOM_SPECIES_IDS_H */

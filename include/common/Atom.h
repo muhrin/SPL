@@ -13,43 +13,55 @@
 
 #include <armadillo>
 
+namespace sstbx {
+namespace common {
+
 // FORWARD DECLARES ///////////////////////////
-namespace sstbx { namespace common {
-	class AtomGroup;
-	class StructureTreeEvent;
-}}
+class Structure;
 
-namespace sstbx { namespace common {
-
-class Atom {
+class Atom
+{
 public:
 
-	typedef arma::Col<double>::fixed<3> Vec3;
-	typedef arma::Mat<double>			Mat;
+  Structure & getStructure();
+  const Structure & getStructure() const;
 
-	friend class AtomGroup;
+  const ::arma::vec3 & getPosition() const;
+  void setPosition(const ::arma::vec3 & pos);
+  void setPosition(const double x, const double y, const double z);
 
-	Atom(const AtomSpeciesId species);
+  double getRadius() const;
+  void setRadius(const double radius);
 
-	const Vec3 & getPosition() const;
-	void setPosition(const Vec3 & pos);
+	const AtomSpeciesId::Value getSpecies() const;
 
-	const AtomSpeciesId getSpecies() const;
+  size_t getIndex() const;
 
 private:
 
-	AtomGroup * getParent() const;
-	void setParent(AtomGroup * const parent);
+  Atom(const AtomSpeciesId::Value species, Structure & structure, const size_t index);
 
-	void eventFired(const StructureTreeEvent & evt);
+  /**
+  /* Special constructor for use by Structure that copies everything an
+  /* atom except the structure and index within the structure which are
+  /* provided by the caller.
+  /*
+  /* Make sure to update this if any changes are made to Atom!
+  /**/
+  Atom(const Atom & toCopy, Structure & structure, const size_t index);
 
-	AtomGroup * myParent;
+  void setIndex(const size_t index);
 
-	AtomSpeciesId	mySpecies;
+  Structure &           myStructure;
 
-	Vec3 position;
+  /** The index of this atom in the structure. */
+  size_t                myIndex;
 
-	double myRadius;
+  AtomSpeciesId::Value	mySpecies;
+  ::arma::vec3          myPosition;
+	double                myRadius;
+
+  friend class Structure;
 };
 
 }} // Close the namespace

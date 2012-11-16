@@ -10,38 +10,49 @@
 #define I_POTENTIAL_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "StandardData.h"
+#include "PotentialData.h"
+
+#include <boost/optional.hpp>
+#include <boost/smart_ptr.hpp>
+
+#include <common/AtomSpeciesId.h>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx
-{
-	namespace common
-	{
-		class Structure;
-	}
-	namespace potential
-	{
-		class IPotentialInfo;
-	}
+namespace sstbx {
+namespace common {
+class Structure;
+}
+namespace potential {
+class IPotentialInfo;
+class IPotentialEvaluator;
+}
 }
 
-namespace sstbx { namespace potential {
+namespace sstbx {
+namespace potential {
 
-template <class DataType = StandardData<> >
 class IPotential
 {
 public:
 
 	virtual ~IPotential() {}
 
-	virtual void evalPotential(
-		const sstbx::common::Structure & structure,
-		DataType & potentialData) const = 0;
+  /**
+  /* Get the name of this potential.
+  /*
+  /**/
+	virtual const ::std::string & getName() const = 0;
 
+  /**
+  /* Get the potential radius for a particular atom species.  Return value is optional as the potential may
+  /* not know or may not deal with the species specified.
+  /**/
+  virtual ::boost::optional<double> getPotentialRadius(const ::sstbx::common::AtomSpeciesId::Value id) const = 0;
 
-	virtual DataType * generatePotentialData(sstbx::common::Structure & structure) const = 0;
+  virtual ::boost::shared_ptr<IPotentialEvaluator> createEvaluator(const sstbx::common::Structure & structure) const = 0;
 };
 
-}}
+}
+}
 
 #endif /* I_POTENTIAL_H */

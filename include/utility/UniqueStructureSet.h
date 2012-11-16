@@ -10,149 +10,116 @@
 #define UNIQUE_STRUCTURE_SET_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "IStructureSet.h"
-
-#include "IStructureComparator.h"
-#include "common/Structure.h"
-
-#include <boost/foreach.hpp>
-
 #include <map>
 
+#include <boost/shared_ptr.hpp>
+#include <boost/iterator/transform_iterator.hpp>
+
+#include "common/Structure.h"
+#include "utility/IBufferedComparator.h"
+#include "utility/TransformFunctions.h"
+
+
 // FORWARD DECLARATIONS ////////////////////////////////////
+namespace sstbx {
+namespace utility {
+class IStructureComparator;
+}
+}
 
 
-namespace sstbx { namespace utility {
+namespace sstbx {
+namespace utility {
 
-template <class ComparisonData>
-class UniqueStructureSet : public IStructureSet
+namespace utility_detail {
+
+
+
+} // namespace utility_detail
+
+class UniqueStructureSet
 {
-private:
+public:
 
 	struct StructureMetadata
 	{
-		StructureMetadata(const ComparisonData * const data = NULL);
-		~StructureMetadata();
+    StructureMetadata();
 
 		/** The number of times this structure has been found */
-		size_t				timesFound;
-
-		const ComparisonData *	data;
+		size_t				                  timesFound;
 	};
-
-public:
-
-	// TODO: Make StructureMetadata not a pointer!!!
-
-	typedef std::map<sstbx::common::Structure *, StructureMetadata *> StructureSet;
-
-	typedef std::pair<sstbx::common::Structure *, StructureMetadata *> StructureSetPair;
-
-	typedef std::pair<sstbx::common::Structure *, bool> ReturnPair;
-
-	UniqueStructureSet(const IStructureComparator<ComparisonData> & comparator);
-	virtual ~UniqueStructureSet();
-
-	// From IStructureSet //
-
-	virtual const std::pair<sstbx::common::Structure *, bool>
-		insert(sstbx::common::Structure * const str);
-
-	virtual void clear();
-
-	// End from IStructureSet //
 
 private:
 
-	const IStructureComparator<ComparisonData> & myComparator;
+	typedef std::map<sstbx::common::Structure *, StructureMetadata> StructureMap;
 
-	StructureSet myStructures;
+public:
+
+  typedef utility::TakeFirst<common::Structure *, StructureMetadata> TakeFirst;
+  typedef utility::TakeFirst<const common::Structure *, StructureMetadata> TakeFirstConst;
+
+  typedef common::Structure * value_type;
+  typedef boost::transform_iterator<TakeFirst, StructureMap::iterator> iterator;
+  typedef boost::transform_iterator<TakeFirstConst, StructureMap::const_iterator> const_iterator;
+  typedef boost::transform_iterator<TakeFirst, StructureMap::reverse_iterator> reverse_iterator;
+  typedef boost::transform_iterator<TakeFirstConst, StructureMap::const_reverse_iterator> const_reverse_iterator;
+  typedef std::pair<iterator, bool> insert_return_type;
+
+  typedef StructureMap::size_type size_type;
+
+	typedef std::pair<sstbx::common::Structure *, bool> ReturnPair;
+
+	UniqueStructureSet(const IStructureComparator & comparator);
+
+  // Iterators /////////////////////////
+  iterator begin();
+  const_iterator begin() const;
+
+  iterator end();
+  const_iterator end() const;
+
+  reverse_iterator rbegin();
+  const_reverse_iterator rbegin() const;
+
+  reverse_iterator rend();
+  const_reverse_iterator rend() const;
+
+  // Capacity ////////////////////////////
+  bool empty() const;
+  size_type size() const;
+  size_type max_size() const;
+
+  // Modifiers ///////////////////////////
+  insert_return_type insert(common::Structure * const newStructure);
+
+  template <class InputIterator>
+  void insert(InputIterator first, InputIterator last);
+  void erase(iterator position);
+  
+	void clear();
+
+private:
+
+  typedef std::pair<StructureMap::iterator, bool> MapInsertReturn;
+
+  const ::boost::shared_ptr<IBufferedComparator> myComparator;
+
+  MapInsertReturn insertStructure(common::Structure * const str);
+  void eraseStructure(common::Structure * const str);
+
+	StructureMap myStructures;
 };
 
-
-// IMPLEMENTATION ////////////////////////////////////////////
-
-
-// StructureMetadata implementation ///////
-
-template <class ComparisonData>
-UniqueStructureSet<ComparisonData>::StructureMetadata::StructureMetadata(
-	const ComparisonData * const inData):
-data(inData),
-timesFound(0)
-{}
-
-template <class ComparisonData>
-UniqueStructureSet<ComparisonData>::StructureMetadata::~StructureMetadata()
+template <class InputIterator>
+void UniqueStructureSet::insert(const InputIterator first, const InputIterator last)
 {
-	if(data)
-		delete data;
+  // Insert any unique structures in the range
+  for(InputIterator it = first; it != last; ++it)
+    insertStructure(*it);
 }
 
-// UniqueStructureSet implementation
-
-template <class ComparisonData>
-UniqueStructureSet<ComparisonData>::UniqueStructureSet(const IStructureComparator<ComparisonData> & comparator):
-myComparator(comparator)
-{}
-
-template <class ComparisonData>
-UniqueStructureSet<ComparisonData>::~UniqueStructureSet()
-{
-	for(typename StructureSet::const_iterator it = myStructures.begin(), end = myStructures.end();
-		it != end; ++it)
-	{
-		delete it->second;
-	}
-	myStructures.clear();
 }
-
-template <class ComparisonData>
-const std::pair<sstbx::common::Structure *, bool>
-UniqueStructureSet<ComparisonData>::insert(sstbx::common::Structure * const str)
-{
-	// First creat the comparison data instance for this structure
-	const ComparisonData * data = myComparator.generateComparisonData(*str);
-
-	sstbx::common::Structure * similarTo = NULL;
-	bool unique = true;
-	for(typename StructureSet::const_iterator it = myStructures.begin(), end = myStructures.end();
-		it != end; ++it)
-	{
-		if(myComparator.areSimilar(*data, *it->second->data))
-		{
-			++it->second->timesFound;
-			similarTo = it->first;
-			unique = false;
-			break;
-		}
-	}
-
-	// If it is not like any of those we have already then insert it
-	if(unique)
-	{
-		myStructures.insert(
-			StructureSetPair(
-			str,
-			new StructureMetadata(data)
-			)
-		);
-	}
-
-	return ReturnPair(unique ? str : similarTo, unique);
 }
-
-template <class ComparisonData>
-void UniqueStructureSet<ComparisonData>::clear()
-{
-	BOOST_FOREACH(const StructureSetPair & p, myStructures)
-	{
-		delete p.second;
-	}
-	myStructures.clear();
-}
-
-}}
 
 
 #endif /* UNIQUE_STRUCTURE_SET_H */

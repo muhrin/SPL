@@ -1,61 +1,108 @@
+# analysis
+
+set(sslib_Source_Files__analysis
+  src/analysis/VoronoiMap.cpp
+)
+source_group("Source Files\\analysis" FILES ${sslib_Source_Files__analysis})
+
+# build_cell
 
 set(sslib_Source_Files__build_cell
   src/build_cell/AbstractConstraintDescription.cpp
   src/build_cell/AtomConstraintDescription.cpp
   src/build_cell/AtomGroupDescription.cpp
+  src/build_cell/AtomExtruder.cpp
   src/build_cell/AtomsDescription.cpp
-  src/build_cell/CellConstraintDescription.cpp
+  src/build_cell/ConstVisitorGroup.cpp
   src/build_cell/DefaultCrystalGenerator.cpp
-  src/build_cell/Minsep.cpp
+  src/build_cell/DistanceConstraintChecker.cpp
+  src/build_cell/RandomAtomPositioner.cpp
+  src/build_cell/RandomUnitCell.cpp
   src/build_cell/StructureBuilder.cpp
   src/build_cell/StructureConstraintDescription.cpp
   src/build_cell/StructureDescription.cpp
+  src/build_cell/StructureDescriptionMap.cpp
+  src/build_cell/VisitorGroup.cpp
 )
 source_group("Source Files\\build_cell" FILES ${sslib_Source_Files__build_cell})
 
 set(sslib_Source_Files__common
   src/common/Atom.cpp
-  src/common/AtomGroup.cpp
   src/common/AtomSpeciesDatabase.cpp
+  src/common/AtomSpeciesId.cpp
   src/common/AtomSpeciesInfo.cpp
   src/common/Constants.cpp
+  src/common/DistanceCalculator.cpp
+  src/common/DistanceCalculatorDelegator.cpp
+  src/common/OrthoCellDistanceCalculator.cpp
+  src/common/ReferenceDistanceCalculator.cpp
   src/common/Structure.cpp
-  src/common/StructureTreeEvent.cpp
-  src/common/UnitCellFactory.cpp
+  src/common/StructureProperties.cpp
+  src/common/UnitCell.cpp
+  src/common/UniversalCrystalDistanceCalculator.cpp
   src/common/Utils.cpp
 )
 source_group("Source Files\\common" FILES ${sslib_Source_Files__common})
 
 set(sslib_Source_Files__common__event
-  src/common/event/AtomGroupEvent.cpp
-  src/common/event/PropertyChangeEvent.cpp
-  src/common/event/PropertyChangeSupport.cpp
 )
 source_group("Source Files\\common\\event" FILES ${sslib_Source_Files__common__event})
 
+set(sslib_Source_Files__factory
+  src/factory/AbstractInputObject.cpp
+  src/factory/Scalar.cpp
+  src/factory/SchemaDoc.cpp
+  src/factory/SchemaElement.cpp
+  src/factory/SchemaList.cpp
+  src/factory/SchemaMap.cpp
+  src/factory/SchemaMapSingle.cpp
+  src/factory/SchemaObjectUid.cpp
+  src/factory/SchemaScalarValue.cpp
+  src/factory/SchemaScalarValueAny.cpp
+  src/factory/SchemaScalarValueLiteral.cpp
+  src/factory/SsLibElements.cpp
+  src/factory/SsLibFactoryYaml.cpp
+)
+source_group("Source Files\\factory" FILES ${sslib_Source_Files__factory})
+
 set(sslib_Source_Files__io
-  src/io/AdditionalData.cpp
   src/io/ResReaderWriter.cpp
   src/io/StructureWriterManager.cpp
 )
 source_group("Source Files\\io" FILES ${sslib_Source_Files__io})
 
+set(sslib_Source_Files__potential
+  src/potential/PotentialData.cpp
+  src/potential/SimplePairPotential.cpp
+  src/potential/SimplePairPotentialData.cpp
+  src/potential/TpsdGeomOptimiser.cpp
+)
+source_group("Source Files\\potential" FILES ${sslib_Source_Files__potential})
+
 set(sslib_Source_Files__utility
+  src/utility/BoostFilesystem.cpp
+  src/utility/DistanceMatrixComparator.cpp
+  src/utility/HeterogeneousMap.cpp
+  src/utility/HeterogeneousMapKey.cpp
   src/utility/SortedDistanceComparator.cpp
+  src/utility/SortedDistanceComparatorEx.cpp
+  src/utility/StableComparison.cpp
+  src/utility/UniqueStructureSet.cpp
 )
 source_group("Source Files\\utility" FILES ${sslib_Source_Files__utility})
 
 set(sslib_Source_Files__
-  src/SSLibConfig.h
-  src/SSLib.h
 )
 source_group("Header Files" FILES ${sslib_Source_Files__})
 
 set(sslib_Source_Files
+  ${sslib_Source_Files__analysis}
   ${sslib_Source_Files__build_cell}
   ${sslib_Source_Files__common}
   ${sslib_Source_Files__common__event}
+  ${sslib_Source_Files__factory}
   ${sslib_Source_Files__io}
+  ${sslib_Source_Files__potential}
   ${sslib_Source_Files__utility}
   ${sslib_Source_Files__}
 )

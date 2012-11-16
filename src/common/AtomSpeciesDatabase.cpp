@@ -12,25 +12,22 @@
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx { namespace common {
+namespace sstbx {
+namespace common {
 
-// Declare the singleton instance
-AtomSpeciesDatabase * AtomSpeciesDatabase::myInstance = NULL;
 
 AtomSpeciesDatabase::AtomSpeciesDatabase()
 {
-	setAll(H, "H", "Hydrogen");
-	setAll(NA, "Na", "Sodium");
-	setAll(CL, "Cl", "Chlorine");
+  setAll(AtomSpeciesId::H, "H", "Hydrogen");
+  setAll(AtomSpeciesId::LI, "Li", "Lithium");
+  setAll(AtomSpeciesId::BE, "Be", "Beryllium");
+  setAll(AtomSpeciesId::B, "B", "Boron");
+  setAll(AtomSpeciesId::C, "C", "Carbon");
+	setAll(AtomSpeciesId::NA, "Na", "Sodium");
+	setAll(AtomSpeciesId::CL, "Cl", "Chlorine");
 }
 
-AtomSpeciesDatabase::~AtomSpeciesDatabase()
-{
-	if(myInstance)
-		delete myInstance;
-}
-
-const ::std::string * AtomSpeciesDatabase::getName(const AtomSpeciesId id) const
+const ::std::string * AtomSpeciesDatabase::getName(const AtomSpeciesId::Value id) const
 {
 	SpeciesString::const_iterator it = myNames.find(id);
 	if(it == myNames.end())
@@ -38,12 +35,12 @@ const ::std::string * AtomSpeciesDatabase::getName(const AtomSpeciesId id) const
 	return &it->second;
 }
 
-void AtomSpeciesDatabase::setName(const AtomSpeciesId id, const ::std::string & name)
+void AtomSpeciesDatabase::setName(const AtomSpeciesId::Value id, const ::std::string & name)
 {
 	myNames[id] = name;
 }
 
-const ::std::string * AtomSpeciesDatabase::getSymbol(const AtomSpeciesId id) const
+const ::std::string * AtomSpeciesDatabase::getSymbol(const AtomSpeciesId::Value id) const
 {
 	SpeciesString::const_iterator it = mySymbols.find(id);
 	if(it == mySymbols.end())
@@ -51,13 +48,42 @@ const ::std::string * AtomSpeciesDatabase::getSymbol(const AtomSpeciesId id) con
 	return &it->second;
 }
 
-void AtomSpeciesDatabase::setSymbol(const AtomSpeciesId id, const ::std::string & symbol)
+void AtomSpeciesDatabase::setSymbol(const AtomSpeciesId::Value id, const ::std::string & symbol)
 {
 	mySymbols[id] = symbol;
 }
 
+const AtomSpeciesId::Value AtomSpeciesDatabase::getIdFromSymbol(const std::string & symbol) const
+{
+  AtomSpeciesId::Value id = AtomSpeciesId::DUMMY;
+  for(SpeciesString::const_iterator it = mySymbols.begin(), end = mySymbols.end();
+    it != end; ++it)
+  {
+    if(it->second == symbol)
+    {
+      id = it->first;
+      break;
+    }
+  }
+  return id;
+}
+
+::boost::optional<double> AtomSpeciesDatabase::getRadius(const AtomSpeciesId::Value id) const
+{
+  ::boost::optional<double> rad;
+	SpeciesDouble::const_iterator it = myRadii.find(id);
+	if(it != myRadii.end())
+    rad.reset(it->second);
+	return rad;
+}
+
+void AtomSpeciesDatabase::setRadius(const AtomSpeciesId::Value id, const double radius)
+{
+  myRadii[id] = radius;
+}
+
 void AtomSpeciesDatabase::setAll(
-	const AtomSpeciesId id,
+  AtomSpeciesId::Value id,
 	const ::std::string & symbol,
 	const ::std::string & name)
 {
@@ -65,13 +91,6 @@ void AtomSpeciesDatabase::setAll(
 	setName(id, name);
 }
 
-AtomSpeciesDatabase & AtomSpeciesDatabase::inst()
-{
-	if(!myInstance)
-	{
-		myInstance = new AtomSpeciesDatabase();
-	}
-	return *myInstance;
-}
 
-}}
+}
+}

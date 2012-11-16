@@ -11,25 +11,25 @@
 
 // INCLUDES /////////////////////////////////////////////
 
+#include <boost/optional.hpp>
+#include <boost/shared_ptr.hpp>
+
+#include <armadillo>
+
+#include "common/Types.h"
 
 // DEFINES //////////////////////////////////////////////
 
 
-// FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx
-{
-	namespace common
-	{
-		class Structure;
-	}
-	namespace potential
-	{
-		template <typename FloatType>
-		struct StandardData;
-	}
-}
+namespace sstbx {
 
-namespace sstbx { namespace potential {
+// FORWARD DECLARATIONS ////////////////////////////////////
+namespace common {
+class Structure;
+}
+namespace potential {
+struct PotentialData;
+class IPotential;
 
 class IGeomOptimiser
 {
@@ -37,13 +37,25 @@ public:
 
 	virtual ~IGeomOptimiser() {}
 
-	virtual bool optimise(::sstbx::common::Structure & structure) const = 0;
+  /**
+  /* Get the potential being used by the geometry optimiser.  Not all
+  /* geometry optimisers need to have a potential in which case NULL
+  /* will be returned.
+  /**/
+  virtual const IPotential * getPotential() const = 0;
+
+  // TODO: Allow return value to give some indication of the reason for the failure!
+	virtual bool optimise(
+    common::Structure & structure,
+    const common::OptionalConstMat33 externalPressure = common::OptionalConstMat33()) const = 0;
 
 	virtual bool optimise(
-		::sstbx::common::Structure & structure,
-		StandardData<double> * & data) const = 0;
+		common::Structure & structure,
+    PotentialData & data,
+    const common::OptionalConstMat33 externalPressure = common::OptionalConstMat33()) const = 0;
 };
 
-}}
+}
+}
 
 #endif /* I_GEOM_OPTIMISER_H */

@@ -20,7 +20,7 @@ double randDouble()
 	return ((double)rand() / RAND_MAX);
 }
 
-double randDouble(const double & from, const double & to)
+double randDouble(const double from, const double to)
 {
 	return ((double)rand() / RAND_MAX) * (to - from) + from;
 }

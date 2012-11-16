@@ -9,210 +9,152 @@
 // INCLUDES //////////////////////////////////////
 #include "build_cell/DefaultCrystalGenerator.h"
 
+#include <memory>
+
+#include <boost/foreach.hpp>
+#include <boost/shared_ptr.hpp>
+
+#include "SSLibTypes.h"
 #include "build_cell/AtomConstraintDescription.h"
 #include "build_cell/AtomGroupDescription.h"
+#include "build_cell/AtomExtruder.h"
 #include "build_cell/AtomsDescription.h"
-#include "build_cell/ICellGenerator.h"
-#include "build_cell/Minsep.h"
+#include "build_cell/DistanceConstraintChecker.h"
+#include "build_cell/IUnitCellBlueprint.h"
+#include "build_cell/RandomAtomPositioner.h"
 #include "build_cell/StructureBuilder.h"
 #include "build_cell/StructureDescription.h"
-
-#include "common/AbstractFmidCell.h"
+#include "build_cell/StructureDescriptionMap.h"
+#include "build_cell/ConstVisitorGroup.h"
 #include "common/Atom.h"
 #include "common/Structure.h"
+#include "common/Types.h"
+#include "common/UnitCell.h"
 #include "common/Utils.h"
 
-namespace sstbx { namespace build_cell {
+namespace sstbx {
+namespace build_cell {
 
-DefaultCrystalGenerator::DefaultCrystalGenerator(
-		const StructureDescription &	structureDescription,
-		const ICellGenerator<double> &	cellGenerator):
-myStructureDescription(structureDescription),
-myCellGenerator(cellGenerator),
-maxAttempts(10000)
-{
-}
+namespace common = ::sstbx::common;
 
-DefaultCrystalGenerator::~DefaultCrystalGenerator()
+DefaultCrystalGenerator::DefaultCrystalGenerator(const bool useExtrudeMethod):
+myUseExtrudeMethod(useExtrudeMethod),
+myMaxAttempts(10000)
 {
 }
 
 
-
-
-::sstbx::common::Structure * const DefaultCrystalGenerator::generateStructure() const
+common::StructurePtr DefaultCrystalGenerator::generateStructure(
+  const StructureDescription &  structureDescription,
+  const common::AtomSpeciesDatabase & speciesDb,
+  StructureGenerationOutcome::Value * outOutcome) const
 {
-	using ::sstbx::common::AbstractFmidCell;
 	using ::sstbx::common::Structure;
 
-	// Create a new blank structure
-	Structure * newStructure = new Structure();
+  const bool hasUnitCell = structureDescription.getUnitCell() != NULL;
 
-	// Create a structure builder to generate the structure tree from the
-	// description
-	StructureBuilder builder(&myStructureDescription, newStructure);
+  // Create a builder that will populate the structure with the required atoms
+  StructureBuilder builder(speciesDb);
+  // and build
+  StructureBuilder::DescriptionMapPtr descriptionMap;
+  common::StructurePtr str = builder.buildStructure(structureDescription, descriptionMap);
 
-	GenerationStatus outcome = NOT_STARTED;
-	for(int i = 0; i < maxAttempts; ++i)
+  common::StructurePtr generatedStructure;
+  StructureGenerationOutcome::Value outcome = StructureGenerationOutcome::SUCCESS;
+	for(u32 i = 0; i < myMaxAttempts; ++i)
 	{
-		// Create a new unit cell
-		AbstractFmidCell<double> * const cell = myCellGenerator.generateCell();
-
-		newStructure->setUnitCell(cell);
+    if(structureDescription.getUnitCell())
+    {
+      // Generate a unit cell for the structure
+      if(!generateUnitCell(structureDescription, *str.get(), builder))
+      {
+        // That one failed, try again...
+        outcome = StructureGenerationOutcome::FAILED_CREATING_UNIT_CELL;
+        continue;
+      }
+    }
 
 		// Genetate atom positions
-		outcome = generateAtomGroupPositions(builder, *newStructure);
-
-		if(outcome == SUCCESS)
+    outcome = generateAtomPositions(*descriptionMap.get());
+    if(outcome == StructureGenerationOutcome::SUCCESS)
 		{
+      generatedStructure = str;
 			break;
 		}
 	}
 
-	if(outcome != SUCCESS)
-	{
-		delete newStructure;
-		newStructure = NULL;
-	}
+  if(outOutcome)
+    *outOutcome = outcome;
 
-	return newStructure;
+	return generatedStructure;
 }
 
-const StructureDescription & DefaultCrystalGenerator::getStructureDescription() const
+bool DefaultCrystalGenerator::generateUnitCell(
+  const StructureDescription & structureDescription,
+  common::Structure &  structure,
+  const StructureBuilder & builder) const
 {
-	return myStructureDescription;
+  const IUnitCellBlueprint::StructureInfo structureInfo(structure.getNumAtoms(), builder.getAtomsVolume());
+  common::UnitCellPtr cell;
+
+  bool succeeded = false;
+  for(u32 i = 0; i < myMaxAttempts; ++i)
+  {
+	  // Create a new unit cell
+    cell = structureDescription.getUnitCell()->generateCell(structureInfo);
+
+    // Check that none of the angles are very small
+    if(cell->getNormVolume() > 0.1)
+    {
+      succeeded = true;
+      break;
+    }
+  }
+
+  if(succeeded)
+    structure.setUnitCell(cell);
+
+  return succeeded;
 }
 
-DefaultCrystalGenerator::GenerationStatus DefaultCrystalGenerator::generateAtomGroupPositions(
-	const StructureBuilder & builder,
-	::sstbx::common::AtomGroup & atomGroup)
-	const
+StructureGenerationOutcome::Value DefaultCrystalGenerator::generateAtomPositions(
+  StructureDescriptionMap & descriptionMap) const
 {
-	using ::std::vector;
-	using ::sstbx::common::AtomGroup;
+  StructureGenerationOutcome::Value outcome = StructureGenerationOutcome::SUCCESS;
 
-	// First create atom positions for child groups
-	const vector<AtomGroup *> & childGroups = atomGroup.getGroups();
-	GenerationStatus outcome = SUCCESS;
-	for(vector<AtomGroup *>::const_iterator it = childGroups.begin(),
-		end = childGroups.end(); it != end; ++it)
-	{
-		outcome = generateAtomGroupPositions(builder, *(*it));
+  RandomAtomPositioner randomAtoms(descriptionMap);
+  if(myUseExtrudeMethod)
+  {
+    descriptionMap.getStructureDescription().traversePostorder(randomAtoms);
 
-		// Check if it was possible to create the child group
-		if(outcome != SUCCESS)
-		{
-			break;
-		}
-	}
+    AtomExtruder extruder;
 
-	// If we were able to position the child groups then carry on
-	if(outcome == SUCCESS)
-	{
-		bool valid = false;
-		for(int i = 0; !valid && i < maxAttempts; ++i)
-		{
-			positionGroupsAndAtoms(builder, atomGroup);
-			// Check if it satisfies the constraints
-			valid = checkConstraints(builder, atomGroup);
-		}
-		if(!valid)
-			outcome = FAILED_MAX_ATTEMPTS;
-	}
+    if(!extruder.extrudeAtoms(descriptionMap.getStructure(), 800))
+    {
+      outcome = StructureGenerationOutcome::FAILED_SATISFYING_CONSTRAINTS;
+    }
+  }
+  else
+  {
 
+    ConstVisitorGroup visitorGroup;
 
-	
+    DistanceConstraintChecker distanceConstraintsChecker(descriptionMap);
 
-	return outcome;
+    visitorGroup.pushBack(randomAtoms);
+    visitorGroup.pushBack(distanceConstraintsChecker);
+
+    // Descent down the atom groups building everything and checking constraints
+    if(!descriptionMap.getStructureDescription().traversePostorder(visitorGroup))
+    {
+      outcome = StructureGenerationOutcome::FAILED_SATISFYING_CONSTRAINTS;
+    }
+  }
+
+  return outcome;
 }
 
-bool DefaultCrystalGenerator::positionGroupsAndAtoms(
-	const StructureBuilder & builder,
-	::sstbx::common::AtomGroup & atomGroup)
-	const
-{
-	using ::std::vector;
-	using ::sstbx::common::AbstractFmidCell;
-	using ::sstbx::common::Atom;
-	using ::sstbx::common::AtomGroup;
 
-	const AbstractFmidCell<double> * cell = builder.getStructure()->getUnitCell();
 
-	// Place the child groups
-	const vector<AtomGroup *> & childGroups = atomGroup.getGroups();
-	for(vector<AtomGroup *>::const_iterator it = childGroups.begin(),
-		end = childGroups.end(); it != end; ++it)
-	{
-		AtomGroup * const childGroup = *it;
-		childGroup->setPosition(cell->randomPoint());
-	}
-
-	// Now let's place the atoms
-	const vector<Atom *> & atoms = atomGroup.getAtoms();
-	for(vector<Atom *>::const_iterator it = atoms.begin(),
-		end = atoms.end(); it != end; ++it)
-	{
-		Atom * const atom = *it;
-		atom->setPosition(cell->randomPoint());
-	}
-
-	return true;
 }
-
-bool DefaultCrystalGenerator::checkConstraints(
-	const StructureBuilder & builder,
-	const ::sstbx::common::AtomGroup & atomGroup)
-	const
-{
-	using ::std::vector;
-	using ::sstbx::common::AbstractFmidCell;
-	using ::sstbx::common::Atom;
-
-	// Assume that each child group satisfies its constraints individually
-	// so just check the atoms of this group
-	const AbstractFmidCell<double> * const cell = builder.getStructure()->getUnitCell();
-
-	Atom::Mat myAndDescendentAtoms;
-
-	atomGroup.getAtomPositionsDescendent(myAndDescendentAtoms);
-
-	bool constraintsSatisfied = true;
-	double sepSq, minsep, minsepSq;
-	const vector<Atom *> & atoms = atomGroup.getAtoms();
-	for(size_t i = 0; constraintsSatisfied && i < atoms.size(); ++i)
-	{
-		const Atom * const atom = atoms[i];
-		// Get the description for the atom which contains the constraints
-		const AtomsDescription * desc = builder.getAtomsDescription(atom);
-
-		const Minsep * const constraint = desc->getAtomConstraint<Minsep>(MINSEP);
-
-		minsep = constraint->getMinsep();
-		minsepSq = minsep * minsep;
-
-		// Check that atom against all the others
-		for(size_t j = 0; j < i; ++j)
-		{
-			sepSq = cell->getDistanceSqMinimumImg(myAndDescendentAtoms.col(i), myAndDescendentAtoms.col(j));
-			if(sepSq < minsepSq)
-			{
-				constraintsSatisfied = false;
-				break;
-			}
-		}
-		for(size_t j = i + 1; constraintsSatisfied && j < myAndDescendentAtoms.n_cols; ++j)
-		{
-			sepSq = cell->getDistanceSqMinimumImg(myAndDescendentAtoms.col(i), myAndDescendentAtoms.col(j));
-			if(sepSq < minsepSq)
-			{
-				constraintsSatisfied = false;
-				break;
-			}
-		}
-	}
-
-
-	return constraintsSatisfied;
 }
-
-}}

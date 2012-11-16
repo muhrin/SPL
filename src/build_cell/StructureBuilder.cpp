@@ -5,99 +5,81 @@
  *      Author: Martin Uhrin
  */
 
+// INCLUDES //////////////////////////////////////
 #include "build_cell/StructureBuilder.h"
 
 #include "build_cell/AtomsDescription.h"
-#include "build_cell/AtomGroupDescription.h"
-#include "build_cell/Minsep.h"
 #include "build_cell/StructureDescription.h"
-
+#include "build_cell/StructureDescriptionMap.h"
 #include "common/Atom.h"
-#include "common/AtomGroup.h"
+#include "common/AtomSpeciesDatabase.h"
+#include "common/Constants.h"
 #include "common/Structure.h"
 
+namespace sstbx {
+namespace build_cell {
 
-namespace sstbx { namespace build_cell {
+StructureBuilder::StructureBuilder(const common::AtomSpeciesDatabase & speciesDb):
+  mySpeciesDb(speciesDb)
+{}
 
-	StructureBuilder::StructureBuilder(const StructureDescription * structureDescription, ::sstbx::common::Structure * const structure):
-myStructureDescription(structureDescription),
-myStructure(structure)
+common::StructurePtr
+StructureBuilder::buildStructure(const StructureDescription & description, DescriptionMapPtr & outDescriptionMap)
 {
-	// Build the structure from the description
-	buildAtomGroup(structureDescription, *myStructure);
+	// Create a new blank structure
+  common::StructurePtr structure(new common::Structure());
+  outDescriptionMap.reset(new StructureDescriptionMap(description, *structure.get()));
+
+  myAtomsVolume = 0.0;
+
+  myCurrentPair.first = structure.get();
+  myCurrentPair.second = outDescriptionMap.get();
+
+  description.traversePreorder(*this);
+
+  // Reset the current structure pair
+  myCurrentPair.first = NULL;
+  myCurrentPair.second = NULL;
+
+  return structure;
 }
 
-::sstbx::common::Structure * StructureBuilder::getStructure() const
+bool StructureBuilder::visitAtom(const AtomsDescription & atomDescription)
 {
-	return myStructure;
+  const size_t numAtoms = atomDescription.getCount();
+  ::boost::optional<double> optionalRadius;
+
+  // See if the description contains a radius
+  optionalRadius = atomDescription.getRadius();
+  if(!optionalRadius)
+  {
+    // The user hasn't specified a radius so try to get a default on from the databaase
+    optionalRadius = mySpeciesDb.getRadius(atomDescription.getSpecies());
+  }
+
+  double radius;
+  for(size_t i = 0; i < atomDescription.getCount(); ++i)
+  {
+    common::Atom & atom = myCurrentPair.first->newAtom(atomDescription.getSpecies());
+
+    if(optionalRadius)
+      atom.setRadius(*optionalRadius);
+
+    radius = atom.getRadius();
+
+    myAtomsVolume += 1.333333 * common::Constants::PI * radius * radius * radius;
+
+    // Finally store the atom and description pair
+    myCurrentPair.second->insert(atomDescription.getParent(), &atomDescription, &atom);
+  }
+
+  return true;
 }
 
-const AtomsDescription * StructureBuilder::getAtomsDescription(
-	const ::sstbx::common::Atom * const atom) const
+double StructureBuilder::getAtomsVolume() const
 {
-	this->myAtomsMap.find(atom);
-	AtomMap::const_iterator it = myAtomsMap.find(atom);
-
-	const AtomsDescription * desc = NULL;
-	
-	if(it != myAtomsMap.end())
-	{
-		desc = it->second;
-	}
-
-	return desc;
+  return myAtomsVolume;
 }
 
-const AtomGroupDescription * StructureBuilder::getAtomGroupDescription(
-	const ::sstbx::common::AtomGroup * const group) const
-{
-	AtomGroupMap::const_iterator it = myAtomGroupsMap.find(group);
-
-	const AtomGroupDescription * desc = NULL;
-	
-	if(it != myAtomGroupsMap.end())
-	{
-		desc = it->second;
-	}
-
-	return desc;
 }
-
-void StructureBuilder::buildAtomGroup(
-	const AtomGroupDescription * groupDescription,
-	::sstbx::common::AtomGroup & group)
-{
-	using ::std::vector;
-	using ::sstbx::common::Atom;
-	using ::sstbx::common::AtomGroup;
-
-	// First create the atoms
-	const vector<AtomsDescription *> & atoms = groupDescription->getChildAtoms();
-	for(vector<AtomsDescription *>::const_iterator it = atoms.begin(), end = atoms.end();
-		it != end; ++it)
-	{
-		const AtomsDescription * desc = *it;
-		for(size_t i = 0; i < desc->getCount(); ++i)
-		{
-			Atom * const a = new Atom(desc->getSpecies());
-			group.insertAtom(a);
-			// Add it to the map
-			myAtomsMap[a] = desc;
-		}
-	}
-
-	// And now any child groups
-	const vector<AtomGroupDescription *> & groups = groupDescription->getChildGroups();
-	for(vector<AtomGroupDescription *>::const_iterator it = groups.begin(), end = groups.end();
-		it != end; ++it)
-	{
-		AtomGroupDescription * desc = *it;
-		AtomGroup * childGroup = new AtomGroup();
-		group.insertGroup(childGroup);
-		// Add it to the map
-		myAtomGroupsMap[childGroup] =  desc;
-		buildAtomGroup(desc, *childGroup);
-	}
 }
-
-}}

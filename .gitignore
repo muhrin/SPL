@@ -2,6 +2,7 @@
 build/
 *.sln
 *.vcproj
+CMakeLocal.txt
 CMakeCache.txt
 CMakeFiles
 cmake_install.cmake

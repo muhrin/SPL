@@ -1,46 +1,96 @@
 cmake_minimum_required(VERSION 2.6)
 
-# Paths to libraries - change these! #########
-set(BOOST_ROOT "/homes/muhrin/src/boost_1_48_0" CACHE FILEPATH "")
-set(ARMADILLO_ROOT "C:/Users/martin/Documents/lib/armadillo-2.4.4" CACHE FILEPATH "")
-
 project(SSLib)
 
 # Tell CMake where to find modules
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules/;${CMAKE_MODULE_PATH}")
 
 set(SSLIB_VERSION_MAJOR 0)
-set(SSLIB_VERSION_MAJOR 1)
+set(SSLIB_VERSION_MINOR 2)
+set(SSLIB_VERSION_PATCH 3)
+set(SSLIB_VERSION_STRING "${SSLIB_VERSION_MAJOR}.${SSLIB_VERSION_MINOR}.${SSLIB_VERSION_PATCH}")
+message(STATUS "Configuring SSLib ${SSLIB_VERSION_STRING}")
 
-configure_file (
-  "${PROJECT_SOURCE_DIR}/src/SSLibConfig.h.in"
-  "${PROJECT_BINARY_DIR}/src/SSLibConfig.h"
-  )
+## CONFIGURATION SETTINGS ##############################
 
+# Custom paths to libraries ####
+set(BOOST_ROOT "" CACHE FILEPATH "Path to boost library")
+set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
+set(CGAL_ROOT "" CACHE FILEPATH "Path to CGAL library")
 
+# Build options ###
+set(SSLIB_ENABLE_TESTING FALSE CACHE BOOL "Build sslib tests")
+set(SSLIB_USE_YAML TRUE CACHE BOOL "SSLib should use YAML for input")
+set(SSLIB_USE_CGAL FALSE CACHE BOOL "Enable functionality that uses CGAL such as convex hulls")
+
+configure_file(
+  "${PROJECT_SOURCE_DIR}/include/SSLibConfig.h.in"
+  "${PROJECT_BINARY_DIR}/include/SSLibConfig.h"
+)
+
+## END CONFIGURATION SETTINGS ##########################
 
 ## FIND PACKAGES ########################################
+
+# Tell CMake where to find modules
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules/")
+
 # First add any user specified paths to the package search array
-set(CMAKE_PREFIX_PATH "${BOOST_ROOT}" "${ARMADILLO_ROOT}")
+set(CMAKE_PREFIX_PATH
+  "${BOOST_ROOT}"
+  "${ARMADILLO_ROOT}"
+  "${CGAL_ROOT}"
+)
 
 # Boost #
-set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.36.0 COMPONENTS system filesystem REQUIRED)
+# Disable auto-linking
+add_definitions(-DBOOST_ALL_NO_LIB)
+find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem)
+
 # Armadillo #
 find_package(Armadillo)
 if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
   set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
 endif()
 
+# CGAL #
+if(SSLIB_USE_CGAL)
+  find_package(CGAL REQUIRED)
+  include( ${CGAL_USE_FILE} )
+endif(SSLIB_USE_CGAL)
+
+# TODO: Add if !CGAL_FOUND print useful message
+if(CGAL_FOUND)
+endif(CGAL_FOUND)
+
 ## END FIND PACKAGES ####################################
 
-# Include directories with header files
-  include_directories(
-    ${Boost_INCLUDE_DIRS}
-    ${ARMADILLO_INCLUDE_DIRS}
-  )
+## INCLUDE DIRECTORIES ##################################
 
-include_directories(include src)
+set(SSLIB_INCLUDE_DIRS
+  ${PROJECT_BINARY_DIR}/include  # So that we find SSLibConfig.h
+  ${PROJECT_SOURCE_DIR}/include
+  CACHE FILEPATH INTERNAL FORCE
+)
+
+# Include directories with header files
+include_directories(
+  ${Boost_INCLUDE_DIRS}
+  ${ARMADILLO_INCLUDE_DIRS}
+  ${SSLIB_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/lib/spglib/include     # TODO: Change this dependency
+  ${CMAKE_SOURCE_DIR}/lib/yaml-cpp/include   # TODO: Change this dependency
+)
+
+# Include YAML if we're using it
+if(SSLIB_USE_YAML)
+  include_directories(${YAML_INCLUDE_DIRECTORIES})
+endif(SSLIB_USE_YAML)
+
+# Include CGAL if we're using it
+if(SSLIB_USE_CGAL)
+  include_directories(${CGAL_INCLUDE_DIRS})
+endif(SSLIB_USE_CGAL)
 
 # Process header and source files
 include(IncludeLists.txt)
@@ -48,10 +98,31 @@ include(SrcLists.txt)
 
 set_property(TARGET PROPERTY PROJECT_LABEL "SSLib")
 
-add_library(sslib SHARED ${sslib_Header_Files} ${sslib_Source_Files})
+## BUILD SSLIB #############################################
+
+add_library(sslib
+  ${sslib_Header_Files}
+  ${sslib_Source_Files}
+)
 
 # Libraries we need to link to
 target_link_libraries(sslib
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
+  ${Boost_LIBRARIES}
+  spglib                        # TODO: Change this dependency
+  yaml-cpp
 )
+
+if(SSLIB_USE_YAML)
+  target_link_libraries(sslib
+    ${YAML_LIBRARIES}
+  )
+endif(SSLIB_USE_YAML)
+
+
+###########
+## Tests ##
+###########
+
+if(SSLIB_ENABLE_TESTING)
+  add_subdirectory(tests)
+endif(SSLIB_ENABLE_TESTING)

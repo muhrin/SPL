@@ -25,10 +25,8 @@ class IAtomConstrainable
 {
 public:
 	virtual void addAtomConstraint(AtomConstraintDescription * const atomConstraint) = 0;
-
-	virtual bool removeAtomConstraint(AtomConstraintDescription * const atomConstraint) = 0;
-
-	virtual AtomConstraintDescription * getAtomConstraint(const ConstraintDescriptionId id) const = 0;
+	virtual bool removeAtomConstraint(const AtomConstraintDescription * const atomConstraint) = 0;
+	virtual const AtomConstraintDescription * getAtomConstraint(const ConstraintDescriptionId id) const = 0;
 
 };
 

@@ -10,48 +10,50 @@
 #define ATOM_SPECIES_DATABASE_H
 
 // INCLUDES /////////////////////////////////////////////
-
-#include "common/AtomSpeciesId.h"
-
 #include <map>
 #include <string>
 
+#include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
+#include <boost/shared_ptr.hpp>
+
+#include "common/AtomSpeciesId.h"
+
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace sstbx { namespace common {
+namespace sstbx {
+namespace common {
 
-class AtomSpeciesDatabase
+class AtomSpeciesDatabase : ::boost::noncopyable
 {
 public:
 
 	AtomSpeciesDatabase();
-	virtual ~AtomSpeciesDatabase();
 
 	virtual void setAll(
-		const AtomSpeciesId id,
+    AtomSpeciesId::Value id,
 		const ::std::string & symbol,
 		const ::std::string & name);
 
-	virtual const ::std::string * getName(const AtomSpeciesId id) const;
-	virtual void setName(const AtomSpeciesId id, const ::std::string & name);
+  virtual const ::std::string * getName(const AtomSpeciesId::Value id) const;
+  virtual void setName(const AtomSpeciesId::Value id, const ::std::string & name);
 
-	virtual const ::std::string * getSymbol(const AtomSpeciesId id) const;
-	virtual void setSymbol(const AtomSpeciesId id, const ::std::string & symbol);
+  virtual const ::std::string * getSymbol(const AtomSpeciesId::Value id) const;
+  virtual void setSymbol(const AtomSpeciesId::Value id, const ::std::string & symbol);
 
-	static AtomSpeciesDatabase & inst();
+  virtual const AtomSpeciesId::Value getIdFromSymbol(const std::string & symbol) const;
+
+  virtual ::boost::optional<double> getRadius(const AtomSpeciesId::Value id) const;
+  virtual void setRadius(const AtomSpeciesId::Value id, const double radius);
 
 protected:
 
-	typedef ::std::map<AtomSpeciesId, ::std::string> SpeciesString;
-
-	typedef ::std::pair<AtomSpeciesId, ::std::string> SpeciesStringPair;
+  typedef ::std::map<AtomSpeciesId::Value, ::std::string> SpeciesString;
+  typedef ::std::map<AtomSpeciesId::Value, double>        SpeciesDouble;
 
 	SpeciesString	myNames;
 	SpeciesString	mySymbols;
-
-private:
-
-	static AtomSpeciesDatabase * myInstance;
+  SpeciesDouble myRadii;
 
 };
 

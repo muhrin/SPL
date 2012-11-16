@@ -14,7 +14,8 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace sstbx { namespace common {
+namespace sstbx {
+namespace common {
 
 class Constants
 {

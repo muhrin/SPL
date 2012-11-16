@@ -10,80 +10,155 @@
 
 // INCLUDES ///////////////////////////////////////////////
 #include "SSLib.h"
-#include "common/AtomGroup.h"
 
-#include <vector>
-#include <map>
+#include <memory>
+
+#include <boost/lexical_cast.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
+
+#include <armadillo>
+
+#include "common/Atom.h"
+#include "common/AtomSpeciesId.h"
+#include "common/DistanceCalculatorDelegator.h"
+#include "common/Types.h"
+#include "common/UnitCell.h"
+#include "utility/HeterogeneousMap.h"
+
+namespace sstbx {
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx { namespace common {
-	enum AtomSpeciesId;
+namespace utility {
+class HeterogeneousMap;
+}
+namespace common {
+class DistanceCalculator;
+class UnitCell;
 
-	template <typename FloatType>
-	class AbstractFmidCell;
-}}
-
-namespace sstbx { namespace common {
-
-	class Structure : public AtomGroup {
+class Structure
+{
 public:
 
-	Structure(AbstractFmidCell<double> * const cell = NULL);
-	virtual ~Structure();
+	explicit Structure(UnitCellPtr cell = UnitCellPtr());
+  Structure(const Structure & toCopy);
 
 	const std::string & getName() const;
 	void setName(const std::string & name);
 
 	// UNIT CELL /////////////////////////////////////////
 
-	AbstractFmidCell<double> * getUnitCell();
-	const AbstractFmidCell<double> * getUnitCell() const;
+	UnitCell * getUnitCell();
+	const UnitCell * getUnitCell() const;
 
-	/**
-	/* Set the unit cell to be used by the structure.  The Structure takes ownership
-	/* and will delete the cell when necessary.
-	/**/
-	void setUnitCell(AbstractFmidCell<double> * const cell);
+	/** Set the unit cell to be used by the structure. */
+	void setUnitCell(UnitCellPtr cell);
 
 	// ATOMS ///////////////////////////////////////////////
 
-	/** Get the total number of atoms in the structure */
-	virtual size_t getNumAtomsDescendent() const;
+  size_t getNumAtoms() const;
 
-	virtual void getAtomPositionsDescendent(Mat & posMtx, const size_t i = 0) const;
+  Atom & getAtom(const size_t idx);
+  const Atom & getAtom(const size_t idx) const;
 
-	virtual void setAtomPositionsDescendent(const Mat & posMtx);
+  Atom & newAtom(const AtomSpeciesId::Value species);
+  Atom & newAtom(const Atom & toCopy);
+	bool removeAtom(const Atom & atom);
+  size_t clearAtoms();
+
+  void getAtomPositions(::arma::mat & posMtx) const;
+  void setAtomPositions(const ::arma::mat & posMtx);
+
+  void getAtomSpecies(::std::vector<AtomSpeciesId::Value> & species) const;
+  size_t getNumAtomsOfSpecies(const AtomSpeciesId::Value species) const;
+
+  const DistanceCalculator & getDistanceCalculator() const;
+
+  template <typename T>
+  T * getProperty(const utility::Key<T> & key);
+
+  template <typename T>
+  const T * getProperty(const utility::Key<T> & key) const;
+
+  template <typename T>
+  void setProperty(utility::Key<T> & key, const T & value);
+
+  template <typename T>
+  void setPropertyFromString(utility::Key<T> & key, const ::std::string & value);
+
+  template <typename T>
+  bool eraseProperty(utility::Key<T> & key);
+
+  bool makePrimitive();
+
+  UniquePtr<Structure>::Type getPrimitiveCopy() const;
 
 private:
 
-	virtual void eventFired(const StructureTreeEvent & evt);
-	
-	/** Methods to respond to child group messages */
-	void childAdded(AtomGroup & childGroup);
-	void childRemoved(AtomGroup & childGroup);
+  typedef ::boost::ptr_vector<Atom> AtomsContainer;
 
-	/** Methods to respond atom messages */
-	void atomAdded(Atom & atom);
-	void atomRemoved(Atom & atom);
+	void atomMoved(const Atom & atom) const;
 
-	/** The unit cell for this crystal structure. */
-	AbstractFmidCell<double> * myCell;
+  inline void unitCellChanged() const
+  { myDistanceCalculator.unitCellChanged(); }
 
 	/** The name of this structure, set by calling code */
-	std::string		myName;
+	std::string		  myName;
 
-	/** The total number of atoms in the structure */
-	size_t			myNumAtomsDescendent;
+	/** The unit cell for this crystal structure. */
+	UnitCellPtr     myCell;
+
+  size_t          myNumAtoms;
+
+	/** The atoms contained in this group */
+	AtomsContainer  myAtoms;
+
+  utility::HeterogeneousMap  myTypedProperties;
 
 	/**
 	/* Flag to indicate whether the structure has changed since
 	/* the last time that all atom positions were requested
 	/**/
-	mutable bool			myAtomPositionsCurrent;
+	mutable bool			    myAtomPositionsCurrent;
 
-	mutable Mat				myAtomPositionsBuffer;
+  mutable ::arma::mat		myAtomPositionsBuffer;
+
+  mutable DistanceCalculatorDelegator  myDistanceCalculator;
+
+  friend class Atom;
+  friend class UnitCell;
 };
 
-}}
+template <typename T>
+T * Structure::getProperty(const utility::Key<T> & key)
+{
+  return myTypedProperties.find(key);
+}
+
+template <typename T>
+const T * Structure::getProperty(const utility::Key<T> & key) const
+{
+  return myTypedProperties.find(key);
+}
+
+template <typename T>
+void Structure::setProperty(utility::Key<T> & key, const T & value)
+{
+  myTypedProperties[key] = value;
+}
+
+template <typename T>
+void Structure::setPropertyFromString(utility::Key<T> & key, const ::std::string & value)
+{
+  setProperty(key, ::boost::lexical_cast<T>(value));
+}
+
+template <typename T>
+bool Structure::eraseProperty(utility::Key<T> & key)
+{
+  myTypedProperties.erase(key);
+}
+
+}
+}
 
 #endif /* STRUCTURE_H */

@@ -9,29 +9,83 @@
 
 #include "build_cell/AtomConstraintDescription.h"
 #include "build_cell/AtomsDescription.h"
+#include "build_cell/ConstStructureDescriptionVisitor.h"
 #include "build_cell/StructureConstraintDescription.h"
+#include "build_cell/StructureDescriptionVisitor.h"
 
-namespace sstbx { namespace build_cell {
+namespace sstbx {
+namespace build_cell {
 
-StructureDescription::~StructureDescription()
+StructureDescription::StructureDescription(ConstUnitCellBlueprintPtr unitCell)
 {
-	using std::vector;
-
-	for(vector<StructureConstraintDescription *>::iterator it = structureConstraints.begin(),
-		end = structureConstraints.end(); it != end; ++it)
-	{
-		delete *it;
-	}
+  myUnitCell = unitCell;
 }
 
-void StructureDescription::addStructureConstraint(StructureConstraintDescription * const structureConstraint)
+void StructureDescription::addStructureConstraint(
+  StructureConstraintDescription * const structureConstraint)
 {
-	structureConstraints.push_back(structureConstraint);
+	myStructureConstraints.push_back(structureConstraint);
 }
 
-::std::vector<StructureConstraintDescription *> const & StructureDescription::getStructureConstraints()
+const StructureDescription::ConstraintsContainer &
+StructureDescription::getStructureConstraints()
 {
-	return structureConstraints;
+	return myStructureConstraints;
 }
 
-}}
+bool StructureDescription::traversePreorder(StructureDescriptionVisitor & visitor)
+{
+  visitor.enteringStructure(*this);
+
+  const bool outcome = AtomGroupDescription::traversePreorder(visitor);
+
+  visitor.leavingStructure(*this);
+
+  return outcome;
+}
+
+bool StructureDescription::traversePreorder(ConstStructureDescriptionVisitor & visitor) const
+{
+  visitor.enteringStructure(*this);
+
+  const bool outcome = AtomGroupDescription::traversePreorder(visitor);
+
+  visitor.leavingStructure(*this);
+
+  return outcome;
+}
+
+bool StructureDescription::traversePostorder(StructureDescriptionVisitor & visitor)
+{
+  visitor.enteringStructure(*this);
+
+  const bool outcome = AtomGroupDescription::traversePostorder(visitor);
+
+  visitor.leavingStructure(*this);
+
+  return outcome;
+}
+
+bool StructureDescription::traversePostorder(ConstStructureDescriptionVisitor & visitor) const
+{
+  visitor.enteringStructure(*this);
+
+  const bool outcome = AtomGroupDescription::traversePostorder(visitor);
+
+  visitor.leavingStructure(*this);
+
+  return outcome;
+}
+
+void StructureDescription::setUnitCell(ConstUnitCellBlueprintPtr unitCell)
+{
+  myUnitCell = unitCell;
+}
+
+const IUnitCellBlueprint * StructureDescription::getUnitCell() const
+{
+  return myUnitCell.get();
+}
+
+}
+}

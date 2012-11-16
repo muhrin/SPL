@@ -40,7 +40,7 @@ namespace sstbx { namespace common {
 
 double randDouble();
 
-double randDouble(const double & from, const double & to);
+double randDouble(const double from, const double to);
 
 ProcessId getProcessId();
 

@@ -1,72 +1,58 @@
 /*
  * StructureBuilder.h
  *
- *  Created on: Nov 10, 2011
+ *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
  */
 
 #ifndef STRUCTURE_BUILDER_H
 #define STRUCTURE_BUILDER_H
 
-// INCLUDES ///////////////////
-#include <map>
+// INCLUDES ////////////
+#include <boost/shared_ptr.hpp>
 
-// FORWARD DECLARES ///////////
-namespace sstbx
-{
-	namespace build_cell
-	{
-		class AtomsDescription;
-		class AtomGroupDescription;
-		class StructureDescription;
-	}
-	namespace common
-	{
-		class Atom;
-		class AtomGroup;
-		class Structure;
-	}
+#include "SSLib.h"
+#include "build_cell/ConstStructureDescriptionVisitor.h"
+#include "common/Types.h"
+
+namespace sstbx {
+namespace common {
+class AtomSpeciesDatabase;
 }
+namespace build_cell {
 
-namespace sstbx { namespace build_cell {
+class StructureDescription;
+class StructureDescriptionMap;
 
-class StructureBuilder
+class StructureBuilder : public ConstStructureDescriptionVisitor
 {
 public:
 
-	StructureBuilder(
-		const StructureDescription * structureDescription,
-		::sstbx::common::Structure * const structure);
+  typedef UniquePtr<StructureDescriptionMap>::Type DescriptionMapPtr;
 
-	::sstbx::common::Structure * getStructure() const;
+  StructureBuilder(const common::AtomSpeciesDatabase & speciesDb);
 
-	const AtomsDescription * getAtomsDescription(const ::sstbx::common::Atom * const atom) const;
+  common::StructurePtr buildStructure(
+    const StructureDescription & description,
+    DescriptionMapPtr & outDescriptionMap);
 
-	const AtomGroupDescription * getAtomGroupDescription(const ::sstbx::common::AtomGroup * const group) const;
+  // From StructureDescriptionVisitor ///////////////////
+  virtual bool visitAtom(const AtomsDescription & description);
+  // End from StructureDescriptionVisitor ///////////////
 
+  double getAtomsVolume() const;
 
 private:
 
-	typedef ::std::map<const ::sstbx::common::Atom *, const AtomsDescription *> AtomMap;
+  typedef ::std::pair<common::Structure *, StructureDescriptionMap *> StructurePair;
 
-	typedef ::std::pair<const ::sstbx::common::Atom *, const AtomsDescription *> AtomMapPair;
-
-	typedef ::std::map<const ::sstbx::common::AtomGroup *, const AtomGroupDescription *> AtomGroupMap;
-
-	typedef ::std::pair<const ::sstbx::common::AtomGroup *, const AtomGroupDescription *> AtomGroupMapPair;
-
-	void buildAtomGroup(const AtomGroupDescription * groupDescription, ::sstbx::common::AtomGroup & group);
-
-	const StructureDescription * myStructureDescription;
-
-	::sstbx::common::Structure * myStructure;
-
-	AtomMap			myAtomsMap;
-
-	AtomGroupMap	myAtomGroupsMap;
-
+  const common::AtomSpeciesDatabase & mySpeciesDb;
+  StructurePair                       myCurrentPair;
+  double                              myAtomsVolume;
+  
 };
 
-}}
+}
+}
 
 #endif /* STRUCTURE_BUILDER_H */

@@ -14,22 +14,26 @@
 
 #include "common/AtomSpeciesId.h"
 
-namespace sstbx { namespace build_cell {
+namespace sstbx {
+namespace build_cell {
 
 AtomsDescription::AtomsDescription():
-mySpecies(sstbx::common::CUSTOM_1),
-count(0)
+mySpecies(sstbx::common::AtomSpeciesId::CUSTOM_1),
+myCount(1),
+myParent(NULL)
 {
 }
 
-AtomsDescription::AtomsDescription(const ::sstbx::common::AtomSpeciesId species, const size_t count):
+AtomsDescription::AtomsDescription(const ::sstbx::common::AtomSpeciesId::Value  species, const size_t count):
 mySpecies(species),
-count(count)
+myCount(count),
+myParent(NULL)
 {}
 
-AtomConstraintDescription * AtomsDescription::getAtomConstraint(const ConstraintDescriptionId id) const
+const AtomConstraintDescription *
+AtomsDescription::getAtomConstraint(const ConstraintDescriptionId id) const
 {
-	AtomConstraintDescription * constraint = 0;
+	const AtomConstraintDescription * constraint = 0;
 
 	AtomCMap::const_iterator it = myAtomConstraints.find(id);
 	if(it != myAtomConstraints.end())
@@ -47,10 +51,10 @@ AtomConstraintDescription * AtomsDescription::getAtomConstraint(const Constraint
 
 void AtomsDescription::addAtomConstraint(AtomConstraintDescription * const atomConstraint)
 {
-	myAtomConstraints.insert(AtomCMapPair(atomConstraint->getType(), atomConstraint));
+	myAtomConstraints.insert(atomConstraint->getType(), atomConstraint);
 }
 
-bool AtomsDescription::removeAtomConstraint(AtomConstraintDescription * const atomConstraint)
+bool AtomsDescription::removeAtomConstraint(const AtomConstraintDescription * const atomConstraint)
 {
 	AtomCMap::iterator it =	myAtomConstraints.find(atomConstraint->getType());
 
@@ -61,24 +65,39 @@ bool AtomsDescription::removeAtomConstraint(AtomConstraintDescription * const at
 	return true;
 }
 
-const ::sstbx::common::AtomSpeciesId AtomsDescription::getSpecies() const
+const ::sstbx::common::AtomSpeciesId::Value & AtomsDescription::getSpecies() const
 {
 	return mySpecies;
 }
 
-void AtomsDescription::setElementType(const ::sstbx::common::AtomSpeciesId species)
+void AtomsDescription::setElementType(const ::sstbx::common::AtomSpeciesId::Value  species)
 {
 	mySpecies = species;
 }
 
 size_t AtomsDescription::getCount() const
 {
-	return count;
+	return myCount;
 }
 
 void AtomsDescription::setCount(const size_t newCount)
 {
-	count = newCount;
+	myCount = newCount;
+}
+
+::boost::optional<double> AtomsDescription::getRadius() const
+{
+  return myRadius;
+}
+
+void AtomsDescription::setRadius(const double radius)
+{
+  myRadius.reset(radius);
+}
+
+const AtomGroupDescription * AtomsDescription::getParent() const
+{
+  return myParent;
 }
 
 void AtomsDescription::setParent(const sstbx::build_cell::AtomGroupDescription *const parent)

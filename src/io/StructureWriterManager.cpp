@@ -15,7 +15,8 @@
 // NAMESPACES ////////////////////////////////
 
 
-namespace sstbx { namespace io {
+namespace sstbx {
+namespace io {
 
 void StructureWriterManager::registerWriter(sstbx::io::IStructureWriter &writer)
 {
@@ -23,7 +24,7 @@ void StructureWriterManager::registerWriter(sstbx::io::IStructureWriter &writer)
 
 	BOOST_FOREACH(string ext, writer.getSupportedFileExtensions())
 	{
-		myExtensionsMap.insert(ExtensionsMapPair(ext, &writer));
+    myExtensionsMap.insert(ExtensionsMap::value_type(ext, &writer));
 	}
 }
 
@@ -45,10 +46,10 @@ void StructureWriterManager::deregisterWriter(sstbx::io::IStructureWriter &write
 	}
 }
 
-void StructureWriterManager::writeStructure(
+bool StructureWriterManager::writeStructure(
 	const ::sstbx::common::Structure & str,
 	const ::boost::filesystem::path & path,
-	const AdditionalData * const data) const
+  const common::AtomSpeciesDatabase & atomSpeciesDb) const
 {
 	// TODO: Add status return value to this method
 	using ::std::string;
@@ -56,14 +57,14 @@ void StructureWriterManager::writeStructure(
 	// Get the extension
 	if(!path.has_filename())
 	{
-		return /*invalid path*/;
+		return false; /*invalid path*/
 	}
 
 	::boost::filesystem::path extPath = path.extension();
 
 	if(extPath.empty())
 	{
-		return /*no extension*/;
+		return false; /*no extension*/
 	}
 
 	string ext = extPath.string(); // Returns e.g. '.txt'
@@ -73,11 +74,14 @@ void StructureWriterManager::writeStructure(
 
 	if(it == myExtensionsMap.end())
 	{
-		return /*unknown extension*/;
+		return false; /*unknown extension*/
 	}
 
 	// Finally pass it on the the correct writer
-	it->second->writeStructure(str, path, data);
+	it->second->writeStructure(str, path, atomSpeciesDb);
+
+  // TODO: The write may have failed so provide better and accurate feedback!
+  return true;
 }
 
 }}

@@ -8,98 +8,112 @@
 // INCLUDES //////////////////////////////////
 #include "io/ResReaderWriter.h"
 
-#include "io/AdditionalData.h"
-#include "common/AbstractFmidCell.h"
+#include <iomanip>
+#include <set>
+#include <vector>
+
+#include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
+
+#include <armadillo>
+
 #include "common/Atom.h"
 #include "common/AtomSpeciesDatabase.h"
 #include "common/AtomSpeciesId.h"
 #include "common/AtomSpeciesInfo.h"
 #include "common/Structure.h"
+#include "common/StructureProperties.h"
+#include "common/Types.h"
+#include "common/UnitCell.h"
+#include "utility/BoostFilesystem.h"
+#include "utility/IndexingEnums.h"
 
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
-#include <boost/foreach.hpp>
-
-#include <armadillo>
-
-#include <iomanip>
-#include <set>
-#include <vector>
+// DEFINES /////////////////////////////////
 
 
 // NAMESPACES ////////////////////////////////
 
 
-namespace sstbx { namespace io {
+namespace sstbx {
+namespace io {
 
-void ResReaderWriter::writeStructure(
-	const sstbx::common::Structure &str,
-	const::boost::filesystem::path & filepath,
-	const AdditionalData *const data) const
-{
-	writeStructure(str, filepath, ::sstbx::common::AtomSpeciesDatabase::inst(), data);
-}
+namespace fs = ::boost::filesystem;
+namespace ssc = ::sstbx::common;
+namespace properties = ssc::structure_properties;
 
 void ResReaderWriter::writeStructure(
 	const ::sstbx::common::Structure & str,
 	const ::boost::filesystem::path & filepath,
-	const ::sstbx::common::AtomSpeciesDatabase & speciesDb,
-	const AdditionalData * const data) const
+	const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const
 {
-	using namespace ::boost::filesystem;
+  using namespace utility::cell_params_enum;
 	using ::sstbx::common::AtomSpeciesId;
 	using ::std::endl;
-	using ::boost::filesystem::ofstream;
+
+  const double * dValue;
+  const ::std::string * sValue;
+  const unsigned int * uiValue;
 
 	if(!filepath.has_filename())
 		throw "Cannot write out structure without filepath";
 
-	const path dir = filepath.parent_path();
+  const fs::path dir = filepath.parent_path();
 	if(!dir.empty() && !exists(dir))
 	{
-		create_directory(dir);
+		create_directories(dir);
 	}
 
-	ofstream strFile;
+  fs::ofstream strFile;
 	strFile.open(filepath);
+
+  const common::UnitCell * const cell = str.getUnitCell();
 
 	//////////////////////////
 	// Start title
 	strFile << "TITL ";
 	
-	if(data && data->name)
-		strFile << *data->name;
+	if(!str.getName().empty())
+		strFile << str.getName();
 	else
 		strFile << filepath.stem();
 	
 	// Presssure
-	strFile << " ";
-	if(data && data->pressure)
-		strFile << *data->pressure;
+  strFile << " ";
+  dValue = str.getProperty(properties::general::PRESSURE_INTERNAL);
+	if(dValue)
+		strFile << *dValue;
 	else
 		strFile << "n/a";
 
 	// Volume
-	strFile << " " << str.getUnitCell()->getVolume();
+	strFile << " ";
+  if(cell)
+    strFile << cell->getVolume();
+  else
+    strFile << "n/a";
 
 	// Enthalpy
 	strFile << " ";
-	if(data && data->enthalpy)
-		strFile << *data->enthalpy;
+  dValue = str.getProperty(properties::general::ENERGY_INTERNAL);
+	if(dValue)
+		strFile << *dValue;
 	else
 		strFile << "n/a";
 
 	// Space group
 	strFile << " 0 0 (";
-	if(data && data->spaceGroup)
-		strFile << *data->spaceGroup;
+  sValue = str.getProperty(properties::general::SPACEGROUP_SYMBOL);
+	if(sValue)
+		strFile << *sValue;
 	else
 		strFile << "n/a";
 
 	// Times found
 	strFile << ") n - ";
-	if(data && data->timesFound)
-		strFile << *data->timesFound;
+  uiValue = str.getProperty(properties::searching::TIMES_FOUND);
+	if(uiValue)
+		strFile << *uiValue;
 	else
 		strFile << "n/a";
 
@@ -108,16 +122,18 @@ void ResReaderWriter::writeStructure(
 	
 	///////////////////////////////////
 	// Start lattice
-	const double (&latticeParams)[6] = str.getUnitCell()->getLatticeParams();
+  if(cell)
+  {
+	  const double (&latticeParams)[6] = cell->getLatticeParams();
 
-	// Do cell parameters
-	strFile << "CELL 1";
-	for(size_t i = 0; i < 6; ++i)
-	{
-		strFile << " " << latticeParams[i];
-	}
-	strFile << endl;
-
+	  // Do cell parameters
+	  strFile << "CELL 1.0";
+	  for(size_t i = A; i <= GAMMA; ++i)
+	  {
+		  strFile << " " << latticeParams[i];
+	  }
+	  strFile << endl;
+  }
 	strFile << "LATT -1" << endl;
 
 	// End lattice
@@ -129,31 +145,38 @@ void ResReaderWriter::writeStructure(
 	using std::vector;
 	using std::set;
 
-	arma::Mat<double> positions;
-	str.getAtomPositionsDescendent(positions);
+  ::arma::mat positions;
+	str.getAtomPositions(positions);
 
-	vector<AtomSpeciesId> species;
-	str.getAtomSpeciesDescendent(species);
+  vector<AtomSpeciesId::Value> species;
+	str.getAtomSpecies(species);
 
-	set<AtomSpeciesId> uniqueSpecies(species.begin(), species.end());
+  set<AtomSpeciesId::Value> uniqueSpecies(species.begin(), species.end());
 
 	// Output atom species
-	::std::map<AtomSpeciesId, ::std::string> speciesSymbols;
+  std::map<AtomSpeciesId::Value, std::string> speciesSymbols;
+  std::map<AtomSpeciesId::Value, unsigned int> speciesOrder;
 	strFile << "SFAC";
-	BOOST_FOREACH(AtomSpeciesId id, uniqueSpecies)
+  size_t idx = 1;
+  BOOST_FOREACH(const AtomSpeciesId::Value id, uniqueSpecies)
 	{
 		const ::std::string * const name = speciesDb.getSymbol(id);
 		speciesSymbols[id] = name ? *name : "?";
+    speciesOrder[id]   = idx;
+    ++idx;
 		strFile << " " << speciesSymbols[id];
 	}
 
 	// Now write out the atom positions along with the spcies
-	const sstbx::common::AbstractFmidCell<double> * cell = str.getUnitCell();
-	sstbx::common::Atom::Vec3 fracPos;
+	::arma::vec3 fracPos;
 	for(size_t i = 0; i < positions.n_cols; ++i)
 	{
-		fracPos = cell->fractionalise(positions.col(i));
-		strFile << endl << ::std::setprecision(32) << speciesSymbols[species[i]] << " " << 1 << " " <<
+    const AtomSpeciesId::Value id = species[i];
+    if(cell)
+		  fracPos = cell->cartToFrac(positions.col(i));
+    else
+      fracPos = positions.col(i);
+		strFile << endl << ::std::setprecision(16) << speciesSymbols[id] << " " << speciesOrder[id] << " " <<
 			fracPos[0] << " " << fracPos[1] << " " << fracPos[2] << " 1.0";
 	}
 
@@ -162,12 +185,260 @@ void ResReaderWriter::writeStructure(
 	strFile << endl << "END" << endl;
 
 
-	strFile.close();
+ if(strFile.is_open())
+    strFile.close();
 }
 
-::std::vector<std::string> ResReaderWriter::getSupportedFileExtensions() const
+UniquePtr<common::Structure>::Type ResReaderWriter::readStructure(
+	const boost::filesystem::path &     filepath,
+	const sstbx::common::AtomSpeciesDatabase & speciesDb) const
 {
-	::std::vector<std::string> ext;
+  namespace utility = ::sstbx::utility;
+  using sstbx::common::Atom;
+	using sstbx::common::AtomSpeciesId;
+	using std::endl;
+  using std::getline;
+  using boost::bad_lexical_cast;
+  using boost::lexical_cast;
+	using boost::filesystem::ifstream;
+
+	if(!filepath.has_filename())
+		throw "Cannot write out structure without filepath";
+
+  UniquePtr<common::Structure>::Type str;
+
+  if(!exists(filepath))
+    return str;
+
+	ifstream strFile;
+	strFile.open(filepath);
+
+  // Set up our tokenizer to split around space and tab
+	typedef boost::tokenizer<boost::char_separator<char> > Tok;
+	const boost::char_separator<char> sep(" \t");
+
+  if(strFile.is_open())
+  {
+    str.reset(new common::Structure());
+
+    std::string line;
+
+    // We're expecting the TITL line
+    bool foundTitle = false;
+    for(
+      getline(strFile, line);
+      !foundTitle && strFile.good();
+      getline(strFile, line))
+    {
+      Tok toker(line, sep);
+      Tok::iterator tokIt = toker.begin();
+      if(*tokIt == "TITL")
+      {
+        foundTitle = true;
+        if(++tokIt != toker.end())
+          str->setName(*tokIt);
+        else
+          str->setName(utility::fs::stemString(filepath));
+
+        bool hasMore = true;
+        // Parse the rest of the tokens
+        // Pressure
+        if(hasMore && ++tokIt != toker.end())
+        {
+          try
+          {
+            str->setPropertyFromString(properties::general::PRESSURE_INTERNAL, *tokIt);
+          }
+          catch(const bad_lexical_cast &)
+          {}
+        }
+        else
+          hasMore = false;
+
+        // Volume
+        if(hasMore && ++tokIt == toker.end())
+          hasMore = false;
+
+        // Free energy
+        if(hasMore && ++tokIt != toker.end())
+        {
+          try
+          {
+            str->setPropertyFromString(properties::general::ENERGY_INTERNAL, *tokIt);
+          }
+          catch(const bad_lexical_cast &)
+          {}
+        }
+        else 
+          hasMore = false;
+
+        if(hasMore && ++tokIt == toker.end())
+          hasMore = false;
+        if(hasMore && ++tokIt == toker.end())
+          hasMore = false;
+
+        // Space group
+        if(hasMore && ++tokIt != toker.end())
+          str->setProperty(properties::general::SPACEGROUP_SYMBOL, *tokIt);
+        else
+          hasMore = false;
+
+        if(hasMore && ++tokIt == toker.end())
+          hasMore = false;
+        if(hasMore && ++tokIt == toker.end())
+          hasMore = false;
+
+        // Times found
+        if(hasMore && ++tokIt != toker.end())
+        {
+          try
+          {
+            str->setPropertyFromString(properties::searching::TIMES_FOUND, *tokIt);
+          }
+          catch(const bad_lexical_cast &)
+          {}
+        }
+        else
+          hasMore = false;
+      } // end if(*tokIt == "TITL")
+    } // end for
+
+    // We're expecting the CELL line
+    bool foundCell = false;
+    for(; // The previous for statement will have called one last getline
+      !foundCell && strFile.good();
+      getline(strFile, line))
+    {
+      Tok toker(line, sep);
+      Tok::iterator tokIt = toker.begin();
+      if(*tokIt == "CELL")
+      {
+        foundCell = true;
+
+        // Move the token on
+        bool hasMore = ++tokIt != toker.end();
+
+        if(hasMore)
+        {
+          // Set up the cell parameters
+          double params[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+
+          unsigned int i = 0;
+          bool foundParams = true;
+          for(++tokIt; i < 6 && tokIt != toker.end();
+            ++i, ++tokIt)
+          {
+            try
+            {
+              params[i] = lexical_cast<double>(*tokIt);
+            }
+            catch(const bad_lexical_cast &)
+            {
+              foundParams = false;
+              break;
+            }
+          }
+          // Check if we found all six values
+          foundParams = foundParams && i == 6;
+
+          str->setUnitCell(common::UnitCellPtr(new common::UnitCell(params)));
+        } // end if(hasMore)
+      } // end if(*tokIt == "CELL")
+    } // while !foundCell
+
+
+    // Look for SFAC line
+    bool foundSfac = false;
+    for(; // The previous for statement will have called one last getline
+      !foundSfac && strFile.good();
+      getline(strFile, line))
+    {
+      Tok toker(line, sep);
+      Tok::iterator tokIt = toker.begin();
+      if(*tokIt == "SFAC")
+      {
+        foundSfac = true;
+
+        // Skip over the first line, it just outlines overall species
+        getline(strFile, line);
+
+        // Now loop over all atoms
+        bool foundEnd = false;
+        for(; // The previous for statement will have called one last getline
+          !foundEnd && strFile.good();
+          getline(strFile, line))
+        {
+          bool atomFound = true;      
+
+          Tok atomToker(line, sep);
+          Tok::iterator atomTokIt = atomToker.begin();
+
+          if(atomTokIt == atomToker.end() || *atomTokIt == "END")
+          {
+            foundEnd = true;
+            break;
+          }
+
+          // Try finding the species id
+          const AtomSpeciesId::Value id = speciesDb.getIdFromSymbol(*atomTokIt);
+
+          if(id != sstbx::common::AtomSpeciesId::DUMMY)
+          {
+            bool hasMore = true;
+
+            // Skip over first value
+            hasMore = (++atomTokIt != atomToker.end());
+
+            if(hasMore)
+            {
+              // Try to get the coordinates
+              bool readCoordinates = true;
+              arma::vec3 pos;
+              unsigned int coord = 0;
+              for(++atomTokIt;
+                coord < 3 && atomTokIt != atomToker.end();
+                ++coord, ++atomTokIt)
+              {
+                try
+                {
+                  pos(coord) = lexical_cast<double>(*atomTokIt);
+                }
+                catch(const bad_lexical_cast &)
+                {
+                  readCoordinates = false;
+                  break;
+                }
+              }
+              readCoordinates = readCoordinates && coord == 3;
+
+              if(readCoordinates)
+              {
+                const common::UnitCell * const cell = str->getUnitCell();
+                Atom & atom = str->newAtom(id);
+                // Try to orthoginalise the position
+                if(cell)
+                {
+                  cell->fracToCartInplace(pos);
+                }
+                atom.setPosition(pos);
+              }
+            } // end if(hasMore)
+          }
+
+        } // for all atoms
+
+      } // end if(*tokIt == "SFAC")
+    } // while !foundSfac
+  
+    strFile.close();
+  } // end if(strFile.is_open())
+
+  return str;
+}
+
+std::vector<std::string> ResReaderWriter::getSupportedFileExtensions() const
+{
+	std::vector<std::string> ext;
 	ext.push_back("res");
 	return ext;
 }

@@ -11,14 +11,23 @@
 
 // INCLUDES /////////////////////////////////////////////
 
+#include <boost/shared_ptr.hpp>
+
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx { namespace common {
-	class Structure;
-}}
+namespace sstbx {
+namespace common {
+class Structure;
+}
+namespace utility {
+class IBufferedComparator;
+}
+}
 
-namespace sstbx { namespace utility {
+namespace sstbx
+{
+namespace utility
+{
 
-template <class ComparisonData>
 class IStructureComparator
 {
 public:
@@ -29,21 +38,14 @@ public:
 		const sstbx::common::Structure & str1,
 		const sstbx::common::Structure & str2) const = 0;
 
-	virtual double compareStructures(
-		const ComparisonData & str1Data,
-		const ComparisonData & str2Data) const = 0;
-
 	virtual bool areSimilar(
 		const sstbx::common::Structure & str1,
 		const sstbx::common::Structure & str2) const = 0;
 
-	virtual bool areSimilar(
-		const ComparisonData & str1Data,
-		const ComparisonData & str2Data) const = 0;
-
-	virtual const ComparisonData * generateComparisonData(const ::sstbx::common::Structure & str) const = 0;
+  virtual ::boost::shared_ptr<IBufferedComparator> generateBuffered() const = 0;
 };
 
-}}
+}
+}
 
 #endif /* I_STRUCTURE_COMPARATOR_H */

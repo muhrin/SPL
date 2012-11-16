@@ -15,7 +15,10 @@
 // FORWARD DECLARES ///////////
 
 
-namespace sstbx { namespace build_cell {
+namespace sstbx
+{
+namespace build_cell
+{
 
 class AtomConstraintDescription : public AbstractConstraintDescription
 {
@@ -24,6 +27,7 @@ public:
 	AtomConstraintDescription(const ConstraintDescriptionId type, const bool inherit = true);
 };
 
-}}
+}
+}
 
 #endif /* ATOM_CONSTRAINT_DESCRIPTION_H */

@@ -10,64 +10,111 @@
 #define SORTED_DISTANCE_COMPARATOR_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "utility/AbstractComparator.h"
-
-#include "common/AbstractFmidCell.h"
-
 #include <vector>
 
+#include <boost/shared_ptr.hpp>
+
+#include "common/AtomSpeciesId.h"
+#include "utility/IStructureComparator.h"
+#include "utility/IndexAdapters.h"
+#include "utility/MapEx.h"
+
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx
-{
-	namespace common
-	{
-		class Structure;
-	}
+namespace sstbx {
+namespace common {
+class Structure;
+}
 }
 
-namespace sstbx { namespace utility {
+namespace sstbx {
+namespace utility {
 
-struct SortedDistanceComparisonData
-{
-	SortedDistanceComparisonData(const ::sstbx::common::AbstractFmidCell<> & _cell):
-		cell(_cell) {}
-	const ::sstbx::common::AbstractFmidCell<>	cell;
-	::std::vector<double>						sortedDistances;
-};
-
-class SortedDistanceComparator : public AbstractComparator<SortedDistanceComparisonData>
+class SortedDistanceComparisonData
 {
 public:
+  typedef ::std::vector<double> DistancesVec;
+  typedef ::boost::shared_ptr<DistancesVec> DistancesVecPtr;
 
-	typedef SortedDistanceComparisonData DataTyp;
+  typedef utility::MapEx<common::AtomSpeciesId::Value, DistancesVecPtr> DistancesMap;
+  typedef utility::MapEx<common::AtomSpeciesId::Value, DistancesMap> SpeciesDistancesMap;
 
-	SortedDistanceComparator(double tolerance = DEFAULT_TOLERANCE);
+  SortedDistanceComparisonData(const common::Structure & structure, const bool usePrimitive);
 
-	virtual double compareStructures(
-		const SortedDistanceComparisonData & dist1,
-		const SortedDistanceComparisonData & dist2) const;
-
-	virtual bool areSimilar(
-		const SortedDistanceComparisonData & dist1,
-		const SortedDistanceComparisonData & dist2) const;
-
-	virtual const DataTyp * generateComparisonData(const ::sstbx::common::Structure & str) const;
+  ::std::vector<common::AtomSpeciesId::Value> species;
+  SpeciesDistancesMap       speciesDistancesMap;
+  double                    cutoff;
+  size_t                    numAtoms;
+  double                    volume;
 
 private:
 
+  void initSpeciesDistancesMap();
+};
+
+class SortedDistanceComparator : public IStructureComparator
+{
+  typedef ::std::vector<double> DistancesVec;
+public:
+
+	typedef SortedDistanceComparisonData DataTyp;
+  typedef IBufferedComparator   BufferedTyp;
+
 	static const double DEFAULT_TOLERANCE;
+  static const double CUTOFF_FACTOR;
+
+	SortedDistanceComparator(double tolerance = DEFAULT_TOLERANCE, const bool volumeAgnostic = false, const bool usePrimitive = true);
+
+  // From IStructureComparator ////////////////
+
+	virtual double compareStructures(
+		const sstbx::common::Structure & str1,
+		const sstbx::common::Structure & str2) const;
+
+	virtual bool areSimilar(
+		const sstbx::common::Structure & str1,
+		const sstbx::common::Structure & str2) const;
+
+  virtual ::boost::shared_ptr<BufferedTyp> generateBuffered() const;
+
+  // End from IStructureComparator /////////////
+
+  // Methods needed to conform to expectations laid out by GenericBufferedComparator ///
+	double compareStructures(
+    const common::Structure & str1,
+		const SortedDistanceComparisonData & dist1,
+    const common::Structure & str2,
+		const SortedDistanceComparisonData & dist2) const;
+
+	bool areSimilar(
+    const common::Structure & str1,
+		const SortedDistanceComparisonData & dist1,
+    const common::Structure & str2,
+		const SortedDistanceComparisonData & dist2) const;
+
+  ::std::auto_ptr<SortedDistanceComparisonData>
+    generateComparisonData(const ::sstbx::common::Structure & str) const;
+  // End conformation methods //////////////
+
+private:
 
 	static const size_t MAX_CELL_MULTIPLES;
 
-	void populateDistanceVector(
-		const ::sstbx::common::Structure & str,
-		::std::vector<double> & distVec,
-		const double cutoff) const;
+  void calcProperties(
+    const DistancesVec & dist1,
+    const StridedIndexAdapter<size_t> & adapt1,
+    const DistancesVec & dist2,
+    const StridedIndexAdapter<size_t> & adapt2,
+    double & sqSum,
+    double & max,
+    unsigned int & runningComparedTotal,
+    const double scaleFactor = 1.0) const;
 
+  const bool myScaleVolumes;
+  const bool myUsePrimitive;
 	double myTolerance;
-
 };
 
-}}
+}
+}
 
 #endif /* SORTED_DISTANCE_COMPARATOR_H */

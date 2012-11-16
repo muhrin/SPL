@@ -10,37 +10,27 @@
 #define RES_READER_WRITER_H
 
 // INCLUDES /////////////////////////////////////////////
-
+#include "io/IStructureReader.h"
 #include "io/IStructureWriter.h"
 
 #include <vector>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx
-{
-	namespace common
-	{
-		class AtomSpeciesDatabase;
-	}
+namespace sstbx {
+namespace common {
+class AtomSpeciesDatabase;
+}
 }
 
 
-namespace sstbx { namespace io {
+namespace sstbx {
+namespace io {
 
-class ResReaderWriter : public IStructureWriter
+class ResReaderWriter :
+  public IStructureWriter,
+  public IStructureReader
 {
 public:
-
-	/**
-	/* Write a structure out to disk.  Additional data may be supplied if avilable
-	/* and will be written out by any writers that support it.
-	/* WARNING: This method may rely on an atom species database in which case the
-	/* default database will be used which is NOT thread safe.
-	/**/
-	virtual void writeStructure(
-		const ::sstbx::common::Structure & str,
-		const ::boost::filesystem::path & filepath,
-		const AdditionalData * const data = NULL) const;
 
 	/**
 	/* Write a structure out to disk.  Additional data may be supplied if avilable
@@ -51,10 +41,17 @@ public:
 	virtual void writeStructure(
 		const ::sstbx::common::Structure & str,
 		const ::boost::filesystem::path & filepath,
-		const ::sstbx::common::AtomSpeciesDatabase & speciesDb,
-		const AdditionalData * const data = NULL) const;
+		const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const;
+
+  // From IStructureReader //
+
+  virtual UniquePtr<common::Structure>::Type readStructure(
+		const ::boost::filesystem::path &     filepath,
+		const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const;
 
 	virtual ::std::vector<std::string> getSupportedFileExtensions() const;
+
+  // End from IStructureReader //
 
 };
 
