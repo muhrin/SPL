@@ -8,8 +8,8 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules/;${CMAKE_MODULE_PATH}"
 set(SSLIB_VERSION_MAJOR 0)
 set(SSLIB_VERSION_MINOR 2)
 set(SSLIB_VERSION_PATCH 3)
-set(SSLIB_VERSION_STRING "${SSLIB_VERSION_MAJOR}.${SSLIB_VERSION_MINOR}.${SSLIB_VERSION_PATCH}")
-message(STATUS "Configuring SSLib ${SSLIB_VERSION_STRING}")
+set(SSLIB_VERSION "${SSLIB_VERSION_MAJOR}.${SSLIB_VERSION_MINOR}.${SSLIB_VERSION_PATCH}")
+message(STATUS "Configuring SSLib ${SSLIB_VERSION}")
 
 ## CONFIGURATION SETTINGS ##############################
 
@@ -42,26 +42,37 @@ set(CMAKE_PREFIX_PATH
   "${CGAL_ROOT}"
 )
 
+#
 # Boost #
 # Disable auto-linking
 add_definitions(-DBOOST_ALL_NO_LIB)
 find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem)
 
+#
 # Armadillo #
 find_package(Armadillo)
 if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
   set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
 endif()
 
+#
 # CGAL #
 if(SSLIB_USE_CGAL)
   find_package(CGAL REQUIRED)
   include( ${CGAL_USE_FILE} )
 endif(SSLIB_USE_CGAL)
 
-# TODO: Add if !CGAL_FOUND print useful message
-if(CGAL_FOUND)
-endif(CGAL_FOUND)
+#
+# spglib, only look if it hasn't already been found
+if(NOT SPGLIB_LIBRARIES)
+  find_package(Spglib REQUIRED)
+endif(NOT SPGLIB_LIBRARIES)
+
+#
+# YamlCpp
+if(SSLIB_USE_YAML AND NOT YAML_CPP_LIBRARIES)
+  find_package(YamlCpp REQUIRED)
+endif(SSLIB_USE_YAML AND NOT YAML_CPP_LIBRARIES)
 
 ## END FIND PACKAGES ####################################
 
@@ -78,13 +89,12 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
   ${ARMADILLO_INCLUDE_DIRS}
   ${SSLIB_INCLUDE_DIRS}
-  ${CMAKE_SOURCE_DIR}/lib/spglib/include     # TODO: Change this dependency
-  ${CMAKE_SOURCE_DIR}/lib/yaml-cpp/include   # TODO: Change this dependency
+  ${SPGLIB_INCLUDE_DIRS}
 )
 
 # Include YAML if we're using it
 if(SSLIB_USE_YAML)
-  include_directories(${YAML_INCLUDE_DIRECTORIES})
+  include_directories(${YAML_CPP_INCLUDE_DIRS})
 endif(SSLIB_USE_YAML)
 
 # Include CGAL if we're using it
@@ -108,13 +118,12 @@ add_library(sslib
 # Libraries we need to link to
 target_link_libraries(sslib
   ${Boost_LIBRARIES}
-  spglib                        # TODO: Change this dependency
-  yaml-cpp
+  ${SPGLIB_LIBRARIES}
 )
 
 if(SSLIB_USE_YAML)
   target_link_libraries(sslib
-    ${YAML_LIBRARIES}
+    ${YAML_CPP_LIBRARIES}
   )
 endif(SSLIB_USE_YAML)
 
