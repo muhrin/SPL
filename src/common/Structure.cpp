@@ -370,6 +370,25 @@ UniquePtr<Structure>::Type Structure::getPrimitiveCopy() const
   return structure;
 }
 
+void Structure::scale(const double scaleFactor)
+{
+  UnitCell * const unitCell = getUnitCell();
+
+  if(unitCell)
+  {
+    const double volume = unitCell->getVolume();
+    ::arma::mat atomPositions;
+    getAtomPositions(atomPositions);
+    unitCell->cartsToFracInplace(atomPositions);                    // Generate fractional positions
+    unitCell->setVolume(volume * scaleFactor);                      // Scale the unit cell
+    setAtomPositions(unitCell->fracsToCartInplace(atomPositions));  // Use the scaled cell to convert back to cart
+  }
+  else
+  {
+    // TODO: Implement cluster scaling
+  }
+}
+
 void Structure::print(::std::ostream & os) const
 {
   using namespace utility::cell_params_enum;

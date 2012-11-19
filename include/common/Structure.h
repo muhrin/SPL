@@ -95,6 +95,8 @@ public:
 
   UniquePtr<Structure>::Type getPrimitiveCopy() const;
 
+  void scale(const double scaleFactor);
+
   void print(::std::ostream & os) const;
 
 private:
