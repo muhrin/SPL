@@ -282,7 +282,7 @@ bool Structure::makePrimitive()
           << positions[i][2] << ::arma::endr;
         atom->setPosition(myCell->fracWrapToCartInplace(pos));
       }
-
+      delete [] positions;
       return true;
     }
   }
