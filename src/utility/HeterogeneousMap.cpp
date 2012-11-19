@@ -15,6 +15,11 @@
 namespace sstbx {
 namespace utility {
 
+HeterogeneousMap::HeterogeneousMap(const HeterogeneousMap & toCopy)
+{
+  myAnyMap.insert(toCopy.myAnyMap.begin(), toCopy.myAnyMap.end());
+}
+
 HeterogeneousMap::~HeterogeneousMap()
 {
   clear();
