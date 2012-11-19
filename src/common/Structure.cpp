@@ -21,6 +21,7 @@ extern "C"
 #include "common/Atom.h"
 #include "common/Types.h"
 #include "common/UnitCell.h"
+#include "utility/IndexingEnums.h"
 
 #ifdef _MSC_VER
 // Disable warning about passing this pointer to DistanceCalculator in initialisation list
@@ -57,7 +58,7 @@ myDistanceCalculator(*this)
 {
   // Copy over the unit cell (if exists)
   if(toCopy.myCell.get())
-    myCell = toCopy.myCell->clone();
+    setUnitCell(toCopy.myCell->clone());
 
   // Copy over the atoms
   BOOST_FOREACH(const Atom & atom, toCopy.myAtoms)
@@ -277,7 +278,7 @@ bool Structure::makePrimitive()
         pos << positions[i][0] << ::arma::endr
           << positions[i][1] << ::arma::endr
           << positions[i][2] << ::arma::endr;
-        atom->setPosition(myCell->wrapVecInplace(pos));
+        atom->setPosition(myCell->fracWrapToCartInplace(pos));
       }
 
       return true;
@@ -356,7 +357,7 @@ UniquePtr<Structure>::Type Structure::getPrimitiveCopy() const
         pos << positions[i][0] << ::arma::endr
           << positions[i][1] << ::arma::endr
           << positions[i][2] << ::arma::endr;
-        atom->setPosition(unitCell->fracToCartInplace(unitCell->wrapVecFracInplace(pos)));
+        atom->setPosition(unitCell->fracWrapToCartInplace(pos));
       }
 
     }
@@ -369,11 +370,52 @@ UniquePtr<Structure>::Type Structure::getPrimitiveCopy() const
   return structure;
 }
 
+void Structure::print(::std::ostream & os) const
+{
+  using namespace utility::cell_params_enum;
+
+  os << "Structure";
+  if(!myName.empty())
+    os << " " << myName;
+  os << ":" << std::endl;
+
+  const UnitCell * const unitCell = getUnitCell();
+  if(unitCell)
+  {
+    const double (&params)[6] = unitCell->getLatticeParams();
+    os << "Unit cell: " << params[A] << " " << params[B] << " " << params[C]
+      << params[ALPHA] << " " << params[BETA] << " " << params[GAMMA] << std::endl;
+  }
+
+  ::arma::vec3 pos;
+  os << "Atoms" << std::endl;
+  for(size_t i = 0; i < getNumAtoms(); ++i)
+  {
+    const Atom & atom = getAtom(i);
+    // Species
+    //os << atom.getSpecies().toString();
+    // Positions
+    pos = atom.getPosition();
+    for(size_t i = 0; i < 3; ++i)
+      os << " " << pos(i);
+    os << std::endl;
+  }
+}
+
 void Structure::atomMoved(const Atom & atom) const
 {
   // Atom has moved so the buffer is not longer current
   myAtomPositionsCurrent = false;
 }
 
-}
+} // namespace common
+} // namespace sstbx
+
+// Global namespace
+std::ostream & operator<<(
+  std::ostream & os,
+  const sstbx::common::Structure & structure)
+{
+  structure.print(os);
+  return os;
 }

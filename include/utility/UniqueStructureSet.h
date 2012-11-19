@@ -51,7 +51,7 @@ public:
 
 private:
 
-	typedef std::map<sstbx::common::Structure *, StructureMetadata> StructureMap;
+	typedef std::map<common::Structure *, StructureMetadata> StructureMap;
 
 public:
 
@@ -67,7 +67,7 @@ public:
 
   typedef StructureMap::size_type size_type;
 
-	typedef std::pair<sstbx::common::Structure *, bool> ReturnPair;
+	typedef std::pair<common::Structure *, bool> ReturnPair;
 
 	UniqueStructureSet(const IStructureComparator & comparator);
 
@@ -97,6 +97,10 @@ public:
   void erase(iterator position);
   
 	void clear();
+
+  // Operations ////////////////////////////
+  iterator find(common::Structure * structure);
+  const_iterator find(common::Structure * structure) const;
 
 private:
 

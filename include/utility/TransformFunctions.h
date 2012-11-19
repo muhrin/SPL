@@ -28,6 +28,18 @@ public:
   }
 };
 
+// Return the dereferenced first value of a pair
+template <typename T1, typename T2, typename T2Deref>
+class TakeFirstDereferenced : public ::std::unary_function< const ::std::pair<T1, T2> &, T2Deref>
+{
+public:
+  T2Deref operator() (const ::std::pair<T1, T2> & pair) const
+  {
+    return *pair.first;
+  }
+};
+
+
 
 // Return the second value of a pair
 template <typename T1, typename T2>
@@ -37,6 +49,17 @@ public:
   T2 operator() (const ::std::pair<T1, T2> & pair) const
   {
     return pair.second;
+  }
+};
+
+// Return the dereferenced second value of a pair
+template <typename T1, typename T2, typename T2Deref>
+class TakeSecondDereferenced : public ::std::unary_function< const ::std::pair<T1, T2> &, T2Deref>
+{
+public:
+  T2Deref operator() (const ::std::pair<T1, T2> & pair) const
+  {
+    return *pair.second;
   }
 };
 

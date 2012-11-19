@@ -101,6 +101,20 @@ public:
     return fracs;
   }
 
+  inline ::arma::vec3 & fracWrapToCartInplace(::arma::vec3 & frac) const
+  {
+    frac -= ::arma::floor(frac);  // Wrap
+    frac = myOrthoMtx * frac;     // Convert to cartesian
+    return frac;
+  }
+
+  inline ::arma::mat & fracsWrapToCartInplace(::arma::mat & fracs) const
+  {
+    fracs -= ::arma::floor(fracs);  // Wrap
+    fracs = myOrthoMtx * fracs;     // Convert to cartesian
+    return fracs;
+  }
+
   inline ::arma::vec3 cartToFrac(const ::arma::vec3 & cart) const
   {
     ::arma::vec3 toFrac(cart);

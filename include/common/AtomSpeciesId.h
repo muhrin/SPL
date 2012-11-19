@@ -38,6 +38,13 @@ public:
   static const Enumerator CUSTOM_3;
   static const Enumerator CUSTOM_4;
   static const Enumerator CUSTOM_5;
+
+  //AtomSpeciesId(const ::std::string & symbol);
+
+  //const ::std::string & toString() const;
+
+private:
+  //::std::string mySymbol;
 };
 
 }

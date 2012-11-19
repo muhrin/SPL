@@ -27,5 +27,14 @@ const AtomSpeciesId::Enumerator AtomSpeciesId::CUSTOM_3;
 const AtomSpeciesId::Enumerator AtomSpeciesId::CUSTOM_4;
 const AtomSpeciesId::Enumerator AtomSpeciesId::CUSTOM_5;
 
+//AtomSpeciesId::AtomSpeciesId(const ::std::string & symbol):
+//mySymbol(symbol)
+//{}
+//
+//const ::std::string & AtomSpeciesId::toString() const
+//{
+//  return mySymbol;
+//}
+
 }
 }

@@ -150,6 +150,18 @@ void UniqueStructureSet::clear()
 	myStructures.clear();
 }
 
+UniqueStructureSet::iterator
+UniqueStructureSet::find(common::Structure * structure)
+{
+  return iterator(myStructures.find(structure), TakeFirst());
+}
+
+UniqueStructureSet::const_iterator
+UniqueStructureSet::find(common::Structure * structure) const
+{
+  return const_iterator(myStructures.find(structure), TakeFirstConst());
+}
+
 UniqueStructureSet::MapInsertReturn
 UniqueStructureSet::insertStructure(common::Structure * const str)
 {
