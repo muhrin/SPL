@@ -50,10 +50,12 @@ find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem)
 
 #
 # Armadillo #
-find_package(Armadillo)
-if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
-  set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
-endif()
+if(NOT ARMADILLO_INCLUDE_DIRS)
+  find_package(Armadillo)
+  if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
+    set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
+  endif()
+endif(NOT ARMADILLO_INCLUDE_DIRS)
 
 #
 # CGAL #
@@ -91,6 +93,8 @@ include_directories(
   ${SSLIB_INCLUDE_DIRS}
   ${SPGLIB_INCLUDE_DIRS}
 )
+
+message(STATUS "Spglib: ${SPGLIB_INCLUDE_DIRS}")
 
 # Include YAML if we're using it
 if(SSLIB_USE_YAML)
