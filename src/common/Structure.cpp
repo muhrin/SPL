@@ -52,7 +52,7 @@ myDistanceCalculator(*this)
 
 Structure::Structure(const Structure & toCopy):
 myName(toCopy.myName),
-myNumAtoms(toCopy.myNumAtoms),
+myNumAtoms(0),  // These'll be added in one by one below
 myTypedProperties(toCopy.myTypedProperties),
 myDistanceCalculator(*this)
 {
@@ -121,6 +121,7 @@ const Atom & Structure::getAtom(const size_t idx) const
 
 Atom & Structure::newAtom(const AtomSpeciesId::Value species)
 {
+  myAtomPositionsCurrent = false;
   Atom * const atom = new Atom(species, *this, myNumAtoms++);
   myAtoms.push_back(atom);
   return *atom;
@@ -128,6 +129,7 @@ Atom & Structure::newAtom(const AtomSpeciesId::Value species)
 
 Atom & Structure::newAtom(const Atom & toCopy)
 {
+  myAtomPositionsCurrent = false;
   return *myAtoms.insert(myAtoms.end(), new Atom(toCopy, *this, ++myNumAtoms));
 }
 

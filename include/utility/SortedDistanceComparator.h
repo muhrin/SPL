@@ -38,7 +38,7 @@ public:
   typedef utility::MapEx<common::AtomSpeciesId::Value, DistancesVecPtr> DistancesMap;
   typedef utility::MapEx<common::AtomSpeciesId::Value, DistancesMap> SpeciesDistancesMap;
 
-  SortedDistanceComparisonData(const common::Structure & structure, const bool usePrimitive);
+  SortedDistanceComparisonData(const common::Structure & structure, const bool volumeAgnostic, const bool usePrimitive);
 
   ::std::vector<common::AtomSpeciesId::Value> species;
   SpeciesDistancesMap       speciesDistancesMap;
@@ -106,8 +106,7 @@ private:
     const StridedIndexAdapter<size_t> & adapt2,
     double & sqSum,
     double & max,
-    unsigned int & runningComparedTotal,
-    const double scaleFactor = 1.0) const;
+    unsigned int & runningComparedTotal) const;
 
   const bool myScaleVolumes;
   const bool myUsePrimitive;

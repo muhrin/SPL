@@ -31,19 +31,21 @@ const double SortedDistanceComparator::DEFAULT_TOLERANCE    = 1e-4;
 const double SortedDistanceComparator::CUTOFF_FACTOR        = 1.5;
 
 
-SortedDistanceComparisonData::SortedDistanceComparisonData(const common::Structure & structure, const bool usePrimitive)
+SortedDistanceComparisonData::SortedDistanceComparisonData(const common::Structure & structure, const bool volumeAgnostic, const bool usePrimitive)
 {
-  const common::Structure * primitive = &structure;
-
   // This needs to be in this scope so it lasts until we return
-  common::StructurePtr primitiveCopy;
+  common::StructurePtr primitive(new common::Structure(structure));
   if(usePrimitive)
-  {
-    primitiveCopy = structure.getPrimitiveCopy();
-    primitive = primitiveCopy.get();
-  }
+    primitive->makePrimitive();
 
   const common::UnitCell * const unitCell = primitive->getUnitCell();
+  if(volumeAgnostic)
+  {
+    // If we are to be volume agnostic then set the volume to 1.0 per atom
+    const double scaleFactor = primitive->getNumAtoms() / unitCell->getVolume();
+    primitive->scale(scaleFactor);
+  }
+
   if(unitCell)
   {
     ::arma::vec3 diag = unitCell->getLongestDiagonal();
@@ -166,17 +168,6 @@ double SortedDistanceComparator::compareStructures(
   IndexAdapter adapt1(leastCommonMultiple / dist1.numAtoms);
   IndexAdapter adapt2(leastCommonMultiple / dist2.numAtoms);
 
-  double scaleFactor = 1.0;
-  if(myScaleVolumes)
-  {
-    // v2 / n2 * v1 / n1
-    scaleFactor = (dist2.volume * dist1.numAtoms) / (dist1.volume * dist2.numAtoms);
-  }
-  else
-  {
-    scaleFactor = (double)dist2.numAtoms / (double)dist1.numAtoms;
-  }
-
   double max = ::std::numeric_limits<double>::min();
   double sqSum = 0.0;
   unsigned int totalCompared = 0;
@@ -191,7 +182,7 @@ double SortedDistanceComparator::compareStructures(
     for(size_t j = i; j < numSpecies; ++j)
     {
       specJ = dist1.species[j];
-      calcProperties(*distMapI1(specJ), adapt1, *distMapI2(specJ), adapt2, sqSum, max, totalCompared, scaleFactor);
+      calcProperties(*distMapI1(specJ), adapt1, *distMapI2(specJ), adapt2, sqSum, max, totalCompared);
     }
   }
 
@@ -211,7 +202,7 @@ bool SortedDistanceComparator::areSimilar(
 ::std::auto_ptr<SortedDistanceComparisonData>
 SortedDistanceComparator::generateComparisonData(const sstbx::common::Structure & str) const
 {
-	return ::std::auto_ptr<SortedDistanceComparisonData>(new SortedDistanceComparisonData(str, myUsePrimitive));
+  return ::std::auto_ptr<SortedDistanceComparisonData>(new SortedDistanceComparisonData(str, myScaleVolumes, myUsePrimitive));
 }
 
 ::boost::shared_ptr<SortedDistanceComparator::BufferedTyp> SortedDistanceComparator::generateBuffered() const
@@ -228,8 +219,7 @@ void SortedDistanceComparator::calcProperties(
   const StridedIndexAdapter<size_t> & adapt2,
   double & sqSum,
   double & max,
-  unsigned int & runningComparedTotal,
-  const double scaleFactor) const
+  unsigned int & runningComparedTotal) const
 {
   const size_t maxIdx = ::std::min(adapt1.inv(dist1.size()), adapt2.inv(dist2.size()));
 
@@ -237,7 +227,7 @@ void SortedDistanceComparator::calcProperties(
   for(size_t i = 0; i < maxIdx; ++i)
   {
     d1 = dist1[adapt1(i)];
-    d2 = scaleFactor * dist2[adapt2(i)];
+    d2 = dist2[adapt2(i)];
 
 #if SORTED_DIST_COMP_DEBUG
     if(std::abs(d1 - d2) > 1e-5)

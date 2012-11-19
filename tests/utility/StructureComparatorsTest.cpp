@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
   // List of comparators to test
   Comparators comparators;
   comparators.push_back(new ssu::SortedDistanceComparator(
-    ssu::SortedDistanceComparator::DEFAULT_TOLERANCE, false, true));
+    ssu::SortedDistanceComparator::DEFAULT_TOLERANCE, true, true));
   //comparators.push_back(new ssu::SortedDistanceComparatorEx());
   //comparators.push_back(new ssu::DistanceMatrixComparator());
   const size_t NUM_COMPARATORS = comparators.size();
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE(SupercellTest)
   // List of comparators to test
   Comparators comparators;
   comparators.push_back(new ssu::SortedDistanceComparator(
-    ssu::SortedDistanceComparator::DEFAULT_TOLERANCE, true, false));
+    ssu::SortedDistanceComparator::DEFAULT_TOLERANCE, false, false));
   //comparators.push_back(new ssu::SortedDistanceComparatorEx());
   //comparators.push_back(new ssu::DistanceMatrixComparator());
   const size_t NUM_COMPARATORS = comparators.size();
