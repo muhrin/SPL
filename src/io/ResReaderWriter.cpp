@@ -217,19 +217,21 @@ UniquePtr<common::Structure>::Type ResReaderWriter::readStructure(
 	typedef boost::tokenizer<boost::char_separator<char> > Tok;
 	const boost::char_separator<char> sep(" \t");
 
+  bool foundTitle, foundCell, foundSfac;
   if(strFile.is_open())
   {
+    bool fileReadSuccessfully = true;
     str.reset(new common::Structure());
 
     std::string line;
 
     // We're expecting the TITL line
-    bool foundTitle = false;
+    foundTitle = false;
     for(
       getline(strFile, line);
       !foundTitle && strFile.good();
       getline(strFile, line))
-    {
+      {
       Tok toker(line, sep);
       Tok::iterator tokIt = toker.begin();
       if(*tokIt == "TITL")
@@ -304,7 +306,7 @@ UniquePtr<common::Structure>::Type ResReaderWriter::readStructure(
     } // end for
 
     // We're expecting the CELL line
-    bool foundCell = false;
+    foundCell = false;
     for(; // The previous for statement will have called one last getline
       !foundCell && strFile.good();
       getline(strFile, line))
@@ -348,7 +350,7 @@ UniquePtr<common::Structure>::Type ResReaderWriter::readStructure(
 
 
     // Look for SFAC line
-    bool foundSfac = false;
+    foundSfac = false;
     for(; // The previous for statement will have called one last getline
       !foundSfac && strFile.good();
       getline(strFile, line))
@@ -432,6 +434,10 @@ UniquePtr<common::Structure>::Type ResReaderWriter::readStructure(
   
     strFile.close();
   } // end if(strFile.is_open())
+
+
+  if(!foundTitle || !foundCell || !foundSfac)
+    str.reset();
 
   return str;
 }

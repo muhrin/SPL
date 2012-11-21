@@ -68,6 +68,7 @@ source_group("Source Files\\factory" FILES ${sslib_Source_Files__factory})
 set(sslib_Source_Files__io
   src/io/ResReaderWriter.cpp
   src/io/StructureWriterManager.cpp
+  src/io/IoFunctions.cpp
 )
 source_group("Source Files\\io" FILES ${sslib_Source_Files__io})
 

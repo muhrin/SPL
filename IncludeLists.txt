@@ -95,6 +95,7 @@ set(sslib_Header_Files__io
   include/io/IStructureWriter.h
   include/io/ResReaderWriter.h
   include/io/StructureWriterManager.h
+  include/io/IoFunctions.h
 )
 source_group("Header Files\\io" FILES ${sslib_Header_Files__io})
 

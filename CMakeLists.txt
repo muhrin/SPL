@@ -94,8 +94,6 @@ include_directories(
   ${SPGLIB_INCLUDE_DIRS}
 )
 
-message(STATUS "Spglib: ${SPGLIB_INCLUDE_DIRS}")
-
 # Include YAML if we're using it
 if(SSLIB_USE_YAML)
   include_directories(${YAML_CPP_INCLUDE_DIRS})

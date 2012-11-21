@@ -44,6 +44,7 @@ public:
 
 	explicit Structure(UnitCellPtr cell = UnitCellPtr());
   Structure(const Structure & toCopy);
+  StructurePtr clone() const;
 
 	const std::string & getName() const;
 	void setName(const std::string & name);

@@ -67,6 +67,11 @@ myDistanceCalculator(*this)
   }
 }
 
+StructurePtr Structure::clone() const
+{
+  return StructurePtr(new Structure(*this));
+}
+
 const std::string & Structure::getName() const
 {
 	return myName;
