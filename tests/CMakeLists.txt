@@ -95,6 +95,7 @@ set(tests_Files
 
 
 ## Copy over files needed by tests
+message(STATUS "Copying test input files...")
 file(COPY
   ${tests_Input_Files__factory}
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/
@@ -103,8 +104,6 @@ file(COPY
   ${tests_Input_Files__utility}
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/
 )
-
-message(STATUS "Copied ${tests_Input_Files__factory} to ${CMAKE_CURRENT_BINARY_DIR}")
 
 
 #########################

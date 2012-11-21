@@ -8,6 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "io/IoFunctions.h"
 
+#include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 
 // Local includes
@@ -47,7 +48,7 @@ bool getWildcardPaths(::std::string wildString, ::std::vector<fs::path> & outPat
 }
 
 bool getWildcardPaths(
-  const ::std::string & wildString,
+  ::std::string wildString,
   ::std::vector< ::boost::filesystem::path> & outPaths,
   const fs::path & searchFolder)
 {
@@ -55,24 +56,56 @@ bool getWildcardPaths(
   if(!fs::exists(searchFolder) || ! fs::is_directory(searchFolder))
     return false;
 
-  const boost::regex resFileFilter(wildString);
+  buildWildcardRegex(wildString);
+  const boost::regex fileFilter(wildString);
 
   const fs::directory_iterator dirEnd; // Default ctor yields past-the-end
   for(fs::directory_iterator it(searchFolder); it != dirEnd; ++it )
   {
       // Skip if not a file
-      if( !fs::is_regular_file(it->status())) continue;
+      if(!fs::is_regular_file(it->status()))
+        continue;
 
       boost::smatch what;
 
       // Skip if no match
-      if(!boost::regex_match(utility::fs::leafString(*it), what, resFileFilter)) continue;
+      if(!boost::regex_match(utility::fs::leafString(*it), what, fileFilter))
+        continue;
 
       // File matches, store it
       outPaths.push_back(it->path());
   }
 
-  return false;
+  return true;
+}
+
+void escapeCharacters(::std::string & regex)
+{
+  boost::replace_all(regex, "\\", "\\\\");
+  boost::replace_all(regex, "^", "\\^");
+  boost::replace_all(regex, ".", "\\.");
+  boost::replace_all(regex, "$", "\\$");
+  boost::replace_all(regex, "|", "\\|");
+  boost::replace_all(regex, "(", "\\(");
+  boost::replace_all(regex, ")", "\\)");
+  boost::replace_all(regex, "[", "\\[");
+  boost::replace_all(regex, "]", "\\]");
+  boost::replace_all(regex, "*", "\\*");
+  boost::replace_all(regex, "+", "\\+");
+  boost::replace_all(regex, "?", "\\?");
+  boost::replace_all(regex, "/", "\\/");
+}
+
+bool buildWildcardRegex(::std::string & pattern)
+{
+  // Escape all regex special chars
+  escapeCharacters(pattern);
+
+  // Convert chars '*?' back to their regex equivalents
+  boost::replace_all(pattern, "\\?", ".");
+  boost::replace_all(pattern, "\\*", ".*");
+
+  return true;
 }
 
 }

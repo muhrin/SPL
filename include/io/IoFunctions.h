@@ -32,9 +32,13 @@ bool getWildcardPaths(
   ::std::vector< ::boost::filesystem::path> & outPaths);
 
 bool getWildcardPaths(
-  const ::std::string & wildString,
+  ::std::string wildString,
   ::std::vector< ::boost::filesystem::path> & outPaths,
   const ::boost::filesystem::path & searchFolder);
+
+void escapeCharacters(::std::string & regex);
+
+bool buildWildcardRegex(::std::string & pattern);
 
 }
 }
