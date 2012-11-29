@@ -21,20 +21,20 @@ namespace common {
 namespace structure_properties {
 namespace general {
 
-static ::sstbx::utility::Key<unsigned int>       SPACEGROUP_NUMBER;
-static ::sstbx::utility::Key< ::std::string>     SPACEGROUP_SYMBOL;
-static ::sstbx::utility::Key<double>             PRESSURE_INTERNAL;
-static ::sstbx::utility::Key<double>             ENERGY_INTERNAL;
+extern ::sstbx::utility::Key<unsigned int>       SPACEGROUP_NUMBER;
+extern ::sstbx::utility::Key< ::std::string>     SPACEGROUP_SYMBOL;
+extern ::sstbx::utility::Key<double>             PRESSURE_INTERNAL;
+extern ::sstbx::utility::Key<double>             ENERGY_INTERNAL;
 
 
 } // namespace general
 
 namespace searching {
-static ::sstbx::utility::Key<unsigned int>       TIMES_FOUND;
+extern ::sstbx::utility::Key<unsigned int>       TIMES_FOUND;
 }
 
 namespace io {
-static ::sstbx::utility::Key< ::boost::filesystem::path>  LAST_ABS_FILE_PATH;
+extern ::sstbx::utility::Key< ::boost::filesystem::path>  LAST_ABS_FILE_PATH;
 }
 
 } // namespace structure_properties
