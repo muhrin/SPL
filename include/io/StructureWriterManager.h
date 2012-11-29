@@ -39,7 +39,7 @@ public:
 
 	
 	bool writeStructure(
-		const common::Structure & str,
+		common::Structure & str,
 		const ::boost::filesystem::path & path,
     const common::AtomSpeciesDatabase & atomSpeciesDb) const;
 

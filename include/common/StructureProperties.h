@@ -11,6 +11,8 @@
 // INCLUDES ///////////////////////////////////////////////
 #include "SSLib.h"
 
+#include <boost/filesystem.hpp>
+
 #include "utility/HeterogeneousMapKey.h"
 
 
@@ -29,6 +31,10 @@ static ::sstbx::utility::Key<double>             ENERGY_INTERNAL;
 
 namespace searching {
 static ::sstbx::utility::Key<unsigned int>       TIMES_FOUND;
+}
+
+namespace io {
+static ::sstbx::utility::Key< ::boost::filesystem::path>  LAST_ABS_FILE_PATH;
 }
 
 } // namespace structure_properties

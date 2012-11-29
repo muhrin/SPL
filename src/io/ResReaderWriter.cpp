@@ -43,7 +43,7 @@ namespace ssc = ::sstbx::common;
 namespace properties = ssc::structure_properties;
 
 void ResReaderWriter::writeStructure(
-	const ::sstbx::common::Structure & str,
+	::sstbx::common::Structure & str,
 	const ::boost::filesystem::path & filepath,
 	const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const
 {
@@ -184,6 +184,9 @@ void ResReaderWriter::writeStructure(
 
 	strFile << endl << "END" << endl;
 
+  str.setProperty(
+    properties::io::LAST_ABS_FILE_PATH,
+    utility::fs::absolute(filepath));
 
  if(strFile.is_open())
     strFile.close();
@@ -222,6 +225,10 @@ UniquePtr<common::Structure>::Type ResReaderWriter::readStructure(
   {
     bool fileReadSuccessfully = true;
     str.reset(new common::Structure());
+
+    str->setProperty(
+      properties::io::LAST_ABS_FILE_PATH,
+      utility::fs::absolute(filepath));
 
     std::string line;
 
@@ -281,7 +288,15 @@ UniquePtr<common::Structure>::Type ResReaderWriter::readStructure(
 
         // Space group
         if(hasMore && ++tokIt != toker.end())
-          str->setProperty(properties::general::SPACEGROUP_SYMBOL, *tokIt);
+        {
+          ::std::string iucSymbol = *tokIt;
+          if(!iucSymbol.empty() && iucSymbol[0] == '(')
+            iucSymbol.erase(0, 1);
+          if(!iucSymbol.empty() && iucSymbol[iucSymbol.size() - 1] == ')')
+            iucSymbol.erase(iucSymbol.size() - 1, 1);
+
+          str->setProperty(properties::general::SPACEGROUP_SYMBOL, iucSymbol);
+        }
         else
           hasMore = false;
 

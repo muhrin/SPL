@@ -37,7 +37,7 @@ public:
 	/* to make sure that the implementation is thread safe if necessary.
 	/**/
 	virtual void writeStructure(
-		const ::sstbx::common::Structure & str,
+		::sstbx::common::Structure & str,
 		const ::boost::filesystem::path & filepath,
 		const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const = 0;
 

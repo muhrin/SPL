@@ -22,6 +22,7 @@
 #include "common/Atom.h"
 #include "common/AtomSpeciesId.h"
 #include "common/DistanceCalculatorDelegator.h"
+#include "common/StructureProperties.h"
 #include "common/Types.h"
 #include "common/UnitCell.h"
 #include "utility/HeterogeneousMap.h"

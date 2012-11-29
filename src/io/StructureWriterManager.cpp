@@ -47,7 +47,7 @@ void StructureWriterManager::deregisterWriter(sstbx::io::IStructureWriter &write
 }
 
 bool StructureWriterManager::writeStructure(
-	const ::sstbx::common::Structure & str,
+	::sstbx::common::Structure & str,
 	const ::boost::filesystem::path & path,
   const common::AtomSpeciesDatabase & atomSpeciesDb) const
 {
