@@ -26,6 +26,7 @@
 #include "common/StructureProperties.h"
 #include "common/Types.h"
 #include "common/UnitCell.h"
+#include "io/IoFunctions.h"
 #include "utility/BoostFilesystem.h"
 #include "utility/IndexingEnums.h"
 
@@ -41,6 +42,8 @@ namespace io {
 namespace fs = ::boost::filesystem;
 namespace ssc = ::sstbx::common;
 namespace properties = ssc::structure_properties;
+
+const unsigned int ResReaderWriter::DIGITS_AFTER_DECIMAL = 8;
 
 void ResReaderWriter::writeStructure(
 	::sstbx::common::Structure & str,
@@ -82,7 +85,7 @@ void ResReaderWriter::writeStructure(
   strFile << " ";
   dValue = str.getProperty(properties::general::PRESSURE_INTERNAL);
 	if(dValue)
-		strFile << *dValue;
+    io::writeToStream(strFile, *dValue, DIGITS_AFTER_DECIMAL);
 	else
 		strFile << "n/a";
 
@@ -97,7 +100,7 @@ void ResReaderWriter::writeStructure(
 	strFile << " ";
   dValue = str.getProperty(properties::general::ENERGY_INTERNAL);
 	if(dValue)
-		strFile << *dValue;
+		io::writeToStream(strFile, *dValue, DIGITS_AFTER_DECIMAL);
 	else
 		strFile << "n/a";
 
@@ -176,8 +179,9 @@ void ResReaderWriter::writeStructure(
 		  fracPos = cell->cartToFrac(positions.col(i));
     else
       fracPos = positions.col(i);
-		strFile << endl << ::std::setprecision(16) << speciesSymbols[id] << " " << speciesOrder[id] << " " <<
-			fracPos[0] << " " << fracPos[1] << " " << fracPos[2] << " 1.0";
+
+		strFile << endl << speciesSymbols[id] << " " << speciesOrder[id] << " " <<
+			::std::setprecision(12) << fracPos[0] << " " << fracPos[1] << " " << fracPos[2] << " 1.0";
 	}
 
 	// End atoms ///////////

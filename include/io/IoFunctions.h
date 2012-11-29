@@ -11,6 +11,7 @@
 
 // INCLUDES /////////////////////////////////////////////
 
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -39,6 +40,10 @@ bool getWildcardPaths(
 void escapeCharacters(::std::string & regex);
 
 bool buildWildcardRegex(::std::string & pattern);
+
+int getPrecision(const double num, const unsigned int digitsAfterDecimal);
+
+void writeToStream(::std::ostream & out, const double num, const unsigned digitsAfterDecimal);
 
 }
 }

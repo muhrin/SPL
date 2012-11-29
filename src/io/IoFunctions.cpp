@@ -8,6 +8,8 @@
 // INCLUDES //////////////////////////////////
 #include "io/IoFunctions.h"
 
+#include <iomanip>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 
@@ -106,6 +108,19 @@ bool buildWildcardRegex(::std::string & pattern)
   boost::replace_all(pattern, "\\*", ".*");
 
   return true;
+}
+
+int getPrecision(const double num, const unsigned int digitsAfterDecimal)
+{
+  int digits = digitsAfterDecimal + 1;
+  if(num != 0.0)
+    digits += (int)ceil(log10(abs(num)));
+  return digits;
+}
+
+void writeToStream(::std::ostream & out, const double num, const unsigned digitsAfterDecimal)
+{
+  out << ::std::setprecision(getPrecision(num, digitsAfterDecimal)) << num;
 }
 
 }

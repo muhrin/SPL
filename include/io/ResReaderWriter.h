@@ -32,6 +32,8 @@ class ResReaderWriter :
 {
 public:
 
+  static const unsigned int DIGITS_AFTER_DECIMAL;
+
 	/**
 	/* Write a structure out to disk.  Additional data may be supplied if avilable
 	/* and will be written out by any writers that support it.
