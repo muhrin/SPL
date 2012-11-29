@@ -37,16 +37,20 @@ namespace fs {
 
 ::std::string leafString(const ::boost::filesystem::path & path);
 
-::boost::filesystem::path
-append(
-  ::boost::filesystem::path appendTo,
+::boost::filesystem::path append(
+  ::boost::filesystem::path path,
+  const ::boost::filesystem::path::iterator & begin,
+  const ::boost::filesystem::path::iterator & end
+);
+
+::boost::filesystem::path & appendTo(
+  ::boost::filesystem::path & path,
   ::boost::filesystem::path::iterator begin,
-  ::boost::filesystem::path::iterator end
+  const ::boost::filesystem::path::iterator & end
 );
 
 ::boost::filesystem::path
 absolute(const ::boost::filesystem::path & p);
-
 bool isAbsolute(const ::boost::filesystem::path & toCheck);
 
 

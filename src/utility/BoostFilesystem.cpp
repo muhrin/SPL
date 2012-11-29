@@ -36,13 +36,9 @@ boostfs::path make_relative(
     if( (*itrFrom) != "." )
       ret /= "..";
   }
+
   // Now navigate down the directory branch
-#ifdef SSLIB_USE_BOOSTFS_V2
-  append(ret, itrTo, a_To.end());
-#else
-  fs::append(ret, itrTo, a_To.end());
-#endif
-  return ret;
+  return appendTo(ret, itrTo, a_To.end());
 }
 
 ::std::string stemString(const boostfs::path & path)
@@ -64,14 +60,23 @@ boostfs::path make_relative(
 }
 
 boostfs::path append(
-  boostfs::path appendTo,
+  boostfs::path path,
+  const boostfs::path::iterator & begin,
+  const boostfs::path::iterator & end
+)
+{
+  return appendTo(path, begin, end);
+}
+
+boostfs::path & appendTo(
+  boostfs::path & path,
   boostfs::path::iterator begin,
-  boostfs::path::iterator end
+  const boostfs::path::iterator & end
 )
 {
   for( ; begin != end ; ++begin )
-    appendTo /= *begin;
-  return appendTo;
+    path /= *begin;
+  return path;
 }
 
 boostfs::path absolute(const boostfs::path & p)
