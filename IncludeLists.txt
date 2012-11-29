@@ -2,6 +2,7 @@
 ## analysis
 
 set(sslib_Header_Files__analysis
+  include/analysis/SpaceGroup.h
   include/analysis/VoronoiMap.h
 )
 source_group("Header Files\\analysis" FILES ${sslib_Header_Files__analysis})

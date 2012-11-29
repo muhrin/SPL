@@ -1,6 +1,7 @@
 # analysis
 
 set(sslib_Source_Files__analysis
+  src/analysis/SpaceGroup.cpp
   src/analysis/VoronoiMap.cpp
 )
 source_group("Source Files\\analysis" FILES ${sslib_Source_Files__analysis})
