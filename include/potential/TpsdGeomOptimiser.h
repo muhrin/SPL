@@ -53,12 +53,12 @@ public:
 
 	virtual bool optimise(
     ::sstbx::common::Structure & structure,
-    const common::OptionalConstMat33 externalPressure = common::OptionalConstMat33()) const;
+    const OptimisationOptions & options) const;
 
 	virtual bool optimise(
 		::sstbx::common::Structure &  structure,
     PotentialData & data,
-    const common::OptionalConstMat33 externalPressure = common::OptionalConstMat33()) const;
+    const OptimisationOptions & options) const;
 
 	// End IGeomOptimiser interface
 
@@ -67,7 +67,7 @@ public:
     IPotentialEvaluator & evaluator,
 		const size_t          maxSteps,
 		const double          eTol,
-    const common::OptionalConstMat33 externalPressure = common::OptionalConstMat33()) const;
+    const OptimisationOptions & options) const;
 
 	bool optimise(
     common::Structure &   structure,
@@ -75,7 +75,7 @@ public:
     IPotentialEvaluator & evaluator,
 		const size_t          maxSteps,
 		const double          eTol,
-    const common::OptionalConstMat33 externalPressure = common::OptionalConstMat33()) const;
+    const OptimisationOptions & options) const;
 
 private:
 

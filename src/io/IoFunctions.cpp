@@ -14,7 +14,7 @@
 #include <boost/regex.hpp>
 
 // Local includes
-#include <utility/BoostFilesystem.h>
+#include <io/BoostFilesystem.h>
 
 // NAMESPACES ////////////////////////////////
 
@@ -71,7 +71,7 @@ bool getWildcardPaths(
       boost::smatch what;
 
       // Skip if no match
-      if(!boost::regex_match(utility::fs::leafString(*it), what, fileFilter))
+      if(!boost::regex_match(leafString(*it), what, fileFilter))
         continue;
 
       // File matches, store it

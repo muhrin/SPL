@@ -92,6 +92,7 @@ set(sslib_Header_Files__factory
 source_group("Header Files\\factory" FILES ${sslib_Header_Files__factory})
 
 set(sslib_Header_Files__io
+  include/io/BoostFilesystem.h
   include/io/IStructureReader.h
   include/io/IStructureWriter.h
   include/io/ResReaderWriter.h
@@ -116,13 +117,13 @@ set(sslib_Header_Files__potential
 source_group("Header Files\\potential" FILES ${sslib_Header_Files__potential})
 
 set(sslib_Header_Files__utility
-  include/utility/BoostFilesystem.h
   include/utility/DistanceMatrixComparator.h
   include/utility/EdgeMap.h
   include/utility/Enum.h
   include/utility/FloatRange.h
   include/utility/GenericBufferedComparator.h
   include/utility/HeterogeneousMap.h
+  include/utility/HeterogeneousMapEx.h
   include/utility/HeterogeneousMapKey.h
   include/utility/IBufferedComparator.h
   include/utility/IndexingEnums.h

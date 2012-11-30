@@ -27,7 +27,7 @@
 #include "common/Types.h"
 #include "common/UnitCell.h"
 #include "io/IoFunctions.h"
-#include "utility/BoostFilesystem.h"
+#include "io/BoostFilesystem.h"
 #include "utility/IndexingEnums.h"
 
 // DEFINES /////////////////////////////////
@@ -190,7 +190,7 @@ void ResReaderWriter::writeStructure(
 
   str.setProperty(
     properties::io::LAST_ABS_FILE_PATH,
-    utility::fs::absolute(filepath));
+    io::absolute(filepath));
 
  if(strFile.is_open())
     strFile.close();
@@ -232,7 +232,7 @@ UniquePtr<common::Structure>::Type ResReaderWriter::readStructure(
 
     str->setProperty(
       properties::io::LAST_ABS_FILE_PATH,
-      utility::fs::absolute(filepath));
+      io::absolute(filepath));
 
     std::string line;
 
@@ -251,7 +251,7 @@ UniquePtr<common::Structure>::Type ResReaderWriter::readStructure(
         if(++tokIt != toker.end())
           str->setName(*tokIt);
         else
-          str->setName(utility::fs::stemString(filepath));
+          str->setName(io::stemString(filepath));
 
         bool hasMore = true;
         // Parse the rest of the tokens

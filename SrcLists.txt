@@ -67,6 +67,7 @@ set(sslib_Source_Files__factory
 source_group("Source Files\\factory" FILES ${sslib_Source_Files__factory})
 
 set(sslib_Source_Files__io
+  src/io/BoostFilesystem.cpp
   src/io/ResReaderWriter.cpp
   src/io/StructureWriterManager.cpp
   src/io/IoFunctions.cpp
@@ -82,7 +83,6 @@ set(sslib_Source_Files__potential
 source_group("Source Files\\potential" FILES ${sslib_Source_Files__potential})
 
 set(sslib_Source_Files__utility
-  src/utility/BoostFilesystem.cpp
   src/utility/DistanceMatrixComparator.cpp
   src/utility/HeterogeneousMap.cpp
   src/utility/HeterogeneousMapKey.cpp

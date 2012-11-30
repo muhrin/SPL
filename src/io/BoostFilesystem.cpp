@@ -6,11 +6,10 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "utility/BoostFilesystem.h"
+#include "io/BoostFilesystem.h"
 
 namespace sstbx {
-namespace utility {
-namespace fs {
+namespace io {
 
 namespace boostfs = ::boost::filesystem;
 
@@ -19,8 +18,8 @@ boostfs::path make_relative(
   boostfs::path a_From,
   boostfs::path a_To )
 {
-  a_From = fs::absolute(a_From);
-  a_To = fs::absolute(a_To);
+  a_From = io::absolute(a_From);
+  a_To = io::absolute(a_To);
 
   boostfs::path ret;
   boostfs::path::const_iterator itrFrom( a_From.begin() ), itrTo( a_To.begin() );
@@ -98,6 +97,5 @@ isAbsolute(const boostfs::path & toCheck)
 #endif
 }
 
-}
 }
 }

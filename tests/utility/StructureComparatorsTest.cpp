@@ -21,9 +21,9 @@
 #include <common/AtomSpeciesDatabase.h>
 #include <common/Structure.h>
 #include <common/UnitCell.h>
+#include <io/BoostFilesystem.h>
 #include <io/ResReaderWriter.h>
 #include <utility/DistanceMatrixComparator.h>
-#include <utility/BoostFilesystem.h>
 #include <utility/IBufferedComparator.h>
 #include <utility/StableComparison.h>
 #include <utility/SortedDistanceComparator.h>
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
       boost::smatch what;
 
       // Skip if no match
-      if(!boost::regex_match(ssu::fs::leafString(*it), what, resFileFilter)) continue;
+      if(!boost::regex_match(ssio::leafString(*it), what, resFileFilter)) continue;
 
       // File matches, store it
       inputFiles.push_back(it->path().string());
@@ -217,7 +217,7 @@ BOOST_AUTO_TEST_CASE(SupercellTest)
       boost::smatch what;
 
       // Skip if no match
-      if(!boost::regex_match(ssu::fs::leafString(*it), what, resFileFilter)) continue;
+      if(!boost::regex_match(ssio::leafString(*it), what, resFileFilter)) continue;
 
       // File matches, store it
       inputFiles.push_back(it->path().string());

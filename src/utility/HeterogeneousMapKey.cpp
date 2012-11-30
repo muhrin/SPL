@@ -10,7 +10,6 @@
 
 #include <boost/foreach.hpp>
 
-#include "SSLibAssert.h"
 #include "utility/HeterogeneousMap.h"
 
 namespace sstbx {

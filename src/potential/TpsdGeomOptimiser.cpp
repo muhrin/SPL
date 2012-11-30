@@ -49,40 +49,17 @@ const IPotential * TpsdGeomOptimiser::getPotential() const
 
 bool TpsdGeomOptimiser::optimise(
 	::sstbx::common::Structure & structure,
-  const common::OptionalConstMat33 externalPressure) const
+  const OptimisationOptions & options) const
 {
-  ::boost::shared_ptr<IPotentialEvaluator> evaluator = myPotential.createEvaluator(structure);
-
-  common::UnitCell * const unitCell = structure.getUnitCell();
-
-  if(unitCell)
-  {
-	  return optimise(
-      structure,
-      *unitCell,
-      *evaluator,
-      DEFAULT_MAX_STEPS,
-      DEFAULT_TOLERANCE,
-      externalPressure
-    );
-  }
-  else
-  {
-	  return optimise(
-      structure,
-      *evaluator,
-      DEFAULT_MAX_STEPS,
-      DEFAULT_TOLERANCE,
-      externalPressure
-    );
-  }
+  PotentialData potData;
+  return optimise(structure, potData, options);
 }
 
 
 bool TpsdGeomOptimiser::optimise(
 	::sstbx::common::Structure & structure,
 	PotentialData & data,
-  const common::OptionalConstMat33 externalPressure) const
+  const OptimisationOptions & options) const
 {
   ::boost::shared_ptr<IPotentialEvaluator> evaluator = myPotential.createEvaluator(structure);
 
@@ -97,7 +74,7 @@ bool TpsdGeomOptimiser::optimise(
       *evaluator,
       DEFAULT_MAX_STEPS,
       DEFAULT_TOLERANCE,
-      externalPressure
+      options
     );
   }
   else
@@ -107,7 +84,7 @@ bool TpsdGeomOptimiser::optimise(
       *evaluator,
       DEFAULT_MAX_STEPS,
       DEFAULT_TOLERANCE,
-      externalPressure
+      options
     );
   }
 
@@ -122,15 +99,10 @@ bool TpsdGeomOptimiser::optimise(
   IPotentialEvaluator & evaluator,
 	const size_t maxSteps,
 	const double eTol,
-  const common::OptionalConstMat33 externalPressure) const
+  const OptimisationOptions & options) const
 {
   // Set up the external pressure
-  ::arma::mat33 pressureMtx;
-  pressureMtx.zeros();
-  if(externalPressure)
-  {
-    pressureMtx = *externalPressure;
-  }
+  ::arma::mat33 pressureMtx = options.externalPressure;
   const double pressureMean = ::arma::trace(pressureMtx) / 3.0;
 
   // Get data about the structure to be optimised
@@ -222,15 +194,10 @@ bool TpsdGeomOptimiser::optimise(
   IPotentialEvaluator & evaluator,
 	const size_t maxSteps,
 	const double eTol,
-  const common::OptionalConstMat33 externalPressure) const
+  const OptimisationOptions & options) const
 {
   // Set up the external pressure
-  ::arma::mat33 pressureMtx;
-  pressureMtx.zeros();
-  if(externalPressure)
-  {
-    pressureMtx = *externalPressure;
-  }
+  ::arma::mat33 pressureMtx = options.externalPressure;
   const double pressureMean = ::arma::trace(pressureMtx) / 3.0;
 
   // Get data about the structure to be optimised
@@ -309,40 +276,55 @@ bool TpsdGeomOptimiser::optimise(
 		h = data.internalEnergy + pressureMean * volume;
 
 		deltaF	= data.forces - f0;
-		// The accu function will do the sum of all elements
-		// and the % operator does the Shure product i.e.
-		// element wise multiplication of two matrices
-		xg		= accu(deltaPos % deltaF);
-		gg		= accu(deltaF % deltaF);
+
+    xg = gg = 0.0;
+    if(options.optimise & OptimisationOptions::ATOMS)
+    {
+		  // The accu function will do the sum of all elements
+		  // and the % operator does the Shure product i.e.
+		  // element wise multiplication of two matrices
+		  xg		= accu(deltaPos % deltaF);
+		  gg		= accu(deltaF % deltaF);
+    }
 
 		deltaS	= s - s0;
-		xg		+= accu(deltaLatticeCar % deltaS);
-		gg		+= accu(deltaS % deltaS);
+    if(options.optimise & OptimisationOptions::LATTICE)
+    {
+		  xg		+= accu(deltaLatticeCar % deltaS);
+		  gg		+= accu(deltaS % deltaS);
+    }
 
 
 		if(fabs(xg) > 0.0)
       step = ::std::min(fabs(xg / gg), MAX_STEPSIZE);
 
-		// Move the particles on by a step, saving the old positions
-		deltaPos		= step * data.forces;
-		data.pos		+= deltaPos;
+    if(options.optimise & OptimisationOptions::ATOMS)
+    {
+		  // Move the particles on by a step, saving the old positions
+		  deltaPos		= step * data.forces;
+		  data.pos		+= deltaPos;
+    }
 
 		// Fractionalise coordinates and wrap coordinates
     unitCell.cartsToFracInplace(data.pos);
     unitCell.wrapVecsFracInplace(data.pos);
 
-		// Move on cell vectors to relax strain
-		deltaLatticeCar = step * (s - pressureMtx * latticeCar);
-		latticeCar += deltaLatticeCar;
-    try
+    if(options.optimise & OptimisationOptions::LATTICE)
     {
-		  unitCell.setOrthoMtx(latticeCar);
-    }
-    catch(const std::runtime_error & /*exception*/)
-    {
-      // The unit cell matrix has become singular
-      converged = false;
-      break;
+		  // Move on cell vectors to relax strain
+		  deltaLatticeCar = step * (s - pressureMtx * latticeCar);
+		  latticeCar += deltaLatticeCar;
+
+      try
+      {
+		    unitCell.setOrthoMtx(latticeCar);
+      }
+      catch(const std::runtime_error & /*exception*/)
+      {
+        // The unit cell matrix has become singular
+        converged = false;
+        break;
+      }
     }
 
 		// Finally re-orthogonalise the ion positions

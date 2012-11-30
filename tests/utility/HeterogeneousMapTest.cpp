@@ -7,10 +7,12 @@
 
 // INCLUDES //////////////////////////////////
 #include <iostream>
+#include <string>
 
 #include <boost/test/unit_test.hpp>
 
 #include <utility/HeterogeneousMap.h>
+#include <utility/HeterogeneousMapEx.h>
 
 namespace ssu = ::sstbx::utility;
 
@@ -98,3 +100,18 @@ BOOST_AUTO_TEST_CASE(HeterogeneousMapTest)
   // bool HeterogeneousMap::insert(Key<T> & key, T value)
 }
 
+template <typename T>
+struct NamedKey
+{
+  typedef ssu::KeyEx<T, ::std::string> Type;
+};
+
+BOOST_AUTO_TEST_CASE(HeterogeneousMapExTest)
+{
+  NamedKey<int>::Type AGE_KEY("age");
+
+  ssu::HeterogeneousMapEx< ::std::string> map;
+
+  map.insert(AGE_KEY, 15);
+  map.erase(AGE_KEY);
+}

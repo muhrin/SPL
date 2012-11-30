@@ -14,9 +14,14 @@
 
 #include <set>
 
+#include <boost/concept_check.hpp>
+#include <boost/concept/assert.hpp>
+#include <boost/foreach.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 
+
+#include "SSLibAssert.h"
 
 namespace sstbx {
 namespace utility {
@@ -24,7 +29,10 @@ namespace utility {
 // FORWARD DECLARATIONS ////////////////////////////////////
 class HeterogeneousMap;
 
-struct KeyId : private ::boost::noncopyable
+template <class IdType>
+class HeterogeneousMapEx;
+
+class KeyId : private ::boost::noncopyable
 {
 public:
   ~KeyId();
@@ -42,7 +50,7 @@ private:
 };
 
 template <typename Type>
-struct Key
+class Key
 {
 public:
   typedef Type ValueType;
@@ -70,6 +78,97 @@ private:
   friend class HeterogeneousMap;
 };
 
+template <class Data>
+class KeyIdEx : private ::boost::noncopyable
+{
+public:
+
+  KeyIdEx(const Data & data):
+  myData(data)
+  {}
+
+  ~KeyIdEx();
+
+  const Data & getData()
+  { return myData; }
+
+private:
+
+  typedef ::std::set<HeterogeneousMapEx<Data> *> MapsSet;
+
+  void insertedIntoMap(HeterogeneousMapEx<Data> & map);
+  void removedFromMap(HeterogeneousMapEx<Data> & map);
+
+  MapsSet myMaps;
+
+  const Data myData;
+
+  friend class HeterogeneousMapEx<Data>;
+};
+
+template <typename T, typename Data>
+class KeyEx
+{
+public:
+  typedef T ValueType;
+
+public:
+
+  KeyEx(const Data & data):
+  myId(new KeyIdEx<Data>(data))
+  {}
+
+  KeyEx(KeyEx & toCopy):
+  myId(toCopy.myId)
+  {}
+
+private:
+
+  typedef KeyIdEx<Data> IdType;
+  typedef ::boost::shared_ptr<IdType> Id;
+
+  IdType * getId()
+  { return myId.get(); }
+
+  const IdType * getId() const
+  { return myId.get(); }
+
+  Id myId;
+
+  friend class HeterogeneousMapEx<Data>;
+};
+
+
+// IMPLEMENTATION /////////////////////////
+
+template <class Derived>
+KeyIdEx<Derived>::~KeyIdEx()
+{
+  // Remove all entries of ourselves from all the maps
+  HeterogeneousMapEx<Derived> * map;
+  BOOST_FOREACH(map, myMaps)
+  {
+    map->erase(*this);
+  }
+}
+
+template <class Derived>
+void KeyIdEx<Derived>::insertedIntoMap(HeterogeneousMapEx<Derived> & map)
+{
+  myMaps.insert(&map);
+}
+
+template <class Derived>
+void KeyIdEx<Derived>::removedFromMap(HeterogeneousMapEx<Derived> & map)
+{
+  MapsSet::iterator it = myMaps.find(&map);
+  
+  // We should know that we are in the map at the moment,
+  // otherwise there is a problem
+  SSLIB_ASSERT(it != myMaps.end());
+
+  myMaps.erase(it);
+}
 
 }
 }

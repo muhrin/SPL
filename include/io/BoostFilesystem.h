@@ -25,8 +25,7 @@
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 namespace sstbx {
-namespace utility {
-namespace fs {
+namespace io {
 
 // Return path when appended to a_From will resolve to same as a_To
 ::boost::filesystem::path make_relative(
@@ -54,7 +53,6 @@ absolute(const ::boost::filesystem::path & p);
 bool isAbsolute(const ::boost::filesystem::path & toCheck);
 
 
-}
 }
 }
 
