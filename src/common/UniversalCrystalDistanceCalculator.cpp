@@ -34,9 +34,9 @@ DistanceCalculator(structure)
   const ::arma::vec3 C(cell.getCVec());
 
 	// Maximum multiple of cell vectors we need to go to
-	int A_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, B, C, minModDR));
-	int B_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, A, C, minModDR));
-	int C_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, minModDR));
+	int A_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, C, minModDR));
+	int B_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, C, minModDR));
+	int C_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, B, minModDR));
 
   bool problemDuringCalculation = false;
   problemDuringCalculation |= capMultiples(A_max, maxCellMultiples);
@@ -93,9 +93,9 @@ bool UniversalCrystalDistanceCalculator::getDistsBetween(
   const double safeCutoff = cutoff + sqrt(::arma::dot(dR, dR));
 
 	// Maximum multiple of cell vectors we need to go to
-	int A_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, B, C, safeCutoff));
-	int B_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(B, A, C, safeCutoff));
-	int C_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(C, A, B, safeCutoff));
+	int A_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, C, cutoff));
+	int B_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, C, cutoff));
+	int C_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, B, cutoff));
 
   bool problemDuringCalculation = false;
   problemDuringCalculation |= capMultiples(A_max, maxCellMultiples);
@@ -149,12 +149,19 @@ bool UniversalCrystalDistanceCalculator::getVecsBetween(
   const ::arma::vec3 B(cell.getBVec());
   const ::arma::vec3 C(cell.getCVec());
 
-  const double safeCutoff = cutoff + sqrt(::arma::dot(dR, dR));
+  ::arma::vec3 aCrossB = ::arma::cross(A, B);
+  aCrossB /= sqrt(::arma::dot(aCrossB, aCrossB));
+
+  ::arma::vec3 bCrossC = ::arma::cross(B, C);
+  bCrossC /= sqrt(::arma::dot(bCrossC, bCrossC));
+
+  ::arma::vec3 aCrossC = ::arma::cross(A, C);
+  aCrossC /= sqrt(::arma::dot(aCrossC, aCrossC));
 
 	// Maximum multiple of cell vectors we need to go to
-	int A_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, B, C, safeCutoff));
-	int B_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(B, A, C, safeCutoff));
-	int C_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(C, A, B, safeCutoff));
+  int A_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(B, C, cutoff + abs(::arma::dot(dR, bCrossC))));
+	int B_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, C, cutoff + abs(::arma::dot(dR, aCrossC))));
+	int C_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, B, cutoff + abs(::arma::dot(dR, aCrossB))));
 
   bool problemDuringCalculation = false;
   problemDuringCalculation |= capMultiples(A_max, maxCellMultiples);
@@ -195,14 +202,13 @@ bool UniversalCrystalDistanceCalculator::isValid() const
 }
 
 double UniversalCrystalDistanceCalculator::getNumPlaneRepetitionsToBoundSphere(
-  const ::arma::vec3 & boundDir,
-  const ::arma::vec3 & planeVecA,
-  const ::arma::vec3 & planeVecB,
+  const ::arma::vec3 & planeVec1,
+  const ::arma::vec3 & planeVec2,
 	const double radius) const
 {
 	// The vector normal to the plane
-  const ::arma::vec3 normal = ::arma::cross(planeVecA, planeVecB);
-  const double unitCellVolume = myStructure.getUnitCell()->getVolume();
+  const ::arma::vec3 normal = ::arma::cross(planeVec1, planeVec2);
+  const double unitCellVolume = myStructure.getUnitCell()->getVolume(); // = a . |b x c|
 
   return radius / unitCellVolume * ::std::sqrt(::arma::dot(normal, normal));
 }

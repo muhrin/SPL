@@ -40,13 +40,10 @@ public:
 
 	static const unsigned int DEFAULT_MAX_STEPS;
 	static const double	DEFAULT_TOLERANCE;
-  static const double DEFAULT_MIN_NORM_VOLUME;
 
 	TpsdGeomOptimiser(
 		const IPotential & potential,
-		const size_t maxSteps = DEFAULT_MAX_STEPS,
-		const double tolerance = DEFAULT_TOLERANCE,
-    const double minNormVolume = DEFAULT_MIN_NORM_VOLUME);
+		const double tolerance = DEFAULT_TOLERANCE);
 
 	// IGeomOptimiser interface //////////////////////////////
   virtual const IPotential * getPotential() const;
@@ -88,9 +85,7 @@ private:
 
 	const IPotential & myPotential;
 
-	const size_t myMaxSteps;
 	const double myTolerance;
-  const double myMinNormVolume;
 };
 
 }

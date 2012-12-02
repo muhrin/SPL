@@ -46,9 +46,8 @@ public:
 private:
 
 	double getNumPlaneRepetitionsToBoundSphere(
-    const ::arma::vec3 & boundDir,
-    const ::arma::vec3 & planeVecA,
-    const ::arma::vec3 & planeVecB,
+    const ::arma::vec3 & planeVec1,
+    const ::arma::vec3 & planeVec2,
 		const double radius) const;
 
 };

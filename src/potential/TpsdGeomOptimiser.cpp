@@ -54,7 +54,6 @@ private:
 
 const unsigned int TpsdGeomOptimiser::DEFAULT_MAX_STEPS = 50000;
 const double TpsdGeomOptimiser::DEFAULT_TOLERANCE = 1e-13;
-const double TpsdGeomOptimiser::DEFAULT_MIN_NORM_VOLUME = 0.05;
 const unsigned int TpsdGeomOptimiser::CHECK_CELL_EVERY_N_STEPS = 20;
 const double TpsdGeomOptimiser::CELL_MIN_NORM_VOLUME = 0.02;
 const double TpsdGeomOptimiser::CELL_MAX_ANGLE_SUM = 355.0;
@@ -65,13 +64,9 @@ const double TpsdGeomOptimiser::MAX_STEPSIZE = 0.2;
 
 TpsdGeomOptimiser::TpsdGeomOptimiser(
 	const IPotential & potential,
-	const size_t maxSteps,
-	const double tolerance,
-  const double minNormVolume):
+  const double tolerance):
 myPotential(potential),
-myMaxSteps(maxSteps),
-myTolerance(tolerance),
-myMinNormVolume(minNormVolume)
+myTolerance(tolerance)
 {}
 
 const IPotential * TpsdGeomOptimiser::getPotential() const
@@ -104,7 +99,7 @@ bool TpsdGeomOptimiser::optimise(
       structure,
       *unitCell,
       *evaluator,
-      DEFAULT_MAX_STEPS,
+      options.getMaxIterations() ? *options.getMaxIterations() : DEFAULT_MAX_STEPS,
       DEFAULT_TOLERANCE,
       options
     );
@@ -114,7 +109,7 @@ bool TpsdGeomOptimiser::optimise(
 	  outcome = optimise(
       structure,
       *evaluator,
-      DEFAULT_MAX_STEPS,
+      options.getMaxIterations() ? *options.getMaxIterations() : DEFAULT_MAX_STEPS,
       DEFAULT_TOLERANCE,
       options
     );

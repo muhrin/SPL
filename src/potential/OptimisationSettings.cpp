@@ -52,6 +52,18 @@ OptimisationSettings::Optimise OptimisationSettings::getOptimise() const
   return myOptimise;
 }
 
+void OptimisationSettings::setMaxIterations(
+  const OptimisationSettings::OptionalUint & maxIters)
+{
+  myMaxIterations = maxIters;
+}
+
+OptimisationSettings::OptionalUint
+OptimisationSettings::getMaxIterations() const
+{
+  return myMaxIterations;
+}
+
 void
 OptimisationSettings::insertConstraint(OptimisationConstraint & constraint)
 {

@@ -35,6 +35,7 @@ public:
   typedef ::boost::ptr_list<OptimisationConstraint> Constraints;
   typedef Constraints::iterator ConstraintsIterator;
   typedef Constraints::const_iterator ConstConstraintsIterator;
+  typedef ::boost::optional<unsigned int> OptionalUint;
 
   enum Optimise
   {
@@ -52,6 +53,9 @@ public:
 
   void setOptimise(const Optimise & optimise);
   Optimise getOptimise() const;
+
+  void setMaxIterations(const OptionalUint & maxIters);
+  OptionalUint getMaxIterations() const;
 
   void insertConstraint(OptimisationConstraint & constraint);
   ConstraintsIterator beginConstraints();
@@ -74,6 +78,7 @@ private:
   Optimise myOptimise;
   ::arma::mat33 myExternalPressure;
   Constraints myConstraints;
+  OptionalUint myMaxIterations;
 
 };
 
