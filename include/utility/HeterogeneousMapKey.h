@@ -141,27 +141,27 @@ private:
 
 // IMPLEMENTATION /////////////////////////
 
-template <class Derived>
-KeyIdEx<Derived>::~KeyIdEx()
+template <class Data>
+KeyIdEx<Data>::~KeyIdEx()
 {
   // Remove all entries of ourselves from all the maps
-  HeterogeneousMapEx<Derived> * map;
+  HeterogeneousMapEx<Data> * map;
   BOOST_FOREACH(map, myMaps)
   {
     map->erase(*this);
   }
 }
 
-template <class Derived>
-void KeyIdEx<Derived>::insertedIntoMap(HeterogeneousMapEx<Derived> & map)
+template <class Data>
+void KeyIdEx<Data>::insertedIntoMap(HeterogeneousMapEx<Data> & map)
 {
   myMaps.insert(&map);
 }
 
-template <class Derived>
-void KeyIdEx<Derived>::removedFromMap(HeterogeneousMapEx<Derived> & map)
+template <class Data>
+void KeyIdEx<Data>::removedFromMap(HeterogeneousMapEx<Data> & map)
 {
-  MapsSet::iterator it = myMaps.find(&map);
+  typename MapsSet::iterator it = myMaps.find(&map);
   
   // We should know that we are in the map at the moment,
   // otherwise there is a problem
