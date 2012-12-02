@@ -13,7 +13,7 @@
 #include "common/UnitCell.h"
 #include "potential/OptimisationSettings.h"
 
-#define TPSD_GEOM_OPTIMISER_DEBUG (SSLIB_DEBUG & 1)
+#define TPSD_GEOM_OPTIMISER_DEBUG (SSLIB_DEBUG & 0)
 
 #if TPSD_GEOM_OPTIMISER_DEBUG
 #  include <sstream>
@@ -223,7 +223,7 @@ bool TpsdGeomOptimiser::optimise(
 	const double eTol,
   const OptimisationSettings & settings) const
 {
-#ifdef TPSD_GEOM_OPTIMISER_DEBUG
+#if TPSD_GEOM_OPTIMISER_DEBUG
   TpsdGeomOptimiserDebugger debugger;
 #endif
 
@@ -369,7 +369,7 @@ bool TpsdGeomOptimiser::optimise(
 
 		converged = fabs(dH) < eTol;
 
-#ifdef TPSD_GEOM_OPTIMISER_DEBUG
+#if TPSD_GEOM_OPTIMISER_DEBUG
     debugger.postOptStepDebugHook(structure, i);
 #endif
 
