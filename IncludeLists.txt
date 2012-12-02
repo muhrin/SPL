@@ -102,11 +102,14 @@ set(sslib_Header_Files__io
 source_group("Header Files\\io" FILES ${sslib_Header_Files__io})
 
 set(sslib_Header_Files__potential
+  include/potential/FixedLatticeShapeConstraint.h
   include/potential/GenericPotentialEvaluator.h
   include/potential/IGeomOptimiser.h
   include/potential/IParameterisable.h
   include/potential/IPotential.h
   include/potential/IPotentialEvaluator.h
+  include/potential/OptimisationConstraint.h
+  include/potential/OptimisationSettings.h
   include/potential/PotentialData.h
   include/potential/SimplePairPotential.h
   include/potential/SimplePairPotentialData.h

@@ -53,12 +53,12 @@ public:
 
 	virtual bool optimise(
     ::sstbx::common::Structure & structure,
-    const OptimisationOptions & options) const;
+    const OptimisationSettings & options) const;
 
 	virtual bool optimise(
 		::sstbx::common::Structure &  structure,
     PotentialData & data,
-    const OptimisationOptions & options) const;
+    const OptimisationSettings & options) const;
 
 	// End IGeomOptimiser interface
 
@@ -67,7 +67,7 @@ public:
     IPotentialEvaluator & evaluator,
 		const size_t          maxSteps,
 		const double          eTol,
-    const OptimisationOptions & options) const;
+    const OptimisationSettings & options) const;
 
 	bool optimise(
     common::Structure &   structure,
@@ -75,7 +75,7 @@ public:
     IPotentialEvaluator & evaluator,
 		const size_t          maxSteps,
 		const double          eTol,
-    const OptimisationOptions & options) const;
+    const OptimisationSettings & options) const;
 
 private:
 

@@ -75,6 +75,8 @@ set(sslib_Source_Files__io
 source_group("Source Files\\io" FILES ${sslib_Source_Files__io})
 
 set(sslib_Source_Files__potential
+  src/potential/FixedLatticeShapeConstraint.cpp
+  src/potential/OptimisationSettings.cpp
   src/potential/PotentialData.cpp
   src/potential/SimplePairPotential.cpp
   src/potential/SimplePairPotentialData.cpp

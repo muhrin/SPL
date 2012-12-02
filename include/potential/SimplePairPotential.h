@@ -68,7 +68,7 @@ public:
     CUSTOM
   };
 
-  static const unsigned int MAX_INTERACTION_VECTORS = 10000;
+  static const unsigned int MAX_INTERACTION_VECTORS = 5000;//10000;
   static const unsigned int MAX_CELL_MULTIPLES = 500;
 
 	SimplePairPotential(
