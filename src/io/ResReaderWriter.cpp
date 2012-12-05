@@ -92,7 +92,7 @@ void ResReaderWriter::writeStructure(
 	// Volume
 	strFile << " ";
   if(cell)
-    strFile << cell->getVolume();
+    io::writeToStream(strFile, cell->getVolume(), DIGITS_AFTER_DECIMAL);
   else
     strFile << "n/a";
 

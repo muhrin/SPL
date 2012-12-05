@@ -190,7 +190,7 @@ T * HeterogeneousMapEx<KeyData>::find(const KeyEx<T, KeyData> & key)
   // NOTE: Have to use const_cast<> here as we have a type of const KeyId * but the
   // map key is actually of type KeyId *.  In this case the cast is safe to do as we
   // guarantee that we will not modify the key.
-	const AnyMap::iterator it = myAnyMap.find(const_cast<KeyData *>(key.getId()));
+	const AnyMap::iterator it = myAnyMap.find(const_cast<KeyIdEx<KeyData> *>(key.getId()));
 
 	if(it == myAnyMap.end())
 		return NULL;
@@ -205,7 +205,7 @@ const T * HeterogeneousMapEx<KeyData>::find(const KeyEx<T, KeyData> & key) const
   // NOTE: Have to use const_cast<> here as we have a type of const KeyId * but the
   // map key is actually of type KeyId *.  In this case the cast is safe to do as we
   // guarantee that we will not modify the key.
-	const AnyMap::const_iterator it = myAnyMap.find(const_cast<KeyData *>(key.getId()));
+	const AnyMap::const_iterator it = myAnyMap.find(const_cast<KeyIdEx<KeyData> *>(key.getId()));
 
 	if(it == myAnyMap.end())
 		return NULL;

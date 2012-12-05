@@ -14,11 +14,12 @@
 #include <boost/multi_array.hpp>
 #include <boost/range/iterator_range.hpp>
 
+#include "SSLib.h"
 #include "utility/IndexRemappingView.h"
 
-//#define SSLIB_PERMUTATION_RANGE_DEBUG
+#define SSLIB_PERMUTATION_RANGE_DEBUG (0 & SSLIB_DEBUG)
 
-#ifdef SSLIB_PERMUTATION_RANGE_DEBUG
+#if SSLIB_PERMUTATION_RANGE_DEBUG
 #  include <iostream>
 #endif
 
@@ -126,7 +127,7 @@ private:
       postStep(largestIdx, largest);
     }
 
-#ifdef SSLIB_PERMUTATION_RANGE_DEBUG
+#if SSLIB_PERMUTATION_RANGE_DEBUG
     for(size_t i = 0; i < myNumElements; ++i)
     {
       if(myIndexDirections[i] == 1)

@@ -11,7 +11,7 @@
 
 // INCLUDES /////////////////////////////////////////////
 
-
+#include <ostream>
 #include <set>
 
 #include <boost/concept_check.hpp>
@@ -106,6 +106,7 @@ private:
   friend class HeterogeneousMapEx<Data>;
 };
 
+
 template <typename T, typename Data>
 class KeyEx
 {
@@ -122,6 +123,9 @@ public:
   myId(toCopy.myId)
   {}
 
+  const Data & getData()
+  { return myId->getData(); }
+
 private:
 
   typedef KeyIdEx<Data> IdType;
@@ -136,6 +140,20 @@ private:
   Id myId;
 
   friend class HeterogeneousMapEx<Data>;
+};
+
+template <typename Data>
+class Streamable
+{
+public:
+  virtual void stream(const HeterogeneousMapEx<Data> & map, ::std::ostream & stream) const = 0;
+};
+
+template <typename T, typename Data>
+class StreamableKeyEx : public KeyEx<T, Data>, public Streamable<Data>
+{
+public:
+  virtual void stream(const HeterogeneousMapEx<Data> & map, ::std::ostream & stream) const;
 };
 
 
@@ -168,6 +186,14 @@ void KeyIdEx<Data>::removedFromMap(HeterogeneousMapEx<Data> & map)
   SSLIB_ASSERT(it != myMaps.end());
 
   myMaps.erase(it);
+}
+
+template <typename T, typename Data>
+void StreamableKeyEx<T, Data>::stream(const HeterogeneousMapEx<Data> & map, ::std::ostream & stream) const
+{
+  const T * const value = map.find(*this);
+  if(value)
+    stream << *value;
 }
 
 }
