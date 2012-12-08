@@ -26,6 +26,7 @@
 #include "common/Types.h"
 #include "common/UnitCell.h"
 #include "utility/HeterogeneousMap.h"
+#include "utility/NamedProperty.h"
 
 std::ostream & operator<<(std::ostream & os, const sstbx::common::Structure & p);
 
@@ -42,6 +43,8 @@ class UnitCell;
 class Structure
 {
 public:
+
+  typedef utility::NamedProperty<utility::HeterogeneousMap> VisibleProperty;
 
 	explicit Structure(UnitCellPtr cell = UnitCellPtr());
   Structure(const Structure & toCopy);
@@ -83,6 +86,10 @@ public:
 
   template <typename T>
   const T * getProperty(const utility::Key<T> & key) const;
+
+  ::boost::optional< ::std::string> getPropertyString(const VisibleProperty & property) const;
+
+  void setProperty(VisibleProperty & property, const ::std::string & value);
 
   template <typename T>
   void setProperty(utility::Key<T> & key, const T & value);

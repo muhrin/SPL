@@ -1,13 +1,13 @@
 /*
- * ResReaderWriter.h
+ * SslibReaderWriter.h
  *
  *
  *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
  */
 
-#ifndef RES_READER_WRITER_H
-#define RES_READER_WRITER_H
+#ifndef SSLIB_READER_WRITER_H
+#define SSLIB_READER_WRITER_H
 
 // INCLUDES /////////////////////////////////////////////
 #include "io/IStructureReader.h"
@@ -15,13 +15,15 @@
 
 #include <vector>
 
+#include "io/StructureYamlGenerator.h"
+
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 
 namespace sstbx {
 namespace io {
 
-class ResReaderWriter :
+class SslibReaderWriter :
   public IStructureWriter,
   public IStructureReader
 {
@@ -54,8 +56,10 @@ public:
 
   // End from IStructureReader //
 
+private:
+
 };
 
 }}
 
-#endif /* RES_READER_WRITER_H */
+#endif /* SSLIB_READER_WRITER_H */

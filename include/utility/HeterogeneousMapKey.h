@@ -49,11 +49,11 @@ private:
   friend class HeterogeneousMap;
 };
 
-template <typename Type>
+template <typename T>
 class Key
 {
 public:
-  typedef Type ValueType;
+  typedef T ValueType;
 
   Key():
   myId(new KeyId())

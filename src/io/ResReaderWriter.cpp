@@ -196,9 +196,9 @@ void ResReaderWriter::writeStructure(
     strFile.close();
 }
 
-UniquePtr<common::Structure>::Type ResReaderWriter::readStructure(
-	const boost::filesystem::path &     filepath,
-	const sstbx::common::AtomSpeciesDatabase & speciesDb) const
+ssc::types::StructurePtr ResReaderWriter::readStructure(
+  const ::boost::filesystem::path &     filepath,
+	const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const
 {
   namespace utility = ::sstbx::utility;
   using sstbx::common::Atom;
@@ -212,7 +212,7 @@ UniquePtr<common::Structure>::Type ResReaderWriter::readStructure(
 	if(!filepath.has_filename())
 		throw "Cannot write out structure without filepath";
 
-  UniquePtr<common::Structure>::Type str;
+  common::types::StructurePtr str;
 
   if(!exists(filepath))
     return str;
@@ -459,6 +459,23 @@ UniquePtr<common::Structure>::Type ResReaderWriter::readStructure(
     str.reset();
 
   return str;
+}
+
+
+size_t ResReaderWriter::readStructures(
+  StructuresContainer & outStructures,
+	const boost::filesystem::path &     filepath,
+	const sstbx::common::AtomSpeciesDatabase & speciesDb) const
+{
+  ssc::types::StructurePtr structure = readStructure(filepath, speciesDb);
+
+  if(structure.get())
+  {
+    outStructures.push_back(structure.release());
+    return 1;
+  }
+
+  return 0;
 }
 
 std::vector<std::string> ResReaderWriter::getSupportedFileExtensions() const

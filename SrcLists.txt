@@ -69,6 +69,8 @@ source_group("Source Files\\factory" FILES ${sslib_Source_Files__factory})
 set(sslib_Source_Files__io
   src/io/BoostFilesystem.cpp
   src/io/ResReaderWriter.cpp
+  src/io/SslibReaderWriter.cpp
+  src/io/StructureYamlGenerator.cpp
   src/io/StructureWriterManager.cpp
   src/io/IoFunctions.cpp
 )
@@ -88,6 +90,7 @@ set(sslib_Source_Files__utility
   src/utility/DistanceMatrixComparator.cpp
   src/utility/HeterogeneousMap.cpp
   src/utility/HeterogeneousMapKey.cpp
+  src/utility/NamedProperty.cpp
   src/utility/SortedDistanceComparator.cpp
   src/utility/SortedDistanceComparatorEx.cpp
   src/utility/StableComparison.cpp

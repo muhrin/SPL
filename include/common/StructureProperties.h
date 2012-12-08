@@ -13,7 +13,8 @@
 
 #include <boost/filesystem.hpp>
 
-#include "utility/HeterogeneousMapKey.h"
+#include "utility/HeterogeneousMap.h"
+#include "utility/NamedProperty.h"
 
 
 namespace sstbx {
@@ -21,21 +22,23 @@ namespace common {
 namespace structure_properties {
 namespace general {
 
-extern ::sstbx::utility::Key<unsigned int>       SPACEGROUP_NUMBER;
-extern ::sstbx::utility::Key< ::std::string>     SPACEGROUP_SYMBOL;
-extern ::sstbx::utility::Key<double>             PRESSURE_INTERNAL;
-extern ::sstbx::utility::Key<double>             ENERGY_INTERNAL;
+extern utility::NamedKey<unsigned int>       SPACEGROUP_NUMBER;
+extern utility::NamedKey< ::std::string>     SPACEGROUP_SYMBOL;
+extern utility::NamedKey<double>             PRESSURE_INTERNAL;
+extern utility::NamedKey<double>             ENERGY_INTERNAL;
 
 
 } // namespace general
 
 namespace searching {
-extern ::sstbx::utility::Key<unsigned int>       TIMES_FOUND;
+extern utility::NamedKey<unsigned int>       TIMES_FOUND;
 }
 
 namespace io {
-extern ::sstbx::utility::Key< ::boost::filesystem::path>  LAST_ABS_FILE_PATH;
+extern utility::Key< ::boost::filesystem::path>  LAST_ABS_FILE_PATH;
 }
+
+extern utility::NamedPropertyStore<utility::HeterogeneousMap> VISIBLE_PROPERTIES;
 
 } // namespace structure_properties
 } // namespace common

@@ -18,6 +18,11 @@
 namespace sstbx {
 namespace common {
 
+UnitCell::UnitCell()
+{
+  init(1.0, 1.0, 1.0, 90.0, 90.0, 90.0);
+}
+
 UnitCell::UnitCell(const double a, const double b, const double c, const double alpha, const double beta, const double gamma)
 {
   init(a, b, c, alpha, beta, gamma);
@@ -53,6 +58,13 @@ UnitCellPtr UnitCell::clone() const
 const double (&UnitCell::getLatticeParams() const)[6]
 {
   return myLatticeParams;
+}
+
+void UnitCell::setLatticeParams(const double (&params)[6])
+{
+  using namespace utility::cell_params_enum;
+
+  init(params[A], params[B], params[C], params[ALPHA], params[BETA], params[GAMMA]);
 }
 
 double UnitCell::getLongestCellVectorLength() const

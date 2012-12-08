@@ -87,7 +87,6 @@ set(sslib_Header_Files__factory
   include/factory/SsLibElements.h
   include/factory/SsLibFactoryYaml.h
   include/factory/SsLibYamlKeywords.h
-  include/factory/YamlCommon.h
 )
 source_group("Header Files\\factory" FILES ${sslib_Header_Files__factory})
 
@@ -96,8 +95,11 @@ set(sslib_Header_Files__io
   include/io/IStructureReader.h
   include/io/IStructureWriter.h
   include/io/ResReaderWriter.h
+  include/io/SslibReaderWriter.h
+  include/io/StructureYamlGenerator.h
   include/io/StructureWriterManager.h
   include/io/IoFunctions.h
+  include/io/YamlTranscode.h
 )
 source_group("Header Files\\io" FILES ${sslib_Header_Files__io})
 
@@ -139,6 +141,7 @@ set(sslib_Header_Files__utility
   include/utility/MultiArray.h
   include/utility/MultiIdx.h
   include/utility/MultiIdxRange.h
+  include/utility/NamedProperty.h
   include/utility/PermutationRange.h
   include/utility/PromotableType.h
   include/utility/SortedDistanceComparator.h
@@ -148,6 +151,11 @@ set(sslib_Header_Files__utility
   include/utility/UniqueStructureSet.h
 )
 source_group("Header Files\\utility" FILES ${sslib_Header_Files__utility})
+
+set(sslib_Header_Files__utility__detail
+  include/utility/detail/NamedProperty.h
+)
+source_group("Header Files\\utility\\detail" FILES ${sslib_Header_Files__utility__detail})
 
 set(sslib_Header_Files__
   include/SSLibConfig.h.in
@@ -167,6 +175,7 @@ set(sslib_Header_Files
   ${sslib_Header_Files__io}
   ${sslib_Header_Files__potential}
   ${sslib_Header_Files__utility}
+  ${sslib_Header_Files__utility__detail}
   ${sslib_Header_Files__}
 )
 

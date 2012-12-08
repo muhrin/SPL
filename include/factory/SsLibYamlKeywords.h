@@ -44,6 +44,9 @@ static const KwTyp STRUCTURE__ATOMS__SPEC         = "spec";
 static const KwTyp STRUCTURE__ATOMS__POS          = "pos";
 static const KwTyp STRUCTURE__CELL                = "cell";
 static const KwTyp STRUCTURE__CELL__ABC           = "abc";
+static const KwTyp STRUCTURE__CELL__VOL           = "vol";
+static const KwTyp STRUCTURE__NAME                = "name";
+static const KwTyp STRUCTURE__PROPERTIES          = "properties";
 
 // Random structure ///////////////
 static const KwTyp RANDOM_STRUCTURE                       = "randomStructure";

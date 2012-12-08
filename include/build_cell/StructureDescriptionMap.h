@@ -20,6 +20,7 @@
 
 #include "build_cell/AtomGroupDescription.h"
 #include "common/Types.h"
+#include "utility/TransformFunctions.h"
 
 // FORWARD DECLARES ///////////
 namespace sstbx {
@@ -37,25 +38,15 @@ class Structure;
 namespace sstbx {
 namespace build_cell {
 
-template <typename T1, typename T2>
-class TakeSecond : public ::std::unary_function< const ::std::pair<T1, T2> &, T2>
-{
-public:
-  T2 operator() (const ::std::pair<T1, T2> & pair) const
-  {
-    return pair.second;
-  }
-};
-
 class StructureDescriptionMap
 {
 private:
 
   typedef ::std::multimap<const AtomsDescription *, ::sstbx::common::Atom *>          AtomsMap;
-  typedef TakeSecond<const AtomsDescription *, ::sstbx::common::Atom *>               AtomsMapTransformer;
+  typedef utility::TakeSecond<const AtomsDescription *, ::sstbx::common::Atom *>      AtomsMapTransformer;
 
   typedef ::std::multimap<const AtomGroupDescription *, ::sstbx::common::Atom *>      GroupAtomsMap;
-  typedef TakeSecond<const AtomGroupDescription *, ::sstbx::common::Atom *>           GroupAtomsTransformer;
+  typedef utility::TakeSecond<const AtomGroupDescription *, ::sstbx::common::Atom *>  GroupAtomsTransformer;
 
 public:
 

@@ -23,7 +23,7 @@ namespace common {
 // FORWARD DECLARES ///////////////////////////
 class Structure;
 
-class UnitCell : private ::boost::noncopyable
+class UnitCell
 {
 public:
 
@@ -41,6 +41,7 @@ public:
     };
   };
 
+  UnitCell();
   UnitCell(
     const double a, const double b, const double c,
     const double alpha, const double beta, const double gamma);
@@ -51,6 +52,7 @@ public:
   UnitCellPtr clone() const;
 
   const double (&getLatticeParams() const)[6];
+  void setLatticeParams(const double (&params)[6]);
 
   inline ::arma::vec3 getAVec() const
   {

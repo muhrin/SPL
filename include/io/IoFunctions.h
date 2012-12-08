@@ -45,6 +45,8 @@ int getPrecision(const double num, const unsigned int digitsAfterDecimal);
 
 void writeToStream(::std::ostream & out, const double num, const unsigned digitsAfterDecimal);
 
+::std::string toString(const double num, const unsigned digitsAfterDecimal);
+
 }
 }
 

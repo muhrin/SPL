@@ -221,6 +221,17 @@ const DistanceCalculator & Structure::getDistanceCalculator() const
   return myDistanceCalculator;
 }
 
+::boost::optional< ::std::string>
+Structure::getPropertyString(const VisibleProperty & property) const
+{
+  return property.getValue(myTypedProperties);
+}
+
+void Structure::setProperty(VisibleProperty & property, const ::std::string & value)
+{
+  property.setValue(myTypedProperties, value);
+}
+
 bool Structure::makePrimitive()
 {
   if(myNumAtoms > 0 && myCell.get())

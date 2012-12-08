@@ -35,7 +35,15 @@ typedef UniquePtr<UnitCell>::Type UnitCellPtr;
 typedef UniquePtr<DistanceCalculator>::Type DistanceCalculatorPtr;
 
 typedef ::boost::optional<const ::arma::mat33> OptionalConstMat33;
+namespace types {
 
+typedef UniquePtr<Structure>::Type StructurePtr;
+
+typedef UniquePtr<UnitCell>::Type UnitCellPtr;
+
+typedef UniquePtr<DistanceCalculator>::Type DistanceCalculatorPtr;
+
+}
 }
 }
 

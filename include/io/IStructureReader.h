@@ -14,6 +14,10 @@
 
 #include "SSLib.h"
 
+#include <boost/ptr_container/ptr_vector.hpp>
+
+#include "common/Types.h"
+
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace sstbx {
 namespace common {
@@ -25,19 +29,25 @@ class Structure;
 namespace sstbx {
 namespace io {
 
+typedef ::boost::ptr_vector<common::Structure> StructuresContainer;
+
 class IStructureReader
 {
 public:
 
 	virtual ~IStructureReader() {}
 
+  virtual ::sstbx::common::types::StructurePtr readStructure(
+		const ::boost::filesystem::path &     filepath,
+		const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const = 0;
+
 	/**
-	/* Read a structure from disk.  Additional data may be read if avilable
-	/* and will be written out by any writers that support it.
+	/* Read structure(s) from disk.
 	/* The user can supply their own species database, however it is up to them
 	/* to make sure that the implementation is thread safe if necessary.
 	/**/
-  virtual UniquePtr<common::Structure>::Type readStructure(
+  virtual size_t readStructures(
+    StructuresContainer & outStructures,
 		const ::boost::filesystem::path &     filepath,
 		const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const = 0;
 

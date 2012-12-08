@@ -121,8 +121,7 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
   
   ssc::AtomSpeciesDatabase speciesDb;
   ssio::ResReaderWriter resReader;
-  ::std::vector<PathStructurePair> structures;
-  ssc::StructurePtr str;
+  ssio::StructuresContainer structures;
 
   BOOST_FOREACH(::std::string & pathString, inputFiles)
   {
@@ -133,9 +132,7 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
       continue;
     }
 
-    str = resReader.readStructure(strPath, speciesDb);
-    if(str.get())
-      structures.push_back(PathStructurePair(strPath, SharedStructurePtr(str.release())));
+    resReader.readStructures(structures, strPath, speciesDb);
 
     // To make sure this test doesn't take too long limit the number of structures
     if(structures.size() >= MAX_STRUCTURES)
@@ -149,12 +146,10 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
   {
     for(size_t j = i + 1; j < numStructures; ++j)
     {
-      //ssc::StructurePtr primitive = structures[i].second->getPrimitiveCopy();
-      //resReader.writeStructure(*primitive.get(), "primitive.res", speciesDb);
       for(size_t k = 0; k < NUM_COMPARATORS; ++k)
       {
-        results[k].numWrong += bufferedComparators[k]->areSimilar(*structures[i].second.get(), *structures[j].second.get()) ? 0 : 1;
-        diff = bufferedComparators[k]->compareStructures(*structures[i].second.get(), *structures[j].second.get()); 
+        results[k].numWrong += bufferedComparators[k]->areSimilar(structures[i], structures[j]) ? 0 : 1;
+        diff = bufferedComparators[k]->compareStructures(structures[i], structures[j]); 
         results[k].max = ::std::max(results[k].max, diff);
         results[k].total += diff;
       }
@@ -227,6 +222,7 @@ BOOST_AUTO_TEST_CASE(SupercellTest)
 
   ssc::AtomSpeciesDatabase speciesDb;
   ssio::ResReaderWriter resReader;
+  ssio::StructuresContainer structures;
   ssc::StructurePtr str;
   ssc::StructurePtr strSupercell;
 
