@@ -26,7 +26,7 @@ utility::NamedKey<unsigned int>       TIMES_FOUND("timesFound");
 }
 
 namespace io {
-::sstbx::utility::Key< ::boost::filesystem::path>  LAST_ABS_FILE_PATH;
+  utility::Key< ::sstbx::io::ResourceLocator>  LAST_ABS_FILE_PATH;
 }
 
 utility::NamedPropertyStore<utility::HeterogeneousMap> VISIBLE_PROPERTIES;

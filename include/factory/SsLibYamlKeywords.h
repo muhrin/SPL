@@ -36,6 +36,7 @@ static const KwTyp MAX                   = "max";
 
 // Structure description ///
 static const KwTyp STRUCTURE                      = "structure";
+static const KwTyp STRUCTURES                     = "structures";
 static const KwTyp STRUCTURE__ATOM_INFO_FORMAT    = "atomInfoFormat";
 static const KwTyp STRUCTURE__ATOM_DEFAULTS       = "atomDefaults";
 static const KwTyp STRUCTURE__ATOMS               = "atoms";

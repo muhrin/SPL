@@ -94,6 +94,7 @@ set(sslib_Header_Files__io
   include/io/BoostFilesystem.h
   include/io/IStructureReader.h
   include/io/IStructureWriter.h
+  include/io/ResourceLocator.h
   include/io/ResReaderWriter.h
   include/io/SslibReaderWriter.h
   include/io/StructureYamlGenerator.h
@@ -148,12 +149,14 @@ set(sslib_Header_Files__utility
   include/utility/SortedDistanceComparatorEx.h
   include/utility/StableComparison.h
   include/utility/TransformFunctions.h
+  include/utility/TypedDataTable.h
   include/utility/UniqueStructureSet.h
 )
 source_group("Header Files\\utility" FILES ${sslib_Header_Files__utility})
 
 set(sslib_Header_Files__utility__detail
   include/utility/detail/NamedProperty.h
+  include/utility/detail/TypedDataTable.h
 )
 source_group("Header Files\\utility\\detail" FILES ${sslib_Header_Files__utility__detail})
 

@@ -18,7 +18,14 @@
 
 
 namespace sstbx {
+
+// FORWARD DECLARES ////////////////////////////
+namespace io {
+class ResourceLocator;
+}
+
 namespace common {
+
 namespace structure_properties {
 namespace general {
 
@@ -35,7 +42,7 @@ extern utility::NamedKey<unsigned int>       TIMES_FOUND;
 }
 
 namespace io {
-extern utility::Key< ::boost::filesystem::path>  LAST_ABS_FILE_PATH;
+extern utility::Key< ::sstbx::io::ResourceLocator>  LAST_ABS_FILE_PATH;
 }
 
 extern utility::NamedPropertyStore<utility::HeterogeneousMap> VISIBLE_PROPERTIES;

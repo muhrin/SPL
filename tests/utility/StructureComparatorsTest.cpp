@@ -22,6 +22,8 @@
 #include <common/Structure.h>
 #include <common/UnitCell.h>
 #include <io/BoostFilesystem.h>
+#include <io/ResourceLocator.h>
+#include <io/ResourceLocator.h>
 #include <io/ResReaderWriter.h>
 #include <utility/DistanceMatrixComparator.h>
 #include <utility/IBufferedComparator.h>
@@ -202,7 +204,7 @@ BOOST_AUTO_TEST_CASE(SupercellTest)
 
   // Get the list of structures to compare
   const boost::regex resFileFilter(".*\\.res");
-  std::vector< ::std::string> inputFiles;
+  std::vector<ssio::ResourceLocator> inputFiles;
   const fs::directory_iterator dirEnd; // Default ctor yields past-the-end
   for(fs::directory_iterator it(referenceStructuresPath); it != dirEnd; ++it )
   {
@@ -215,7 +217,7 @@ BOOST_AUTO_TEST_CASE(SupercellTest)
       if(!boost::regex_match(ssio::leafString(*it), what, resFileFilter)) continue;
 
       // File matches, store it
-      inputFiles.push_back(it->path().string());
+      inputFiles.push_back(it->path());
   }
 
   BOOST_REQUIRE(inputFiles.size() > 0);
@@ -255,7 +257,7 @@ BOOST_AUTO_TEST_CASE(SupercellTest)
       }
     }
   }
-  resReader.writeStructure(*strSupercell, "supercell.res", speciesDb);
+  resReader.writeStructure(*strSupercell, ssio::ResourceLocator("supercell.res"), speciesDb);
 
   for(size_t i = 0; i < NUM_COMPARATORS; ++i)
   {

@@ -87,10 +87,6 @@ public:
   template <typename T>
   const T * getProperty(const utility::Key<T> & key) const;
 
-  ::boost::optional< ::std::string> getPropertyString(const VisibleProperty & property) const;
-
-  void setProperty(VisibleProperty & property, const ::std::string & value);
-
   template <typename T>
   void setProperty(utility::Key<T> & key, const T & value);
 
@@ -99,6 +95,9 @@ public:
 
   template <typename T>
   bool eraseProperty(utility::Key<T> & key);
+
+  ::boost::optional< ::std::string> getVisibleProperty(const VisibleProperty & property) const;
+  void setVisibleProperty(VisibleProperty & property, const ::std::string & value);
 
   bool makePrimitive();
 

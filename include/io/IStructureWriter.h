@@ -13,6 +13,8 @@
 
 #include <boost/filesystem.hpp>
 
+#include "io/ResourceLocator.h"
+
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace sstbx {
 namespace common {
@@ -38,7 +40,7 @@ public:
 	/**/
 	virtual void writeStructure(
 		::sstbx::common::Structure & str,
-		const ::boost::filesystem::path & filepath,
+		const ResourceLocator & locator,
 		const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const = 0;
 
 	virtual ::std::vector<std::string> getSupportedFileExtensions() const = 0;

@@ -222,12 +222,12 @@ const DistanceCalculator & Structure::getDistanceCalculator() const
 }
 
 ::boost::optional< ::std::string>
-Structure::getPropertyString(const VisibleProperty & property) const
+Structure::getVisibleProperty(const VisibleProperty & property) const
 {
   return property.getValue(myTypedProperties);
 }
 
-void Structure::setProperty(VisibleProperty & property, const ::std::string & value)
+void Structure::setVisibleProperty(VisibleProperty & property, const ::std::string & value)
 {
   property.setValue(myTypedProperties, value);
 }

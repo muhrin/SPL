@@ -48,20 +48,20 @@ StructureYamlGenerator::generateNode(const ::sstbx::common::Structure & structur
 
   // Name
   if(!structure.getName().empty())
-    root[kw::STRUCTURE][kw::STRUCTURE__NAME] = structure.getName();
+    root[kw::STRUCTURE__NAME] = structure.getName();
   
   // Unit cell
   const common::UnitCell * const cell = structure.getUnitCell();
   if(cell)
-    root[kw::STRUCTURE][kw::STRUCTURE__CELL] = *cell;
+    root[kw::STRUCTURE__CELL] = *cell;
 
   // Atoms
   for(size_t i = 0 ; i < structure.getNumAtoms(); ++i)
-    root[kw::STRUCTURE][kw::STRUCTURE__ATOMS].push_back(generateNode(structure.getAtom(i)));
+    root[kw::STRUCTURE__ATOMS].push_back(generateNode(structure.getAtom(i)));
 
   // Properties
   BOOST_FOREACH(const StructureProperty & property, structure_properties::VISIBLE_PROPERTIES)
-    addProperty(root[kw::STRUCTURE][kw::STRUCTURE__PROPERTIES], structure, property);
+    addProperty(root[kw::STRUCTURE__PROPERTIES], structure, property);
   
 
   return root;
@@ -137,7 +137,7 @@ bool StructureYamlGenerator::addProperty(
   const common::Structure & structure,
   const StructureProperty & property) const
 {
-  ::boost::optional< ::std::string> value = structure.getPropertyString(property);
+  ::boost::optional< ::std::string> value = structure.getVisibleProperty(property);
 
   if(!value)
     return false;
@@ -160,7 +160,7 @@ void StructureYamlGenerator::praseProperties(
 
     if(property)
     {
-      structure.setProperty(*property, it->second.as< ::std::string>());
+      structure.setVisibleProperty(*property, it->second.as< ::std::string>());
     }
   }
 }

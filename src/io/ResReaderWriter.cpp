@@ -47,7 +47,7 @@ const unsigned int ResReaderWriter::DIGITS_AFTER_DECIMAL = 8;
 
 void ResReaderWriter::writeStructure(
 	::sstbx::common::Structure & str,
-	const ::boost::filesystem::path & filepath,
+	const ResourceLocator & locator,
 	const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const
 {
   using namespace utility::cell_params_enum;
@@ -58,6 +58,7 @@ void ResReaderWriter::writeStructure(
   const ::std::string * sValue;
   const unsigned int * uiValue;
 
+  const fs::path filepath(locator.path());
 	if(!filepath.has_filename())
 		throw "Cannot write out structure without filepath";
 
@@ -190,14 +191,14 @@ void ResReaderWriter::writeStructure(
 
   str.setProperty(
     properties::io::LAST_ABS_FILE_PATH,
-    io::absolute(filepath));
+    io::ResourceLocator(io::absolute(filepath)));
 
  if(strFile.is_open())
     strFile.close();
 }
 
 ssc::types::StructurePtr ResReaderWriter::readStructure(
-  const ::boost::filesystem::path &     filepath,
+  const ResourceLocator & resourceLocator,
 	const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const
 {
   namespace utility = ::sstbx::utility;
@@ -209,8 +210,9 @@ ssc::types::StructurePtr ResReaderWriter::readStructure(
   using boost::lexical_cast;
 	using boost::filesystem::ifstream;
 
+  const fs::path filepath = resourceLocator.path();
 	if(!filepath.has_filename())
-		throw "Cannot write out structure without filepath";
+		throw "Cannot read structure without filepath";
 
   common::types::StructurePtr str;
 
@@ -232,7 +234,7 @@ ssc::types::StructurePtr ResReaderWriter::readStructure(
 
     str->setProperty(
       properties::io::LAST_ABS_FILE_PATH,
-      io::absolute(filepath));
+      io::ResourceLocator(io::absolute(filepath)));
 
     std::string line;
 
@@ -464,10 +466,10 @@ ssc::types::StructurePtr ResReaderWriter::readStructure(
 
 size_t ResReaderWriter::readStructures(
   StructuresContainer & outStructures,
-	const boost::filesystem::path &     filepath,
+	const ResourceLocator & resourceLocator,
 	const sstbx::common::AtomSpeciesDatabase & speciesDb) const
 {
-  ssc::types::StructurePtr structure = readStructure(filepath, speciesDb);
+  ssc::types::StructurePtr structure = readStructure(resourceLocator, speciesDb);
 
   if(structure.get())
   {

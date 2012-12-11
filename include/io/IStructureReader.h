@@ -17,16 +17,17 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 
 #include "common/Types.h"
+#include "io/ResourceLocator.h"
+
+
+namespace sstbx {
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx {
 namespace common {
 class AtomSpeciesDatabase;
 class Structure;
 }
-}
 
-namespace sstbx {
 namespace io {
 
 typedef ::boost::ptr_vector<common::Structure> StructuresContainer;
@@ -37,9 +38,9 @@ public:
 
 	virtual ~IStructureReader() {}
 
-  virtual ::sstbx::common::types::StructurePtr readStructure(
-		const ::boost::filesystem::path &     filepath,
-		const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const = 0;
+  virtual common::types::StructurePtr readStructure(
+    const ResourceLocator & resourceLocator,
+		const common::AtomSpeciesDatabase & speciesDb) const = 0;
 
 	/**
 	/* Read structure(s) from disk.
@@ -48,8 +49,8 @@ public:
 	/**/
   virtual size_t readStructures(
     StructuresContainer & outStructures,
-		const ::boost::filesystem::path &     filepath,
-		const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const = 0;
+		const ResourceLocator & resourceLocator,
+		const common::AtomSpeciesDatabase & speciesDb) const = 0;
 
 	virtual ::std::vector<std::string> getSupportedFileExtensions() const = 0;
 };

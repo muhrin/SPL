@@ -38,18 +38,18 @@ public:
 	/**/
 	virtual void writeStructure(
 		::sstbx::common::Structure & str,
-		const ::boost::filesystem::path & filepath,
+		const ResourceLocator & locator,
 		const common::AtomSpeciesDatabase & speciesDb) const;
 
   // From IStructureReader //
 
   virtual ::sstbx::common::types::StructurePtr readStructure(
-		const ::boost::filesystem::path &     filepath,
+		const ResourceLocator & resourceLocator,
 		const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const;
 
   virtual size_t readStructures(
     StructuresContainer & outStructures,
-		const ::boost::filesystem::path &     filepath,
+		const ResourceLocator & resourceLocator,
 		const common::AtomSpeciesDatabase & speciesDb) const;
 
 	virtual ::std::vector<std::string> getSupportedFileExtensions() const;

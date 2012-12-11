@@ -11,9 +11,12 @@
 
 // INCLUDES /////////////////////////////////////////////
 
+#include <map>
+
 #include <boost/filesystem.hpp>
 
-#include <map>
+#include "common/Types.h"
+#include "io/IStructureReader.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace sstbx {
@@ -23,6 +26,7 @@ class Structure;
 }
 namespace io {
 class IStructureWriter;
+class ResourceLocator;
 }
 }
 
@@ -37,18 +41,33 @@ public:
 	void registerWriter(IStructureWriter & writer);
 	void deregisterWriter(IStructureWriter & writer);
 
+  void registerReader(IStructureReader & reader);
+  void deregisterReader(IStructureReader & reader);
+
 	
 	bool writeStructure(
 		common::Structure & str,
-		const ::boost::filesystem::path & path,
+		const ResourceLocator & path,
     const common::AtomSpeciesDatabase & atomSpeciesDb) const;
 
+  common::types::StructurePtr readStructure(
+    const ResourceLocator & locator,
+    const common::AtomSpeciesDatabase & speciesDb) const;
+
+  size_t readStructures(
+    io::StructuresContainer & outStructures,
+    const ResourceLocator & locator,
+    const common::AtomSpeciesDatabase & speciesDb) const;
 
 protected:
 
-	typedef ::std::map<std::string, IStructureWriter *> ExtensionsMap;
+  typedef ::std::map< ::std::string, IStructureWriter *> WritersMap;
+  typedef ::std::map< ::std::string, IStructureReader *> ReadersMap;
 
-	ExtensionsMap	myExtensionsMap;
+  bool getExtension(::std::string & ext, const ResourceLocator & locator) const;
+
+	WritersMap myWriters;
+  ReadersMap myReaders;
 };
 
 }}
