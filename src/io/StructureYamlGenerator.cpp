@@ -133,7 +133,7 @@ YAML::Node StructureYamlGenerator::generateNode(
 }
 
 bool StructureYamlGenerator::addProperty(
-  YAML::Node & propertiesNode,
+  YAML::Node propertiesNode,
   const common::Structure & structure,
   const StructureProperty & property) const
 {

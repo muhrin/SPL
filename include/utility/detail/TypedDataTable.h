@@ -73,7 +73,7 @@ template <typename Key>
 template <typename T>
 T * TypedDataTable<Key>::get(const Key & key, const TypedColumn<T, Key> & column)
 {
-  const Table::iterator rowIt = myTable.find(key);
+  const typename Table::iterator rowIt = myTable.find(key);
 
   if(rowIt == myTable.end())
     return NULL;
@@ -85,7 +85,7 @@ template <typename Key>
 template <typename T>
 const T * TypedDataTable<Key>::get(const Key & key, const TypedColumn<T, Key> & column) const
 {
-  const Table::const_iterator rowIt = myTable.find(key);
+  const typename Table::const_iterator rowIt = myTable.find(key);
 
   if(rowIt == myTable.end())
     return NULL;
@@ -101,7 +101,7 @@ void TypedDataTable<Key>::getAscending(SortedKeys & sortedKeys, const TypedColum
 
   // Empty the container and copy all the current keys
   sortedKeys.clear();
-  BOOST_FOREACH(const Table::value_type & entry, myTable)
+  BOOST_FOREACH(const typename Table::value_type & entry, myTable)
   {
     sortedKeys.push_back(entry.first);
   }

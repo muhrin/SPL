@@ -122,6 +122,7 @@ add_library(sslib
 target_link_libraries(sslib
   ${Boost_LIBRARIES}
   ${SPGLIB_LIBRARIES}
+  ${ARMADILLO_LIBRARIES}
 )
 
 if(SSLIB_USE_YAML)

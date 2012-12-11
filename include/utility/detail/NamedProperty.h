@@ -31,6 +31,8 @@ public:
   BadLexicalCast() {}
   BadLexicalCast(const char * msg);
 
+  virtual ~BadLexicalCast() throw() {}
+
   virtual const char * what() const throw();
 
 private:
@@ -120,14 +122,13 @@ NamedKey<T>::setValue(HeterogeneousMap & container, const ::std::string & valueS
 template <typename Container>
 bool NamedPropertyStore<Container>::addProperty(NamedProperty<Container> & namedProperty)
 {
-  typedef ::std::pair<Properties::iterator, bool> ReturnType;
   return myProperties.insert(std::make_pair(namedProperty.getName(), &namedProperty)).second;
 }
 
 template <typename Container>
 bool NamedPropertyStore<Container>::removeProperty(NamedProperty<Container> & namedProperty)
 {
-  Properties::iterator it = myProperties.find(namedProperty.getName());
+  typename Properties::iterator it = myProperties.find(namedProperty.getName());
 
   if(it == myProperties.end())
     return false;
@@ -139,7 +140,7 @@ bool NamedPropertyStore<Container>::removeProperty(NamedProperty<Container> & na
 template <typename Container>
 NamedProperty<Container> * NamedPropertyStore<Container>::getProperty(const std::string & name)
 {
-  Properties::iterator it = myProperties.find(name);
+  typename Properties::iterator it = myProperties.find(name);
 
   if(it == myProperties.end())
     return NULL;

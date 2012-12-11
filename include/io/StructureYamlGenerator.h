@@ -41,7 +41,7 @@ private:
 
   YAML::Node generateNode(const common::Atom & atom) const;
   bool addProperty(
-    YAML::Node & propertiesNode,
+    YAML::Node propertiesNode,
     const common::Structure & structure,
     const StructureProperty & property) const;
 

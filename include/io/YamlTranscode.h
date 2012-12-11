@@ -13,6 +13,7 @@
 
 #ifdef SSLIB_USE_YAML
 
+#include <iomanip>
 #include <sstream>
 #include <string>
 
