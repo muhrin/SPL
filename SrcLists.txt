@@ -72,7 +72,7 @@ set(sslib_Source_Files__io
   src/io/ResReaderWriter.cpp
   src/io/SslibReaderWriter.cpp
   src/io/StructureYamlGenerator.cpp
-  src/io/StructureWriterManager.cpp
+  src/io/StructureReadWriteManager.cpp
   src/io/IoFunctions.cpp
 )
 source_group("Source Files\\io" FILES ${sslib_Source_Files__io})

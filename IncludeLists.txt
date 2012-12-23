@@ -98,11 +98,16 @@ set(sslib_Header_Files__io
   include/io/ResReaderWriter.h
   include/io/SslibReaderWriter.h
   include/io/StructureYamlGenerator.h
-  include/io/StructureWriterManager.h
+  include/io/StructureReadWriteManager.h
   include/io/IoFunctions.h
   include/io/YamlTranscode.h
 )
 source_group("Header Files\\io" FILES ${sslib_Header_Files__io})
+
+set(sslib_Header_Files__io__detail
+  include/io/detail/StructureReadWriteManager.h
+)
+source_group("Header Files\\io\\detail" FILES ${sslib_Header_Files__io__detail})
 
 set(sslib_Header_Files__potential
   include/potential/FixedLatticeShapeConstraint.h
@@ -176,6 +181,7 @@ set(sslib_Header_Files
   ${sslib_Header_Files__common__event}
   ${sslib_Header_Files__factory}
   ${sslib_Header_Files__io}
+  ${sslib_Header_Files__io__detail}
   ${sslib_Header_Files__potential}
   ${sslib_Header_Files__utility}
   ${sslib_Header_Files__utility__detail}

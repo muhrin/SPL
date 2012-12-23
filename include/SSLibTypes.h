@@ -37,6 +37,17 @@ private:
 };
 
 
+// Sometimes it's not possible to use the above struct-typedef method,
+// for example in cases where ADL should be used.  In which case this
+// macro can be used for the pointer type instead.  It's less safe -
+// but it works.
+#ifdef SSLIB_USE_CPP11
+#  define SSLIB_UNIQUE_PTR(T) ::std::unique_ptr<T>
+#else
+#  define SSLIB_UNIQUE_PTR(T) ::std::auto_ptr<T>
+#endif
+
+
 #ifdef BOOST_STATIC_ASSERT_MSG
 #  define SSLIB_STATIC_ASSERT_MSG( B, Msg ) BOOST_STATIC_ASSERT_MSG(B, Msg)
 #else

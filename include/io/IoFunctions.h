@@ -27,6 +27,7 @@
 
 namespace sstbx {
 namespace io {
+class StructureReadWriteManager;
 
 bool getWildcardPaths(
   ::std::string wildString,
@@ -46,6 +47,8 @@ int getPrecision(const double num, const unsigned int digitsAfterDecimal);
 void writeToStream(::std::ostream & out, const double num, const unsigned digitsAfterDecimal);
 
 ::std::string toString(const double num, const unsigned digitsAfterDecimal);
+
+void populateReadWriteManager(StructureReadWriteManager & manager);
 
 }
 }

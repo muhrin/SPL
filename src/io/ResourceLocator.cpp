@@ -67,7 +67,10 @@ bool ResourceLocator::set(const ::std::string & locatorString)
 
 ::std::string ResourceLocator::string() const
 {
-  return myPath.string() + ID_DELIMITER + myResourceId;
+  ::std::string str = myPath.string();
+  if(!myResourceId.empty())
+    str += ID_DELIMITER + myResourceId;
+  return str;
 }
 
 const fs::path & ResourceLocator::path() const
