@@ -59,6 +59,7 @@ SharedHandle<Id, Notifiee>::operator =(const SharedHandle & rhs)
 
   myId = rhs.myId;
   myNotifiee = rhs.myNotifiee;
+  return *this;
 }
 
 template <typename Id, class Notifiee>

@@ -111,16 +111,16 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
   const fs::directory_iterator dirEnd; // Default ctor yields past-the-end
   for(fs::directory_iterator it(referenceStructuresPath); it != dirEnd; ++it )
   {
-      // Skip if not a file
-      if( !fs::is_regular_file(it->status())) continue;
+    // Skip if not a file
+    if( !fs::is_regular_file(it->status())) continue;
 
-      boost::smatch what;
+    boost::smatch what;
 
-      // Skip if no match
-      if(!boost::regex_match(ssu::fs::leafString(*it), what, resFileFilter)) continue;
+    // Skip if no match
+    if(!boost::regex_match(ssu::fs::leafString(*it), what, resFileFilter)) continue;
 
-      // File matches, store it
-      inputFiles.push_back(it->path().string());
+    // File matches, store it
+    inputFiles.push_back(it->path().string());
   }
   
   ssc::AtomSpeciesDatabase speciesDb;
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
   double diff;
   for(size_t k = 0; k < NUM_COMPARATORS; ++k)
   {
-    for(size_t i = 0; i < numStructures - 1; ++i)
+    for(size_t i = 0; i < numStructures; ++i)
     {
       comparisonHandles[i] = bufferedComparators[k]->generateComparisonData(*structures[i].second);
     }
