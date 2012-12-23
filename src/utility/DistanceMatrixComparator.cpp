@@ -109,22 +109,18 @@ double DistanceMatrixComparator::compareStructures(
 	const common::Structure & str1,
 	const common::Structure & str2) const
 {
-  typedef ::std::auto_ptr<DataTyp> ComparisonData;
-
-  ComparisonData comp1 = generateComparisonData(str1);
-  ComparisonData comp2 = generateComparisonData(str2);
-  return compareStructures(str1, *comp1.get(), str2, *comp2.get());
+  ComparisonDataPtr comp1(generateComparisonData(str1));
+  ComparisonDataPtr comp2(generateComparisonData(str2));
+  return compareStructures(*comp1.get(), *comp2.get());
 }
 
 bool DistanceMatrixComparator::areSimilar(
 	const common::Structure & str1,
   const common::Structure & str2) const
 {
-  typedef ::std::auto_ptr<DataTyp> ComparisonData;
-
-  ComparisonData comp1 = generateComparisonData(str1);
-  ComparisonData comp2 = generateComparisonData(str2);
-  return areSimilar(str1, *comp1.get(), str2, *comp2.get());
+  ComparisonDataPtr comp1(generateComparisonData(str1));
+  ComparisonDataPtr comp2(generateComparisonData(str2));
+  return areSimilar(*comp1.get(), *comp2.get());
 }
 
 ::boost::shared_ptr<IBufferedComparator> DistanceMatrixComparator::generateBuffered() const
@@ -140,17 +136,17 @@ DistanceMatrixComparator::generateComparisonData(const common::Structure & struc
 
 
 bool DistanceMatrixComparator::areSimilar(
-  const common::Structure & str1, const DataTyp & str1Data,
-  const common::Structure & str2, const DataTyp & str2Data) const
+  const DataTyp & str1Data,
+  const DataTyp & str2Data) const
 {
-  return compareStructures(str1, str1Data, str2, str2Data) < 0.001;
+  return compareStructures(str1Data, str2Data) < 0.001;
 }
 
 double DistanceMatrixComparator::compareStructures(
-  const common::Structure & str1, const DataTyp & str1Data,
-  const common::Structure & str2, const DataTyp & str2Data) const
+  const DataTyp & str1Data,
+  const DataTyp & str2Data) const
 {
-  if(!areComparable(str1, str1Data, str2, str2Data))
+  if(!areComparable(str1Data, str2Data))
     return STRUCTURES_INCOMPARABLE;
 
   const size_t maxAtoms = ::std::max(str1Data.distancesMtx.n_cols, str2Data.distancesMtx.n_cols);
@@ -158,18 +154,18 @@ double DistanceMatrixComparator::compareStructures(
   if(maxAtoms < myFastComparisonAtomsLimit)
   {
     // Use more expensive, but more accurate method
-    return compareStructuresFull(str1, str1Data, str2, str2Data);
+    return compareStructuresFull(str1Data, str2Data);
   }
   else
   {
     // Use cheaper method
-    return compareStructuresFast(str1, str1Data, str2, str2Data);
+    return compareStructuresFast(str1Data, str2Data);
   }
 }
 
 bool DistanceMatrixComparator::areComparable(
-  const common::Structure & str1, const DataTyp & str1Data,
-  const common::Structure & str2, const DataTyp & str2Data) const
+  const DataTyp & str1Data,
+  const DataTyp & str2Data) const
 {
   size_t minAtoms, maxAtoms;
 
@@ -193,8 +189,8 @@ bool DistanceMatrixComparator::areComparable(
 
 
 double DistanceMatrixComparator::compareStructuresFull(
-  const common::Structure & str1, const DataTyp & str1Data,
-  const common::Structure & str2, const DataTyp & str2Data) const
+  const DataTyp & str1Data,
+  const DataTyp & str2Data) const
 {
   typedef PermutationRange< ::std::vector<size_t>, size_t> Range;
 
@@ -255,8 +251,8 @@ double DistanceMatrixComparator::compareStructuresFull(
 }
 
 double DistanceMatrixComparator::compareStructuresFast(
-    const common::Structure & str1, const DataTyp & str1Data,
-    const common::Structure & str2, const DataTyp & str2Data) const
+    const DataTyp & str1Data,
+    const DataTyp & str2Data) const
 {
   const size_t numAtoms1 = str1Data.distancesMtx.n_cols;
   const size_t numAtoms2 = str2Data.distancesMtx.n_cols;

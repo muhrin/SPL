@@ -10,6 +10,8 @@
 #define DISTANCE_MATRIX_COMPARATOR_H
 
 // INCLUDES /////////////////////////////////////////////
+#include "SSLib.h"
+
 #include <map>
 #include <vector>
 
@@ -46,6 +48,7 @@ class DistanceMatrixComparator : public IStructureComparator
 public:
 
   typedef DistanceMatrixComparisonData DataTyp;
+  typedef ::sstbx::UniquePtr<DataTyp>::Type ComparisonDataPtr;
 
   static const double STRUCTURES_INCOMPARABLE;
 
@@ -71,30 +74,30 @@ public:
   // End from IStructureComparator /////////////
 
   // Methods needed to conform to expectations laid out by GenericBufferedComparator ///
-  ::std::auto_ptr<DataTyp> generateComparisonData(const common::Structure & structure) const;
-
   bool areSimilar(
-    const common::Structure & str1, const DataTyp & str1Data,
-    const common::Structure & str2, const DataTyp & str2Data) const;
+    const DataTyp & str1Data,
+    const DataTyp & str2Data) const;
 
   double compareStructures(
-    const common::Structure & str1, const DataTyp & str1Data,
-    const common::Structure & str2, const DataTyp & str2Data) const;
+    const DataTyp & str1Data,
+    const DataTyp & str2Data) const;
+
+  ComparisonDataPtr generateComparisonData(const common::Structure & structure) const;
   // End conformation methods //////////////
 
 private:
 
   bool areComparable(
-    const common::Structure & str1, const DataTyp & str1Data,
-    const common::Structure & str2, const DataTyp & str2Data) const;
+    const DataTyp & str1Data,
+    const DataTyp & str2Data) const;
 
   double compareStructuresFull(
-    const common::Structure & str1, const DataTyp & str1Data,
-    const common::Structure & str2, const DataTyp & str2Data) const;
+    const DataTyp & str1Data,
+    const DataTyp & str2Data) const;
 
   double compareStructuresFast(
-      const common::Structure & str1, const DataTyp & str1Data,
-      const common::Structure & str2, const DataTyp & str2Data) const;
+    const DataTyp & str1Data,
+    const DataTyp & str2Data) const;
 
   const size_t myFastComparisonAtomsLimit;
 

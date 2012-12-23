@@ -10,6 +10,8 @@
 #define SORTED_DISTANCE_COMPARATOR_H
 
 // INCLUDES /////////////////////////////////////////////
+#include "SSLib.h"
+
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
@@ -58,6 +60,7 @@ public:
 
 	typedef SortedDistanceComparisonData DataTyp;
   typedef IBufferedComparator   BufferedTyp;
+  typedef ::sstbx::UniquePtr<DataTyp>::Type ComparisonDataPtr;
 
 	static const double DEFAULT_TOLERANCE;
   static const double CUTOFF_FACTOR;
@@ -80,19 +83,14 @@ public:
 
   // Methods needed to conform to expectations laid out by GenericBufferedComparator ///
 	double compareStructures(
-    const common::Structure & str1,
 		const SortedDistanceComparisonData & dist1,
-    const common::Structure & str2,
 		const SortedDistanceComparisonData & dist2) const;
 
 	bool areSimilar(
-    const common::Structure & str1,
 		const SortedDistanceComparisonData & dist1,
-    const common::Structure & str2,
 		const SortedDistanceComparisonData & dist2) const;
 
-  ::std::auto_ptr<SortedDistanceComparisonData>
-    generateComparisonData(const ::sstbx::common::Structure & str) const;
+  ComparisonDataPtr generateComparisonData(const ::sstbx::common::Structure & str) const;
   // End conformation methods //////////////
 
 private:

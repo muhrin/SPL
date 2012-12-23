@@ -136,6 +136,7 @@ set(sslib_Header_Files__utility
   include/utility/MultiIdxRange.h
   include/utility/PermutationRange.h
   include/utility/PromotableType.h
+  include/utility/SharedHandle.h
   include/utility/SortedDistanceComparator.h
   include/utility/SortedDistanceComparatorEx.h
   include/utility/StableComparison.h
@@ -143,6 +144,13 @@ set(sslib_Header_Files__utility
   include/utility/UniqueStructureSet.h
 )
 source_group("Header Files\\utility" FILES ${sslib_Header_Files__utility})
+
+set(sslib_Header_Files__utility__detail
+  include/utility/detail/GenericBufferedComparator.h
+  include/utility/detail/SharedHandle.h
+  include/utility/detail/UniqueStructureSet.h
+)
+source_group("Header Files\\utility\\detail" FILES ${sslib_Header_Files__utility__detail})
 
 set(sslib_Header_Files__
   include/SSLibConfig.h.in
@@ -162,6 +170,7 @@ set(sslib_Header_Files
   ${sslib_Header_Files__io}
   ${sslib_Header_Files__potential}
   ${sslib_Header_Files__utility}
+  ${sslib_Header_Files__utility__detail}
   ${sslib_Header_Files__}
 )
 

@@ -88,7 +88,6 @@ set(sslib_Source_Files__utility
   src/utility/SortedDistanceComparator.cpp
   src/utility/SortedDistanceComparatorEx.cpp
   src/utility/StableComparison.cpp
-  src/utility/UniqueStructureSet.cpp
 )
 source_group("Source Files\\utility" FILES ${sslib_Source_Files__utility})
 
