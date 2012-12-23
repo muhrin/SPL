@@ -55,9 +55,9 @@ public:
 
   typedef typename StructureMap::size_type size_type;
 
-	typedef std::pair<Key, bool> ReturnPair;
+  typedef std::pair<Key, bool> ReturnPair;
 
-	UniqueStructureSetBase(const IStructureComparator & comparator);
+  UniqueStructureSetBase(const IStructureComparator & comparator);
 
   // Iterators /////////////////////////
   iterator begin();
@@ -91,25 +91,22 @@ protected:
   typedef ::boost::shared_ptr<IBufferedComparator> Comparator;
   typedef std::pair<typename StructureMap::iterator, bool> MapInsertReturn;
 
-  Comparator & getComparator();
-  StructureMap & getStructureMap();
   MapInsertReturn insertStructure(const Key & key, common::Structure & correspondingStructure);
 
 private:
   const Comparator myComparator;
-	StructureMap myStructures;
+  StructureMap myStructures;
 };
 
 
-} // namespace utility_detail
+} // namespace detail
 
 template <typename Key = common::Structure *>
 class UniqueStructureSet : public detail::UniqueStructureSetBase<Key>
 {
 private:
-  typedef UniqueStructureSetBase<Key> Base;
-  typedef Base::ComparisonDataHandle ComparisonDataHandle;
-  typedef Base::StructureMap StructureMap;
+  typedef detail::UniqueStructureSetBase<Key> Base;
+  typedef typename Base::StructureMap StructureMap;
 
 public:
 
@@ -122,10 +119,12 @@ public:
 
   typedef typename StructureMap::size_type size_type;
 
-	UniqueStructureSet(const IStructureComparator & comparator);
+  UniqueStructureSet(const IStructureComparator & comparator);
 
   // Modifiers ///////////////////////////
   insert_return_type insert(const Key & key, common::Structure & correspondingStructure);
+private:
+  typedef typename Base::MapInsertReturn MapInsertReturn;
 };
 
 template <>
@@ -133,10 +132,8 @@ class UniqueStructureSet<common::Structure *> : public detail::UniqueStructureSe
 {
 private:
   typedef common::Structure * Key;
-  typedef UniqueStructureSetBase<Key> Base;
-  typedef Base::ComparisonDataHandle ComparisonDataHandle;
+  typedef detail::UniqueStructureSetBase<Key> Base;
   typedef Base::StructureMap StructureMap;
-
 public:
 
 
@@ -149,12 +146,14 @@ public:
   typedef Base::insert_return_type insert_return_type;
 
   typedef StructureMap::size_type size_type;
-	typedef std::pair<Key, bool> ReturnPair;
+  typedef std::pair<Key, bool> ReturnPair;
 
-	UniqueStructureSet(const IStructureComparator & comparator);
+  UniqueStructureSet(const IStructureComparator & comparator);
 
   // Modifiers ///////////////////////////
   insert_return_type insert(common::Structure * structure);
+private:
+  typedef Base::MapInsertReturn MapInsertReturn;
 };
 
 //template <class InputIterator>

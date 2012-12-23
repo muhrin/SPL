@@ -74,7 +74,7 @@ template <class ComparatorTyp>
 const typename GenericBufferedComparator<ComparatorTyp>::DataTyp &
 GenericBufferedComparator<ComparatorTyp>::getComparisonData(const HandleId & id)
 {
-  const DataMap::const_iterator it = myComparisonData.find(id);
+  const typename DataMap::const_iterator it = myComparisonData.find(id);
 
   SSLIB_ASSERT_MSG(it != myComparisonData.end(), "Comparison data could not be found.");
 
@@ -84,7 +84,7 @@ GenericBufferedComparator<ComparatorTyp>::getComparisonData(const HandleId & id)
 template <class ComparatorTyp>
 void GenericBufferedComparator<ComparatorTyp>::handleReleased(const HandleId & id)
 {
-  const DataMap::iterator it = myComparisonData.find(id);
+  const typename DataMap::iterator it = myComparisonData.find(id);
 
   SSLIB_ASSERT_MSG(it != myComparisonData.end(), "Comparison data could not be found.");
 

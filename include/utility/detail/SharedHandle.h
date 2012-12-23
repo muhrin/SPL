@@ -18,6 +18,12 @@ namespace sstbx {
 namespace utility {
 
 template <typename Id, class Notifiee>
+SharedHandle<Id, Notifiee>::SharedHandle():
+myNotifiee(NULL)
+{}
+
+
+template <typename Id, class Notifiee>
 SharedHandle<Id, Notifiee>::SharedHandle(const Id id, Notifiee & notifiee):
 myId(new Id(id)),
 myNotifiee(&notifiee)
@@ -43,7 +49,7 @@ SharedHandle<Id, Notifiee>::~SharedHandle()
 
 template <typename Id, class Notifiee>
 SharedHandle<Id, Notifiee> &
-SharedHandle<Id, Notifiee>::operator =(SharedHandle & rhs)
+SharedHandle<Id, Notifiee>::operator =(const SharedHandle & rhs)
 {
   if(*this == rhs)
     return *this;
@@ -52,7 +58,7 @@ SharedHandle<Id, Notifiee>::operator =(SharedHandle & rhs)
   release();
 
   myId = rhs.myId;
-  myNotifee = rhs.myNotifee;
+  myNotifiee = rhs.myNotifiee;
 }
 
 template <typename Id, class Notifiee>
@@ -64,7 +70,7 @@ bool SharedHandle<Id, Notifiee>::operator ==(const SharedHandle & rhs) const
     return false;
 
   // Do full compare
-  return (*myId.get() == *rhs.myId.get()) && (myNotifee == rhs.myNotifiee);
+  return (*myId.get() == *rhs.myId.get()) && (myNotifiee == rhs.myNotifiee);
 }
 
 template <typename Id, class Notifiee>

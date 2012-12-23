@@ -25,11 +25,12 @@ class SharedHandle
   BOOST_CONCEPT_ASSERT((::boost::CopyConstructible<Id>));
 
 public:
+  SharedHandle();
   SharedHandle(const Id id, Notifiee & notifiee);
   SharedHandle(const SharedHandle & other);
   ~SharedHandle();
 
-  SharedHandle & operator =(SharedHandle & rhs);
+  SharedHandle & operator =(const SharedHandle & rhs);
   bool operator ==(const SharedHandle & rhs) const;
 
   const Id & getId() const;

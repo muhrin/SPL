@@ -6,7 +6,7 @@
  */
 
 // INCLUDES /////////////////////////////////////
-
+#include "utility/IStructureComparator.h"
 
 namespace sstbx {
 namespace utility {
@@ -128,25 +128,25 @@ UniqueStructureSetBase<Key>::insertStructure(const Key & key, common::Structure 
   // .second is used to indiate that a new structure was inserted
   returnPair.second = true;
 
-  ComparisonDataHandle handle(getComparator()->generateComparisonData(correspondingStructure));
+  ComparisonDataHandle handle(myComparator->generateComparisonData(correspondingStructure));
 
   // Check if we have a structure like this already
-  for(StructureMap::iterator it = getStructureMap().begin(), end = getStructureMap().end();
+  for(typename StructureMap::iterator it = myStructures.begin(), end = myStructures.end();
     it != end; ++it)
   {
-		if(getComparator()->areSimilar(handle, it->second))
-		{
+    if(myComparator->areSimilar(handle, it->second))
+    {
       returnPair.first = it;
       returnPair.second = false;
-			break;
-		}
+      break;
+    }
   }
 
-	// If it is not like any of those we have already then insert it
-	if(returnPair.second)
-	{
-		returnPair = getStructureMap().insert(StructureMap::value_type(key, handle));
-	}
+  // If it is not like any of those we have already then insert it
+  if(returnPair.second)
+  {
+    returnPair = myStructures.insert(typename StructureMap::value_type(key, handle));
+  }
   else
   {
     // Tell the comparator the remove the comparison data for this structure as we
@@ -154,7 +154,7 @@ UniqueStructureSetBase<Key>::insertStructure(const Key & key, common::Structure 
     handle.release();
   }
 
-	return returnPair;
+  return returnPair;
 }
 
 } // namespace detail
@@ -167,12 +167,6 @@ UniqueStructureSet<Key>::insert(const Key & key, common::Structure & correspondi
   return insert_return_type(iterator(pair.first), pair.second);
 }
 
-UniqueStructureSet<common::Structure *>::insert_return_type
-UniqueStructureSet<common::Structure *>::insert(common::Structure * structure)
-{
-  MapInsertReturn pair = insertStructure(structure, *structure);
-  return insert_return_type(iterator(pair.first), pair.second);
-}
 
 }
 }
