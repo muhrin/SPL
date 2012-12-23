@@ -113,7 +113,6 @@ private:
 
 public:
 
-  typedef typename Base::Key value_type;
   // Iterators ///
   typedef typename Base::iterator iterator;
   typedef typename Base::const_iterator const_iterator;
