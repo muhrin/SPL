@@ -29,6 +29,7 @@ namespace sstbx {
 namespace io {
 class StructureReadWriteManager;
 
+
 bool getWildcardPaths(
   ::std::string wildString,
   ::std::vector< ::boost::filesystem::path> & outPaths);

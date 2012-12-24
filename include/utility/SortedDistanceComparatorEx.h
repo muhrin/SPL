@@ -10,6 +10,8 @@
 #define SORTED_DISTANCE_COMPARATOR_EX_H
 
 // INCLUDES /////////////////////////////////////////////
+#include "SSLib.h"
+
 #include <map>
 #include <vector>
 
@@ -57,6 +59,7 @@ public:
 
 	typedef SortedDistanceComparisonDataEx DataTyp;
   typedef IBufferedComparator   BufferedTyp;
+  typedef ::sstbx::UniquePtr<DataTyp>::Type ComparisonDataPtr;
 
 	SortedDistanceComparatorEx(double tolerance = DEFAULT_TOLERANCE);
 
@@ -76,19 +79,14 @@ public:
 
   // Methods needed to conform to expectations laid out by GenericBufferedComparator ///
 	double compareStructures(
-    const common::Structure & str1,
 		const SortedDistanceComparisonDataEx & dist1,
-    const common::Structure & str2,
 		const SortedDistanceComparisonDataEx & dist2) const;
 
 	bool areSimilar(
-    const common::Structure & str1,
 		const SortedDistanceComparisonDataEx & dist1,
-    const common::Structure & str2,
 		const SortedDistanceComparisonDataEx & dist2) const;
 
-  ::std::auto_ptr<SortedDistanceComparisonDataEx>
-    generateComparisonData(const ::sstbx::common::Structure & str) const;
+  ComparisonDataPtr generateComparisonData(const ::sstbx::common::Structure & str) const;
   // End conformation methods //////////////
 	
 

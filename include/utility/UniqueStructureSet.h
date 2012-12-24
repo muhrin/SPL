@@ -31,45 +31,33 @@ class IStructureComparator;
 namespace sstbx {
 namespace utility {
 
-namespace utility_detail {
+namespace detail {
 
-
-
-} // namespace utility_detail
-
-class UniqueStructureSet
+template <typename Key>
+class UniqueStructureSetBase
 {
-public:
-
-	struct StructureMetadata
-	{
-    StructureMetadata();
-
-		/** The number of times this structure has been found */
-		size_t				                  timesFound;
-	};
-
-private:
-
-	typedef std::map<common::Structure *, StructureMetadata> StructureMap;
+protected:
+  typedef IBufferedComparator::ComparisonDataHandle ComparisonDataHandle;
+  typedef ::std::map<Key, ComparisonDataHandle> StructureMap;
 
 public:
 
-  typedef utility::TakeFirst<common::Structure *, StructureMetadata> TakeFirst;
-  typedef utility::TakeFirst<const common::Structure *, StructureMetadata> TakeFirstConst;
+  typedef utility::TakeFirst<Key, ComparisonDataHandle> TakeFirst;
+  typedef utility::TakeFirst<const Key, ComparisonDataHandle> TakeFirstConst;
 
-  typedef common::Structure * value_type;
-  typedef boost::transform_iterator<TakeFirst, StructureMap::iterator> iterator;
-  typedef boost::transform_iterator<TakeFirstConst, StructureMap::const_iterator> const_iterator;
-  typedef boost::transform_iterator<TakeFirst, StructureMap::reverse_iterator> reverse_iterator;
-  typedef boost::transform_iterator<TakeFirstConst, StructureMap::const_reverse_iterator> const_reverse_iterator;
+  typedef Key value_type;
+  // Iterators ///
+  typedef boost::transform_iterator<TakeFirst, typename StructureMap::iterator> iterator;
+  typedef boost::transform_iterator<TakeFirstConst, typename StructureMap::const_iterator> const_iterator;
+  typedef boost::transform_iterator<TakeFirst, typename StructureMap::reverse_iterator> reverse_iterator;
+  typedef boost::transform_iterator<TakeFirstConst, typename StructureMap::const_reverse_iterator> const_reverse_iterator;
   typedef std::pair<iterator, bool> insert_return_type;
 
-  typedef StructureMap::size_type size_type;
+  typedef typename StructureMap::size_type size_type;
 
-	typedef std::pair<common::Structure *, bool> ReturnPair;
+  typedef std::pair<Key, bool> ReturnPair;
 
-	UniqueStructureSet(const IStructureComparator & comparator);
+  UniqueStructureSetBase(const IStructureComparator & comparator);
 
   // Iterators /////////////////////////
   iterator begin();
@@ -89,9 +77,6 @@ public:
   size_type size() const;
   size_type max_size() const;
 
-  // Modifiers ///////////////////////////
-  insert_return_type insert(common::Structure * const newStructure);
-
   template <class InputIterator>
   void insert(InputIterator first, InputIterator last);
   void erase(iterator position);
@@ -99,31 +84,89 @@ public:
 	void clear();
 
   // Operations ////////////////////////////
-  iterator find(common::Structure * structure);
-  const_iterator find(common::Structure * structure) const;
+  iterator find(const Key & key);
+  const_iterator find(const Key key) const;
+
+protected:
+  typedef ::boost::shared_ptr<IBufferedComparator> Comparator;
+  typedef std::pair<typename StructureMap::iterator, bool> MapInsertReturn;
+
+  MapInsertReturn insertStructure(const Key & key, common::Structure & correspondingStructure);
 
 private:
-
-  typedef std::pair<StructureMap::iterator, bool> MapInsertReturn;
-
-  const ::boost::shared_ptr<IBufferedComparator> myComparator;
-
-  MapInsertReturn insertStructure(common::Structure * const str);
-  void eraseStructure(common::Structure * const str);
-
-	StructureMap myStructures;
+  const Comparator myComparator;
+  StructureMap myStructures;
 };
 
-template <class InputIterator>
-void UniqueStructureSet::insert(const InputIterator first, const InputIterator last)
+
+} // namespace detail
+
+template <typename Key = common::Structure *>
+class UniqueStructureSet : public detail::UniqueStructureSetBase<Key>
 {
-  // Insert any unique structures in the range
-  for(InputIterator it = first; it != last; ++it)
-    insertStructure(*it);
-}
+private:
+  typedef detail::UniqueStructureSetBase<Key> Base;
+  typedef typename Base::StructureMap StructureMap;
+
+public:
+
+  // Iterators ///
+  typedef typename Base::iterator iterator;
+  typedef typename Base::const_iterator const_iterator;
+  typedef typename Base::reverse_iterator reverse_iterator;
+  typedef typename Base::const_reverse_iterator const_reverse_iterator;
+  typedef typename Base::insert_return_type insert_return_type;
+
+  typedef typename StructureMap::size_type size_type;
+
+  UniqueStructureSet(const IStructureComparator & comparator);
+
+  // Modifiers ///////////////////////////
+  insert_return_type insert(const Key & key, common::Structure & correspondingStructure);
+private:
+  typedef typename Base::MapInsertReturn MapInsertReturn;
+};
+
+template <>
+class UniqueStructureSet<common::Structure *> : public detail::UniqueStructureSetBase<common::Structure *>
+{
+private:
+  typedef common::Structure * Key;
+  typedef detail::UniqueStructureSetBase<Key> Base;
+  typedef Base::StructureMap StructureMap;
+public:
+
+
+  typedef Key value_type;
+  // Iterators ///
+  typedef Base::iterator iterator;
+  typedef Base::const_iterator const_iterator;
+  typedef Base::reverse_iterator reverse_iterator;
+  typedef Base::const_reverse_iterator const_reverse_iterator;
+  typedef Base::insert_return_type insert_return_type;
+
+  typedef StructureMap::size_type size_type;
+  typedef std::pair<Key, bool> ReturnPair;
+
+  UniqueStructureSet(const IStructureComparator & comparator);
+
+  // Modifiers ///////////////////////////
+  insert_return_type insert(common::Structure * structure);
+private:
+  typedef Base::MapInsertReturn MapInsertReturn;
+};
+
+//template <class InputIterator>
+//void UniqueStructureSet::insert(const InputIterator first, const InputIterator last)
+//{
+//  // Insert any unique structures in the range
+//  for(InputIterator it = first; it != last; ++it)
+//    insertStructure(*it);
+//}
 
 }
 }
 
+#include "utility/detail/UniqueStructureSet.h"
 
 #endif /* UNIQUE_STRUCTURE_SET_H */

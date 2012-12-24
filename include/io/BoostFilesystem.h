@@ -6,8 +6,8 @@
  *      Author: Martin Uhrin
  */
 
-#ifndef BOOST_FILESYSTEM_H
-#define BOOST_FILESYSTEM_H
+#ifndef BOOST_FILESYSTEM_LOCAL_H
+#define BOOST_FILESYSTEM_LOCAL_H
 
 // INCLUDES /////////////////////////////////////////////
 
@@ -56,4 +56,4 @@ bool isAbsolute(const ::boost::filesystem::path & toCheck);
 }
 }
 
-#endif /* BOOST_FILESYSTEM_H */
+#endif /* BOOST_FILESYSTEM_LOCAL_H */

@@ -26,7 +26,6 @@
 #include <map>
 #include <memory>
 
-#include <boost/concept_check.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
 
 #include "utility/IBufferedComparator.h"
@@ -41,6 +40,7 @@ namespace utility {
 template <class ComparatorTyp>
 class GenericBufferedComparator : public IBufferedComparator
 {
+  typedef IBufferedComparator::HandleId HandleId;
 public:
 
   // The comparator must have DataTyp defined
@@ -50,88 +50,34 @@ public:
   virtual ~GenericBufferedComparator() {}
 
 	virtual double compareStructures(
-		const sstbx::common::Structure & str1,
-		const sstbx::common::Structure & str2);
+		const ComparisonDataHandle & str1,
+		const ComparisonDataHandle & str2);
 
 	virtual bool areSimilar(
-		const sstbx::common::Structure & str1,
-		const sstbx::common::Structure & str2);
+		const ComparisonDataHandle & str1,
+		const ComparisonDataHandle & str2);
 
-  virtual bool hasComparisonDataFor(const common::Structure & str);
-  virtual bool releaseComparisonDataFor(const common::Structure & str);
+  virtual ComparisonDataHandle generateComparisonData(const sstbx::common::Structure & structure);
 
   virtual const IStructureComparator & getComparator() const;
 
 private:
 
-  typedef ::boost::ptr_map<const common::Structure *, DataTyp> DataMap;
+  typedef ::boost::ptr_map<HandleId, DataTyp> DataMap;
 
-  const DataTyp & getComparisonData(const common::Structure * structure);
+  const DataTyp & getComparisonData(const HandleId & id);
+  void handleReleased(const HandleId & id);
+  HandleId generateHandleId();
 
+  HandleId                myLastHandleId;
   const ComparatorTyp &   myComparator;
   DataMap                 myComparisonData;
   size_t                  myTotalData;
 };
 
-// IMPLEMENTATION //////////////////////////////
-
-template <class ComparatorTyp>
-GenericBufferedComparator<ComparatorTyp>::GenericBufferedComparator(const ComparatorTyp & comparator):
-myComparator(comparator),
-myTotalData(0)
-{}
-
-template <class ComparatorTyp>
-double GenericBufferedComparator<ComparatorTyp>::compareStructures(
-  const sstbx::common::Structure & str1,
-  const sstbx::common::Structure & str2)
-{
-  return myComparator.compareStructures(str1, getComparisonData(&str1), str2, getComparisonData(&str2));
-}
-
-template <class ComparatorTyp>
-bool GenericBufferedComparator<ComparatorTyp>::areSimilar(
-  const sstbx::common::Structure & str1,
-  const sstbx::common::Structure & str2)
-{
-  return myComparator.areSimilar(str1, getComparisonData(&str1), str2, getComparisonData(&str2));
-}
-
-template <class ComparatorTyp>
-bool GenericBufferedComparator<ComparatorTyp>::hasComparisonDataFor(const common::Structure & str)
-{
-  return myComparisonData.find(&str) != myComparisonData.end();
-}
-
-template <class ComparatorTyp>
-bool GenericBufferedComparator<ComparatorTyp>::releaseComparisonDataFor(const common::Structure & str)
-{
-  return myComparisonData.erase(&str) > 0;
-}
-
-template <class ComparatorTyp>
-const IStructureComparator & GenericBufferedComparator<ComparatorTyp>::getComparator() const
-{
-  return myComparator;
-}
-
-template <class ComparatorTyp>
-const typename GenericBufferedComparator<ComparatorTyp>::DataTyp &
-GenericBufferedComparator<ComparatorTyp>::getComparisonData(const common::Structure * structure)
-{
-  const ::std::auto_ptr<DataTyp> comparisonData;
-
-  // Have we seen this structure before?
-  typename DataMap::iterator it = myComparisonData.find(structure);
-  if(it == myComparisonData.end())
-  {
-    it = myComparisonData.insert(structure, myComparator.generateComparisonData(*structure)).first;
-  }
-
-  return *it->second;
-}
-
 }
 }
+
+#include "detail/GenericBufferedComparator.h"
 
 #endif /* GENERIC_BUFFERED_COMPARATOR_H */

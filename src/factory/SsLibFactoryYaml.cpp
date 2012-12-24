@@ -34,7 +34,6 @@
 #include "io/ResReaderWriter.h"
 #include "utility/IndexingEnums.h"
 #include "utility/SortedDistanceComparator.h"
-#include "utility/UniqueStructureSet.h"
 
 
 
@@ -424,7 +423,7 @@ SsLibFactoryYaml::createStructureSet(const YAML::Node & node)
   UniqueStructureSetPtr strSet;
   if(comparator)
   {
-    strSet.reset(new ssu::UniqueStructureSet(*comparator));
+    strSet.reset(new ssu::UniqueStructureSet<>(*comparator));
   }
   
   return strSet;

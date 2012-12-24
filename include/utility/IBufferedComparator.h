@@ -10,8 +10,9 @@
 #define I_BUFFERED_COMPARATOR_H
 
 // INCLUDES /////////////////////////////////////////////
-
 #include <limits>
+
+#include <utility/SharedHandle.h>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace sstbx{
@@ -28,22 +29,30 @@ namespace utility {
 
 class IBufferedComparator
 {
+protected:
+  typedef size_t HandleId;
 public:
+  typedef SharedHandle<HandleId, IBufferedComparator> ComparisonDataHandle;
 
   virtual ~IBufferedComparator() {}
 
 	virtual double compareStructures(
-		const sstbx::common::Structure & str1,
-		const sstbx::common::Structure & str2) = 0;
+		const ComparisonDataHandle & str1,
+		const ComparisonDataHandle & str2) = 0;
 
 	virtual bool areSimilar(
-		const sstbx::common::Structure & str1,
-		const sstbx::common::Structure & str2) = 0;
+		const ComparisonDataHandle & str1,
+		const ComparisonDataHandle & str2) = 0;
 
-  virtual bool hasComparisonDataFor(const ::sstbx::common::Structure & str) = 0;
-  virtual bool releaseComparisonDataFor(const ::sstbx::common::Structure & str) = 0;
-
+  virtual ComparisonDataHandle generateComparisonData(
+    const sstbx::common::Structure & structure) = 0;
   virtual const IStructureComparator & getComparator() const = 0;
+
+protected:
+
+  virtual void handleReleased(const HandleId & id) = 0;
+
+  friend class SharedHandle<HandleId, IBufferedComparator>;
 };
 
 }

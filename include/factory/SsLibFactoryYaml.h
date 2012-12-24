@@ -36,6 +36,7 @@
 #include "potential/SimplePairPotential.h"
 #include "potential/TpsdGeomOptimiser.h"
 #include "utility/IStructureComparator.h"
+#include "utility/UniqueStructureSet.h"
 
 
 
@@ -48,9 +49,6 @@ class AtomsDescription;
 namespace common {
 class AtomSpeciesDatabase;
 }
-namespace utility {
-class UniqueStructureSet;
-}
 
 namespace factory {
 
@@ -58,7 +56,7 @@ class SsLibFactoryYaml : ::boost::noncopyable
 {
 public:
 
-  typedef UniquePtr<utility::UniqueStructureSet>::Type UniqueStructureSetPtr;
+  typedef UniquePtr<utility::UniqueStructureSet<> >::Type UniqueStructureSetPtr;
 
   enum ErrorCode
   {

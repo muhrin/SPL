@@ -9,8 +9,6 @@
 
 #include "utility/SortedDistanceComparatorEx.h"
 
-#include <memory>
-
 #include <boost/scoped_ptr.hpp>
 
 #include <armadillo>
@@ -113,26 +111,24 @@ double SortedDistanceComparatorEx::compareStructures(
 	const sstbx::common::Structure & str1,
 	const sstbx::common::Structure & str2) const
 {
-  ::std::auto_ptr<const SortedDistanceComparatorEx::DataTyp> comp1(generateComparisonData(str1));
-  ::std::auto_ptr<const SortedDistanceComparatorEx::DataTyp> comp2(generateComparisonData(str2));
+  ComparisonDataPtr comp1(generateComparisonData(str1));
+  ComparisonDataPtr comp2(generateComparisonData(str2));
 
-  return compareStructures(str1, *comp1, str2, *comp2);
+  return compareStructures(*comp1, *comp2);
 }
 
 bool SortedDistanceComparatorEx::areSimilar(
 	const sstbx::common::Structure & str1,
 	const sstbx::common::Structure & str2) const
 {
-  ::std::auto_ptr<const SortedDistanceComparatorEx::DataTyp> comp1(generateComparisonData(str1));
-  ::std::auto_ptr<const SortedDistanceComparatorEx::DataTyp> comp2(generateComparisonData(str2));
+  ComparisonDataPtr comp1(generateComparisonData(str1));
+  ComparisonDataPtr comp2(generateComparisonData(str2));
 
-  return areSimilar(str1, *comp1, str2, *comp2);
+  return areSimilar(*comp1, *comp2);
 }
 
 double SortedDistanceComparatorEx::compareStructures(
-    const common::Structure & str1,
 		const SortedDistanceComparisonDataEx & dist1,
-    const common::Structure & str2,
 		const SortedDistanceComparisonDataEx & dist2) const
 {
   typedef ::std::vector<double> DistancesVec;
@@ -176,12 +172,10 @@ double SortedDistanceComparatorEx::compareStructures(
 }
 
 bool SortedDistanceComparatorEx::areSimilar(
-    const common::Structure & str1,
 		const SortedDistanceComparisonDataEx & dist1,
-    const common::Structure & str2,
 		const SortedDistanceComparisonDataEx & dist2) const
 {
-	return compareStructures(str1, dist1, str2, dist2) < myTolerance;
+	return compareStructures(dist1, dist2) < myTolerance;
 }
 
 ::std::auto_ptr<SortedDistanceComparisonDataEx>

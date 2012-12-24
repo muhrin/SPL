@@ -150,6 +150,7 @@ set(sslib_Header_Files__utility
   include/utility/NamedProperty.h
   include/utility/PermutationRange.h
   include/utility/PromotableType.h
+  include/utility/SharedHandle.h
   include/utility/SortedDistanceComparator.h
   include/utility/SortedDistanceComparatorEx.h
   include/utility/StableComparison.h
@@ -162,6 +163,9 @@ source_group("Header Files\\utility" FILES ${sslib_Header_Files__utility})
 set(sslib_Header_Files__utility__detail
   include/utility/detail/NamedProperty.h
   include/utility/detail/TypedDataTable.h
+  include/utility/detail/GenericBufferedComparator.h
+  include/utility/detail/SharedHandle.h
+  include/utility/detail/UniqueStructureSet.h
 )
 source_group("Header Files\\utility\\detail" FILES ${sslib_Header_Files__utility__detail})
 
