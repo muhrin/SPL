@@ -160,6 +160,11 @@ UniqueStructureSetBase<Key>::insertStructure(const Key & key, common::Structure 
 } // namespace detail
 
 template <typename Key>
+UniqueStructureSet<Key>::UniqueStructureSet(const IStructureComparator & comparator):
+detail::UniqueStructureSetBase<Key>(comparator)
+{}
+
+template <typename Key>
 typename UniqueStructureSet<Key>::insert_return_type
 UniqueStructureSet<Key>::insert(const Key & key, common::Structure & correspondingStructure)
 {
