@@ -68,5 +68,16 @@ size_t HeterogeneousMap::erase(KeyId & key)
   return 1;
 }
 
+size_t HeterogeneousMap::eraseNoNotify(KeyId & key)
+{
+  const AnyMap::iterator it = myAnyMap.find(&key);
+
+  if(it == myAnyMap.end())
+    return 0;
+
+  myAnyMap.erase(it);
+  return 1;
+}
+
 }
 }

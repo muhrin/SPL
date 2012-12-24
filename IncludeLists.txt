@@ -147,6 +147,7 @@ source_group("Header Files\\utility" FILES ${sslib_Header_Files__utility})
 
 set(sslib_Header_Files__utility__detail
   include/utility/detail/GenericBufferedComparator.h
+  include/utility/detail/HeterogeneousMap.h
   include/utility/detail/SharedHandle.h
   include/utility/detail/UniqueStructureSet.h
 )
