@@ -164,6 +164,7 @@ set(sslib_Header_Files__utility__detail
   include/utility/detail/NamedProperty.h
   include/utility/detail/TypedDataTable.h
   include/utility/detail/GenericBufferedComparator.h
+  include/utility/detail/HeterogeneousMap.h
   include/utility/detail/SharedHandle.h
   include/utility/detail/UniqueStructureSet.h
 )

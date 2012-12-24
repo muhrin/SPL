@@ -21,7 +21,9 @@ KeyId::~KeyId()
   HeterogeneousMap * map;
   BOOST_FOREACH(map, myMaps)
   {
-    map->erase(*this);
+    // Need to call non-notifying version as otherwise removedFromMap would
+    // be called invalidating the iterator
+    map->eraseNoNotify(*this);
   }
 }
 
