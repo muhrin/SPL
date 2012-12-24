@@ -32,6 +32,8 @@ std::ostream & operator<<(std::ostream & os, const sstbx::common::Structure & p)
 
 std::ostream & operator<<(std::ostream & os, const sstbx::common::Structure & p);
 
+std::ostream & operator<<(std::ostream & os, const sstbx::common::Structure & p);
+
 namespace sstbx {
 
 // FORWARD DECLARATIONS ////////////////////////////////////

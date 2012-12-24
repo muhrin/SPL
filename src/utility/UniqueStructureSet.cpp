@@ -23,5 +23,9 @@ UniqueStructureSet<common::Structure *>::insert(common::Structure * structure)
   return insert_return_type(iterator(pair.first), pair.second);
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> d58c64683591480856d9a864079efb24c6a736a8
 }
 }

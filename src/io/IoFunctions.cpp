@@ -16,7 +16,6 @@
 
 // Local includes
 #include <io/BoostFilesystem.h>
-#include <io/BoostFilesystem.h>
 
 // NAMESPACES ////////////////////////////////
 
