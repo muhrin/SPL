@@ -7,10 +7,10 @@
 
 
 // INCLUDES //////////////////////////////////////
-#include "common/AtomSpeciesInfo.h"
+#include "spl/common/AtomSpeciesInfo.h"
 
 
-namespace sstbx { namespace common {
+namespace spl { namespace common {
 
 const ::std::string & AtomSpeciesInfo::getName() const
 {

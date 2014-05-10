@@ -13,32 +13,38 @@
 
 #include <armadillo>
 
-#include <build_cell/AtomExtruder.h>
-#include <build_cell/RandomUnitCell.h>
-#include <common/Atom.h>
-#include <common/AtomSpeciesId.h>
-#include <common/Constants.h>
-#include <common/DistanceCalculator.h>
-#include <common/Structure.h>
-#include <common/UnitCell.h>
-#include <common/Types.h>
+#include <spl/build_cell/GenerationOutcome.h>
+#include <spl/build_cell/PointSeparator.h>
+#include <spl/build_cell/RandomUnitCellGenerator.h>
+#include <spl/common/Atom.h>
+#include <spl/common/AtomSpeciesId.h>
+#include <spl/common/Constants.h>
+#include <spl/common/DistanceCalculator.h>
+#include <spl/common/Structure.h>
+#include <spl/common/UnitCell.h>
+#include <spl/common/Types.h>
+#include <spl/math/Random.h>
+#include <spl/utility/StableComparison.h>
 
-#include <common/Utils.h>
+namespace ssbc = spl::build_cell;
+namespace ssc = spl::common;
+namespace ssm = spl::math;
 
-namespace ssbc = ::sstbx::build_cell;
-namespace ssc = ::sstbx::common;
+BOOST_AUTO_TEST_SUITE(PointSeparator)
 
 BOOST_AUTO_TEST_CASE(ExtrusionTest)
 {
   // SETTINGS ///////
   const size_t numStructures = 5, maxAtoms = 10;
+  const double SEPARATION_TOL = 0.001;
 
-  ssbc::RandomUnitCell randomCell;
+  ssbc::RandomUnitCellGenerator randomCell;
   randomCell.setVolumeDelta(0.0);
 
-  ssbc::AtomExtruder extruder;
+  ssbc::PointSeparator separator(ssbc::PointSeparator::DEFAULT_MAX_ITERATIONS,
+      SEPARATION_TOL);
 
-  const double radius = 1.0, minsep = 2.0 * radius - 0.1, minsepSq = minsep * minsep;
+  const double radius = 1.0, minsep = 2.0 * radius;
   size_t numAtoms;
 
   bool extruded;
@@ -49,14 +55,22 @@ BOOST_AUTO_TEST_CASE(ExtrusionTest)
 
     ssc::Structure structure;
 
-    numAtoms = (size_t)ssc::randDouble(1.0, (double)maxAtoms);
+    numAtoms = static_cast< size_t>(ssm::randu(1,
+        static_cast< int>(maxAtoms) - 1));
 
     // Create a unit cell
     // Make the volume somewhat bigger than the space filled by the atoms
-    randomCell.setTargetVolume(2.0 * numAtoms * 4.0 / 3.0 * ssc::Constants::PI /* times r^3, but r=1 */);
+    randomCell.setTargetVolume(
+        2.0 * numAtoms * 4.0 / 3.0
+            * ssc::constants::PI /* times r^3, but r=1 */);
 
-    structure.setUnitCell(randomCell.generateCell());
+    {
+      ssc::UnitCellPtr cell;
+      BOOST_REQUIRE(randomCell.generateCell(cell).isSuccess());
+      structure.setUnitCell(*cell);
+    }
     const ssc::UnitCell * const cell = structure.getUnitCell();
+    BOOST_REQUIRE(cell);
 
     // Check that the volume is not NaN
     volume = cell->getVolume();
@@ -64,33 +78,38 @@ BOOST_AUTO_TEST_CASE(ExtrusionTest)
 
     for(size_t j = 0; j < numAtoms; ++j)
     {
-      ssc::Atom & atom = structure.newAtom(ssc::AtomSpeciesId::CUSTOM_1);
+      ssc::Atom & atom = structure.newAtom("C1");
       atom.setPosition(cell->randomPoint());
     }
 
-    extruded = extruder.extrudeAtoms(structure);
+    ssbc::SeparationData sepData(structure);
+    sepData.separations.fill(minsep);
+    extruded = separator.separatePoints(&sepData);
 
     if(extruded)
     {
-      // Check that they are indeed no closer than 2 apart
-      const ssc::DistanceCalculator & distanceCalc = structure.getDistanceCalculator();
-      double dr;
+      structure.setAtomPositions(sepData.points);
+
+      // Check that they are indeed no closer than the minsep apart
+      const ssc::DistanceCalculator & distanceCalc =
+          structure.getDistanceCalculator();
+      double drSq;
 
       for(size_t k = 0; k < numAtoms - 1; ++k)
       {
-        const ::arma::vec & pos1 = structure.getAtom(k).getPosition();
+        const arma::vec & pos1 = structure.getAtom(k).getPosition();
         for(size_t l = k + 1; l < numAtoms; ++l)
         {
-          const ::arma::vec & pos2 = structure.getAtom(l).getPosition();
-          dr = distanceCalc.getDistMinImg(pos1, pos2);
+          const arma::vec & pos2 = structure.getAtom(l).getPosition();
+          drSq = distanceCalc.getDistSqMinImg(pos1, pos2);
 
-          BOOST_REQUIRE(dr * dr >= minsepSq);
+          BOOST_CHECK_GE(std::sqrt(drSq), (1.0 - SEPARATION_TOL) * minsep);
         }
       }
     }
     else
-    {
-      BOOST_WARN_MESSAGE(extruded, "Extruder failed to extrude atoms");
-    }
+      BOOST_WARN_MESSAGE(extruded, "Separator failed to extrude atoms");
   }
 }
+
+BOOST_AUTO_TEST_SUITE_END()

@@ -6,9 +6,9 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "utility/NamedProperty.h"
+#include "spl/utility/NamedProperty.h"
 
-namespace sstbx {
+namespace spl {
 namespace utility {
 
 

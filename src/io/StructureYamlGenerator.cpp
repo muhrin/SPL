@@ -6,162 +6,144 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "io/StructureYamlGenerator.h"
+#include "spl/io/StructureYamlGenerator.h"
 
+#include <algorithm>
 #include <sstream>
 
 #include <boost/foreach.hpp>
 
 #include <armadillo>
 
-#include "common/Atom.h"
-#include "common/AtomSpeciesDatabase.h"
-#include "common/Structure.h"
-#include "common/UnitCell.h"
-#include "factory/SsLibYamlKeywords.h"
-#include "io/IoFunctions.h"
-#include "io/YamlTranscode.h"
-#include "utility/IndexingEnums.h"
+#include "spl/common/Atom.h"
+#include "spl/common/AtomSpeciesDatabase.h"
+#include "spl/common/Structure.h"
+#include "spl/common/UnitCell.h"
+#include "spl/io/IoFunctions.h"
+#include "spl/utility/IndexingEnums.h"
 
 // DEFINES /////////////////////////////////
 
-
 // NAMESPACES ////////////////////////////////
 
-
-namespace sstbx {
+namespace spl {
 namespace io {
 
-namespace kw = factory::sslib_yaml_keywords;
 namespace structure_properties = common::structure_properties;
 
-StructureYamlGenerator::StructureYamlGenerator(const common::AtomSpeciesDatabase & speciesDb):
-mySpeciesDb(speciesDb)
-{}
-
-YAML::Node
-StructureYamlGenerator::generateNode(const ::sstbx::common::Structure & structure) const
+StructureYamlGenerator::StructureYamlGenerator(
+    const AtomYamlFormatParser::AtomsFormat & format) :
+    myAtomInfoParser(format)
 {
-  using namespace utility::cell_params_enum;
+}
 
-  YAML::Node root;
+Structure
+StructureYamlGenerator::generateInfo(
+    const spl::common::Structure & structure) const
+{
+  Structure str;
 
   // Name
   if(!structure.getName().empty())
-    root[kw::STRUCTURE__NAME] = structure.getName();
-  
+    str.name = structure.getName();
+
   // Unit cell
-  const common::UnitCell * const cell = structure.getUnitCell();
-  if(cell)
-    root[kw::STRUCTURE__CELL] = *cell;
+  if(structure.getUnitCell())
+    str.unitCell = generateUnitCell(*structure.getUnitCell());
 
   // Atoms
-  for(size_t i = 0 ; i < structure.getNumAtoms(); ++i)
-    root[kw::STRUCTURE__ATOMS].push_back(generateNode(structure.getAtom(i)));
+  for(size_t i = 0; i < structure.getNumAtoms(); ++i)
+    str.atoms.push_back(generateAtom(structure.getAtom(i)));
 
   // Properties
-  BOOST_FOREACH(const StructureProperty & property, structure_properties::VISIBLE_PROPERTIES)
-    addProperty(root[kw::STRUCTURE__PROPERTIES], structure, property);
-  
+  Properties props;
+  extractProperties(structure, &props);
+  if(!props.empty())
+    str.properties = props;
 
-  return root;
+  return str;
 }
 
 common::types::StructurePtr
-StructureYamlGenerator::generateStructure(const YAML::Node & node) const
+StructureYamlGenerator::generateStructure(const Structure & info) const
 {
   common::types::StructurePtr structure(new common::Structure());
 
-  bool valid = true;
+  if(info.name)
+    structure->setName(*info.name);
 
-  if(node[kw::STRUCTURE__NAME])
-    structure->setName(node[kw::STRUCTURE__NAME].as< ::std::string>());
-  
-  if(node[kw::STRUCTURE__CELL])
+  if(info.unitCell)
   {
-    common::types::UnitCellPtr cell(new common::UnitCell());
-    *cell = node[kw::STRUCTURE__CELL].as<common::UnitCell>();
-    structure->setUnitCell(cell);
+    BOOST_ASSERT(info.unitCell->abc.size() == 6);
+    double abc[6];
+    std::copy(info.unitCell->abc.begin(), info.unitCell->abc.end(), abc);
+    structure->setUnitCell(common::UnitCell(abc));
   }
 
-  if(node[kw::STRUCTURE__ATOMS] && node[kw::STRUCTURE__ATOMS].IsSequence())
+  BOOST_FOREACH(const Atom & atomInfo, info.atoms)
   {
-    common::AtomSpeciesId::Value species;
-    ::arma::vec3 pos;
-    BOOST_FOREACH(const YAML::Node & atomNode, node[kw::STRUCTURE__ATOMS])
-    {
-      if(atomNode[kw::STRUCTURE__ATOMS__SPEC])
-      {
-        species =
-          mySpeciesDb.getIdFromSymbol(atomNode[kw::STRUCTURE__ATOMS__SPEC].as< ::std::string>());
-
-        if(species != common::AtomSpeciesId::DUMMY)
-        {
-          common::Atom & atom = structure->newAtom(species);
-          if(atomNode[kw::STRUCTURE__ATOMS__POS])
-          {
-            pos = atomNode[kw::STRUCTURE__ATOMS__POS].as< ::arma::vec3>();
-            atom.setPosition(pos);
-          }
-        }
-      }
-    }
+    common::Atom & atom = structure->newAtom(atomInfo.species);
+    atom.setPosition(atomInfo.pos.t());
+    if(atomInfo.radius)
+      atom.setRadius(*atomInfo.radius);
   }
 
-  if(node[kw::STRUCTURE__PROPERTIES])
-    praseProperties(*structure, node[kw::STRUCTURE__PROPERTIES]);
+  if(info.properties)
+    injectProperties(*info.properties, structure.get());
 
   return structure;
 }
 
-YAML::Node StructureYamlGenerator::generateNode(
-  const ::sstbx::common::Atom & atom) const
+Atom
+StructureYamlGenerator::generateAtom(const spl::common::Atom & atom) const
 {
-  using namespace utility::cart_coords_enum;
+  Atom atomInfo;
+  atomInfo.species = atom.getSpecies();
+  atomInfo.pos = atom.getPosition().t();
+  if(atom.getRadius() != 0.0)
+    atomInfo.radius = atom.getRadius();
 
-  YAML::Node atomNode;
-
-  // Species
-  const ::std::string * const species = mySpeciesDb.getSymbol(atom.getSpecies());
-  if(species)
-    atomNode[kw::STRUCTURE__ATOMS__SPEC] = *species;
-
-  // Position
-  atomNode[kw::STRUCTURE__ATOMS__POS] = atom.getPosition();
-
-  return atomNode;
+  return atomInfo;
 }
 
-bool StructureYamlGenerator::addProperty(
-  YAML::Node propertiesNode,
-  const common::Structure & structure,
-  const StructureProperty & property) const
+UnitCell
+StructureYamlGenerator::generateUnitCell(const common::UnitCell & cell) const
 {
-  ::boost::optional< ::std::string> value = structure.getVisibleProperty(property);
+  UnitCell unitCellInfo;
+  unitCellInfo.abc.resize(6);
+  for(size_t i = 0; i < 6; ++i)
+    unitCellInfo.abc[i] = cell.getLatticeParams()[i];
 
-  if(!value)
-    return false;
+  unitCellInfo.volume = cell.getVolume();
 
-  propertiesNode[property.getName()] = *value;
-
-  return true;
+  return unitCellInfo;
 }
 
-void StructureYamlGenerator::praseProperties(
-  common::Structure & structure,
-  const YAML::Node & propertiesNode) const
+void
+StructureYamlGenerator::extractProperties(const common::Structure & structure,
+    Properties * const properties) const
 {
-  common::Structure::VisibleProperty * property;
-  for(YAML::const_iterator it = propertiesNode.begin(), end = propertiesNode.end();
-    it != end; ++it)
+  BOOST_FOREACH(const StructureProperty & property, structure_properties::VISIBLE_PROPERTIES)
   {
-    property =
-      structure_properties::VISIBLE_PROPERTIES.getProperty(it->first.as< ::std::string>());
+    const boost::optional< std::string> value = structure.getVisibleProperty(
+        property);
+
+    if(value)
+      (*properties)[property.getName()] = *value;
+  }
+}
+
+void
+StructureYamlGenerator::injectProperties(const Properties & properties,
+    common::Structure * const structure) const
+{
+  BOOST_FOREACH(Properties::const_reference p, properties)
+  {
+    common::Structure::VisibleProperty * const property =
+        structure_properties::VISIBLE_PROPERTIES.getProperty(p.first);
 
     if(property)
-    {
-      structure.setVisibleProperty(*property, it->second.as< ::std::string>());
-    }
+      structure->setVisibleProperty(*property, p.second);
   }
 }
 

@@ -6,12 +6,12 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "potential/PotentialData.h"
+#include "spl/potential/PotentialData.h"
 
 // NAMESPACES ////////////////////////////////
 
 
-namespace sstbx {
+namespace spl {
 namespace potential {
 
 PotentialData::PotentialData():
@@ -20,7 +20,7 @@ internalEnergy(0.0)
 {
 }
 
-PotentialData::PotentialData(const sstbx::common::Structure & structure)
+PotentialData::PotentialData(const spl::common::Structure & structure)
 {
 	numParticles = structure.getNumAtoms();
 	internalEnergy = 0.0;

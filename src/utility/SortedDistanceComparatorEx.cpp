@@ -6,20 +6,21 @@
  */
 
 // INCLUDES /////////////////////////////////////
+#include "spl/utility/SortedDistanceComparatorEx.h"
 
-#include "utility/SortedDistanceComparatorEx.h"
+#include <iterator>
 
 #include <boost/scoped_ptr.hpp>
 
 #include <armadillo>
 
-#include "common/DistanceCalculator.h"
-#include "common/Structure.h"
-#include "common/UnitCell.h"
-#include "utility/GenericBufferedComparator.h"
+#include "spl/common/DistanceCalculator.h"
+#include "spl/common/Structure.h"
+#include "spl/common/UnitCell.h"
+#include "spl/utility/GenericBufferedComparator.h"
 
 
-namespace sstbx {
+namespace spl {
 namespace utility {
 
 const size_t SortedDistanceComparatorEx::MAX_CELL_MULTIPLES   = 10;
@@ -36,11 +37,11 @@ cutoff(_cutoff)
 
   const size_t numAtoms = primitive->getNumAtoms();
 
-  primitive->getAtomSpecies(species);
-  ::std::set<common::AtomSpeciesId::Value> speciesSet(species.begin(), species.end());
-  species.resize(speciesSet.size());
+  ::std::set< common::AtomSpeciesId::Value> speciesSet;
+  primitive->getAtomSpecies(::std::inserter(speciesSet, speciesSet.begin()));
+  const size_t numSpecies = speciesSet.size();
+  species.resize(numSpecies);
   ::std::copy(speciesSet.begin(), speciesSet.end(), species.begin());
-  const size_t numSpecies = species.size();
 
   initSpeciesDistancesMap();
 
@@ -108,8 +109,8 @@ myTolerance(tolerance)
 {}
 
 double SortedDistanceComparatorEx::compareStructures(
-	const sstbx::common::Structure & str1,
-	const sstbx::common::Structure & str2) const
+	const spl::common::Structure & str1,
+	const spl::common::Structure & str2) const
 {
   ComparisonDataPtr comp1(generateComparisonData(str1));
   ComparisonDataPtr comp2(generateComparisonData(str2));
@@ -118,8 +119,8 @@ double SortedDistanceComparatorEx::compareStructures(
 }
 
 bool SortedDistanceComparatorEx::areSimilar(
-	const sstbx::common::Structure & str1,
-	const sstbx::common::Structure & str2) const
+	const spl::common::Structure & str1,
+	const spl::common::Structure & str2) const
 {
   ComparisonDataPtr comp1(generateComparisonData(str1));
   ComparisonDataPtr comp2(generateComparisonData(str2));
@@ -131,8 +132,6 @@ double SortedDistanceComparatorEx::compareStructures(
 		const SortedDistanceComparisonDataEx & dist1,
 		const SortedDistanceComparisonDataEx & dist2) const
 {
-  typedef ::std::vector<double> DistancesVec;
-
   const size_t numSpecies = dist1.species.size();
 
   if(numSpecies != dist1.species.size())
@@ -179,21 +178,19 @@ bool SortedDistanceComparatorEx::areSimilar(
 }
 
 ::std::auto_ptr<SortedDistanceComparisonDataEx>
-SortedDistanceComparatorEx::generateComparisonData(const sstbx::common::Structure & str) const
+SortedDistanceComparatorEx::generateComparisonData(const spl::common::Structure & str) const
 {
-  const common::DistanceCalculator & distCalc = str.getDistanceCalculator();
-
   const common::UnitCell * const unitCell = str.getUnitCell();
 
   double maxDist = 0.0;
   if(unitCell)
   {
     ::arma::vec3 diag = unitCell->getLongestDiagonal();
-    double longestDiag = sqrt(::arma::dot(diag, diag));
+    double longestDiag = ::std::sqrt(::arma::dot(diag, diag));
     maxDist = 1.75 * longestDiag;
   }
 
-	return ::std::auto_ptr<SortedDistanceComparisonDataEx>(new SortedDistanceComparisonDataEx(str, maxDist));
+  return makeUniquePtr(new SortedDistanceComparisonDataEx(str, maxDist));
 }
 
 ::boost::shared_ptr<SortedDistanceComparatorEx::BufferedTyp> SortedDistanceComparatorEx::generateBuffered() const

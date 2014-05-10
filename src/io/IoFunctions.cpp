@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "io/IoFunctions.h"
+#include "spl/io/IoFunctions.h"
 
 #include <iomanip>
 #include <sstream>
@@ -14,12 +14,12 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 
-// Local includes
-#include <io/BoostFilesystem.h>
+
+#include "spl/io/BoostFilesystem.h"
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace io {
 
 namespace fs = ::boost::filesystem;
@@ -47,13 +47,13 @@ bool getWildcardPaths(::std::string wildString, ::std::vector<fs::path> & outPat
   }
 
   return getWildcardPaths(wildString, outPaths, searchFolder);
-
 }
 
 bool getWildcardPaths(
   ::std::string wildString,
   ::std::vector< ::boost::filesystem::path> & outPaths,
-  const fs::path & searchFolder)
+  const fs::path & searchFolder
+)
 {
   // Check that the search folder makes sense
   if(!fs::exists(searchFolder) || ! fs::is_directory(searchFolder))
@@ -78,7 +78,6 @@ bool getWildcardPaths(
       // File matches, store it
       outPaths.push_back(it->path());
   }
-
   return true;
 }
 
@@ -113,27 +112,26 @@ bool buildWildcardRegex(::std::string & pattern)
 
 int getPrecision(const double num, const unsigned int digitsAfterDecimal)
 {
+  using ::std::abs;
+  using ::std::ceil;
+  using ::std::log10;
+
   int digits = digitsAfterDecimal + 1;
   if(num != 0.0)
-    digits += (int)ceil(log10(abs(num)));
+    digits += static_cast<int>(ceil(log10(abs(num))));
   return digits;
 }
 
 void writeToStream(::std::ostream & out, const double num, const unsigned digitsAfterDecimal)
 {
-  out << ::std::setprecision(getPrecision(num, digitsAfterDecimal)) << num;
+  out << ::std::fixed << ::std::setprecision(getPrecision(num, digitsAfterDecimal)) << num;
 }
 
 ::std::string toString(const double num, const unsigned digitsAfterDecimal)
 {
   ::std::stringstream ss;
-  ss << ::std::setprecision(getPrecision(num, digitsAfterDecimal)) << num;
+  ss << ::std::fixed << ::std::setprecision(getPrecision(num, digitsAfterDecimal)) << num;
   return ss.str();
-}
-
-void populateReadWriteManager(StructureReadWriteManager & manager)
-{
-  //manager.insertWriter(
 }
 
 }

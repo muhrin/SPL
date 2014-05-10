@@ -6,12 +6,35 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "io/BoostFilesystem.h"
+#include "spl/io/BoostFilesystem.h"
 
-namespace sstbx {
+namespace spl {
 namespace io {
 
-namespace boostfs = ::boost::filesystem;
+namespace boostfs = boost::filesystem;
+
+ScopedFile::ScopedFile(const std::string & path):
+    myPath(path)
+{
+  createFile(myPath);
+}
+
+ScopedFile::ScopedFile(const boostfs::path & path):
+    myPath(path)
+{
+  createFile(myPath);
+}
+
+const boostfs::path &
+ScopedFile::get() const
+{
+  return myPath;
+}
+
+ScopedFile::~ScopedFile()
+{
+  boostfs::remove_all(myPath);
+}
 
 // Return path when appended to a_From will resolve to same as a_To
 boostfs::path make_relative(
@@ -49,7 +72,7 @@ boostfs::path make_relative(
 #endif
 }
 
-::std::string leafString(const ::boost::filesystem::path & path)
+::std::string leafString(const boost::filesystem::path & path)
 {
 #ifdef SSLIB_USE_BOOSTFS_V2
   return path.filename();
@@ -94,6 +117,28 @@ isAbsolute(const boostfs::path & toCheck)
   return toCheck.is_complete();
 #else
   return toCheck.is_absolute();
+#endif
+}
+
+bool
+createFile(const boost::filesystem::path & toCreate)
+{
+  boostfs::ofstream file(toCreate);
+  file.close();
+  return boostfs::exists(toCreate);
+}
+
+bool
+createAndChangeCurrentPath(const boost::filesystem::path & path)
+{
+  boostfs::create_directories(path);
+#ifdef SSLIB_USE_BOOSTFS_V2
+  boostfs::current_path(path);
+  return true;
+#else
+  boost::system::error_code error;
+  boostfs::current_path(path, error);
+  return !error;
 #endif
 }
 

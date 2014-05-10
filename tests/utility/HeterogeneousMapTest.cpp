@@ -11,10 +11,10 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <utility/HeterogeneousMap.h>
-#include <utility/HeterogeneousMapEx.h>
+#include <spl/utility/HeterogeneousMap.h>
+#include <spl/utility/HeterogeneousMapEx.h>
 
-namespace ssu = ::sstbx::utility;
+namespace ssu = ::spl::utility;
 
 static ssu::Key<int> INT_KEY;
 static ssu::Key< ::std::string> STRING_KEY;
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(HeterogeneousMapTest)
   intValPtr = map1.find(INT_KEY);
   BOOST_REQUIRE(intValPtr && *intValPtr == intVal);
 
-  const int mapSizeBefore = map1.size();
+  const size_t mapSizeBefore = map1.size();
   {
     ssu::Key<double> scopedDoubleKey;
     ssu::Key<int> scopedIntKeyCopy = INT_KEY;

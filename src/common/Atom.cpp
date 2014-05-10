@@ -6,83 +6,134 @@
  */
 
 // INCLUDES ///////////////
-#include "common/Atom.h"
+#include "spl/common/Atom.h"
 
-#include "SSLibAssert.h"
-#include "common/Structure.h"
+#include <boost/foreach.hpp>
 
-namespace sstbx {
+#include "spl/SSLibAssert.h"
+#include "spl/common/Structure.h"
+
+namespace spl {
 namespace common {
 
-const Structure & Atom::getStructure() const
+Atom::Atom(const AtomSpeciesId::Value & species) :
+    myIndex(-1), mySpecies(species), myRadius(-1.0)
 {
-  return myStructure;
 }
 
-Structure & Atom::getStructure()
+Atom::Atom(const AtomSpeciesId::Value & species, const size_t index) :
+    myIndex(index), mySpecies(species), myRadius(-1.0)
 {
-  return myStructure;
 }
 
-const ::arma::vec3 & Atom::getPosition() const
+Atom::Atom(const Atom & toCopy) :
+    myIndex(-1), mySpecies(toCopy.getSpecies()), myPosition(
+        toCopy.getPosition()), myRadius(toCopy.getRadius())
 {
-	return myPosition;
 }
 
-void Atom::setPosition(const ::arma::vec3 & pos)
+Atom::~Atom()
 {
-	myPosition = pos;
-  myStructure.atomMoved(*this);
+  sendDestroyedMsg();
 }
 
-void Atom::setPosition(const double x, const double y, const double z)
+Atom &
+Atom::operator ==(const Atom & rhs)
 {
-	myPosition(0) = x;
+  mySpecies = rhs.mySpecies;
+  myPosition = rhs.myPosition;
+  myRadius = rhs.myRadius;
+
+  return *this;
+}
+
+const ::arma::vec3 &
+Atom::getPosition() const
+{
+  return myPosition;
+}
+
+void
+Atom::setPosition(const ::arma::vec3 & pos)
+{
+  myPosition = pos;
+  sendMovedMsg();
+}
+
+void
+Atom::setPosition(const double x, const double y, const double z)
+{
+  myPosition(0) = x;
   myPosition(1) = y;
   myPosition(2) = z;
-  myStructure.atomMoved(*this);
+  sendMovedMsg();
 }
 
-double Atom::getRadius() const
+void
+Atom::moveBy(const ::arma::vec3 & dr)
+{
+  myPosition += dr;
+  sendMovedMsg();
+}
+
+double
+Atom::getRadius() const
 {
   return myRadius;
 }
 
-void Atom::setRadius(const double radius)
+void
+Atom::setRadius(const double radius)
 {
-  SSLIB_ASSERT(radius > 0.0);
-
   myRadius = radius;
 }
 
-const AtomSpeciesId::Value  Atom::getSpecies() const
+const AtomSpeciesId::Value &
+Atom::getSpecies() const
 {
-	return mySpecies;
+  return mySpecies;
 }
 
-size_t Atom::getIndex() const
+size_t
+Atom::getIndex() const
 {
   return myIndex;
 }
 
-Atom::Atom(const AtomSpeciesId::Value species, Structure & structure, const size_t index):
-myStructure(structure),
-myIndex(index),
-mySpecies(species),
-myRadius(-1.0)
-{}
-
-Atom::Atom(const Atom & toCopy, Structure & structure, const size_t index):
-myStructure(structure),
-myIndex(index),
-mySpecies(toCopy.getSpecies()),
-myPosition(toCopy.getPosition()),
-myRadius(toCopy.getRadius())
-{}
-
-void Atom::setIndex(const size_t index)
+void
+Atom::setIndex(const size_t index)
 {
   myIndex = index;
+}
+
+void
+Atom::addListener(Listener * const listener)
+{
+  myListeners.insert(listener);
+}
+
+bool
+Atom::removeListener(Listener * const listener)
+{
+  return myListeners.erase(listener);
+}
+
+void
+Atom::sendMovedMsg()
+{
+  BOOST_FOREACH(Listener * const l, myListeners)
+  {
+    l->onAtomMoved(this);
+  }
+}
+
+void
+Atom::sendDestroyedMsg()
+{
+  BOOST_FOREACH(Listener * const l, myListeners)
+  {
+    l->onAtomDestroyed(this);
+  }
 }
 
 }

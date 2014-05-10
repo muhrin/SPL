@@ -13,54 +13,50 @@ endif(Boost_USE_STATIC_LIBS)
 
 find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem unit_test_framework regex)
 
-# tests/analysis
-
-set(tests_Source_Files__analysis
-  analysis/VoronoiMapTest.cpp
-)
-source_group("Source Files\\analysis" FILES ${tests_Source_Files__analysis})
-
-# tests/build_cell
-
-set(tests_Source_Files__build_cell
-  build_cell/AtomExtruderTest.cpp
-)
-source_group("Source Files\\build_cell" FILES ${tests_Source_Files__build_cell})
-
-# tests/common
-
-set(tests_Source_Files__common
-  common/DistanceCalculatorsTest.cpp
-  common/UnitCellTest.cpp
-)
-source_group("Source Files\\common" FILES ${tests_Source_Files__common})
-
-# tests/factory
-
-set(tests_Source_Files__factory
-  factory/YamlFactoryTest.cpp
-)
-source_group("Source Files\\factory" FILES ${tests_Source_Files__factory})
-set(tests_Input_Files__factory
-  factory/RandomStructure.sslib
+set(test_folders
+  analysis
+  build_cell
+  common
+  factory
+  io
+  potential
+  utility
 )
 
-## tests/utility
+foreach(test_folder ${test_folders})
+  # Look for cpp files
+  file(GLOB
+    tests_Source_Files__${test_folder}
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    ${test_folder}/*.cpp
+  )
+  source_group("Source Files\\${test_folder}" FILES ${tests_Source_Files__${test_folder}})
+  set(tests_Source_Files
+    ${tests_Source_Files}
+	${tests_Source_Files__${test_folder}}
+  )
+  
+  # Look for input files
+  file(GLOB
+    tests_Input_Files__${test_folder}
+	RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    ${test_folder}/input/*
+  )
+  set(tests_Input_Files
+    ${tests_Input_Files}
+	${tests_Input_Files__${test_folder}}
+  )
+endforeach()
 
-set(tests_Header_Files__utility
+## Look for any shared input files
+file(GLOB
+  tests_Input_Files__shared
+  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+  input/*
 )
-source_group("Header Files\\utility" FILES ${tests_Header_Files__utility})
-
-set(tests_Source_Files__utility
-  utility/HeterogeneousMapTest.cpp
-  utility/MultiIdxTest.cpp
-  utility/MultiIdxRangeTest.cpp
-  utility/PermutationRangeTest.cpp
-  utility/StructureComparatorsTest.cpp
-)
-source_group("Source Files\\utility" FILES ${tests_Source_Files__utility})
-set(tests_Input_Files__utility
-  utility/similarStructures
+set(tests_Input_Files
+  ${tests_Input_Files}
+  ${tests_Input_Files__shared}
 )
 
 ## tests/
@@ -75,17 +71,7 @@ set(tests_Source_Files__
 source_group("Source Files" FILES ${tests_Source_Files__})
 
 set(tests_Header_Files
-  ${tests_Header_Files__utility}
   ${tests_Header_Files__}
-)
-
-set(tests_Source_Files
-  ${tests_Source_Files__analysis}
-  ${tests_Source_Files__build_cell}
-  ${tests_Source_Files__common}
-  ${tests_Source_Files__factory}
-  ${tests_Source_Files__utility}
-  ${tests_Source_Files__}
 )
 
 set(tests_Files
@@ -97,11 +83,7 @@ set(tests_Files
 ## Copy over files needed by tests
 message(STATUS "Copying test input files...")
 file(COPY
-  ${tests_Input_Files__factory}
-  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/
-)
-file(COPY
-  ${tests_Input_Files__utility}
+  ${tests_Input_Files}
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/
 )
 
@@ -116,18 +98,18 @@ include_directories(
 )
 
 
-############################
-## SSLibTest executable   ##
-############################
-add_executable(sslibtest
+##########################
+## SplTest executable   ##
+##########################
+add_executable(spltest
   ${tests_Files}
   sslibtest.cpp
 )
 
-add_dependencies(sslibtest sslib)
+add_dependencies(spltest sslib)
 
 # Libraries we need to link to
-target_link_libraries(sslibtest
+target_link_libraries(spltest
   ${Boost_LIBRARIES}
   ${ARMADILLO_LIBRARIES}
   spglib

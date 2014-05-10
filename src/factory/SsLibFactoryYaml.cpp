@@ -6,627 +6,482 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "SSLib.h"
-
-#ifdef SSLIB_USE_YAML
-
-#include "factory/SsLibFactoryYaml.h"
+#include "spl/factory/SsLibFactoryYaml.h"
 
 #include <memory>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
 
-#include <yaml-cpp/yaml.h>
-
-// Local includes
-#include "build_cell/AtomsDescription.h"
-#include "build_cell/AtomConstraintDescription.h"
-#include "build_cell/DefaultCrystalGenerator.h"
-#include "build_cell/RandomUnitCell.h"
-#include "build_cell/StructureConstraintDescription.h"
-#include "common/AtomSpeciesDatabase.h"
-#include "common/AtomSpeciesId.h"
-#include "factory/FactoryError.h"
-#include "io/ResReaderWriter.h"
-#include "utility/IndexingEnums.h"
-#include "utility/SortedDistanceComparator.h"
-
-
+#include "spl/build_cell/AtomsDescription.h"
+#include "spl/build_cell/AtomsGroup.h"
+#include "spl/build_cell/PointGroups.h"
+#include "spl/build_cell/RandomUnitCellGenerator.h"
+#include "spl/build_cell/VoronoiSlabRegions.h"
+#include "spl/common/AtomSpeciesDatabase.h"
+#include "spl/common/AtomSpeciesId.h"
+#include "spl/factory/FactoryError.h"
+#include "spl/io/ResReaderWriter.h"
+#include "spl/math/Matrix.h"
+#include "spl/potential/CastepGeomOptimiser.h"
+#include "spl/potential/ExternalOptimiser.h"
+#include "spl/potential/LennardJones.h"
+#include "spl/potential/OptimisationSettings.h"
+#include "spl/potential/TpsdGeomOptimiser.h"
+#include "spl/potential/Types.h"
+#include "spl/utility/IndexingEnums.h"
+#include "spl/utility/SortedDistanceComparator.h"
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace factory {
 
-// namespace aliases
-namespace ssbc  = ::sstbx::build_cell;
-namespace ssc   = ::sstbx::common;
-namespace ssio  = ::sstbx::io;
-namespace ssp   = ::sstbx::potential;
-namespace ssu   = ::sstbx::utility;
-
-namespace kw = sslib_yaml_keywords;
+namespace fs = boost::filesystem;
 
 // Boost Tokenizer stuff
-typedef boost::tokenizer<boost::char_separator<char> > Tok;
-const boost::char_separator<char> tokSep(" \t");
+typedef boost::tokenizer< boost::char_separator< char> > Tok;
+const boost::char_separator< char> tokSep(" \t");
 
-SsLibFactoryYaml::SsLibFactoryYaml(common::AtomSpeciesDatabase & atomSpeciesDb):
-myAtomSpeciesDb(atomSpeciesDb)
+Factory::Factory() :
+    myShapeFactory()
 {
-  // All the possible options that can go in a structure atom info node
-  myStructureAtomInfoSet.insert(kw::STRUCTURE__ATOMS__SPEC);
-  myStructureAtomInfoSet.insert(kw::STRUCTURE__ATOMS__POS);
-
-  myDefaultStructureAtomsInfoFormat.push_back(AtomsInfoEntry(kw::STRUCTURE__ATOMS__SPEC, OptionalString()));
-  myDefaultStructureAtomsInfoFormat.push_back(AtomsInfoEntry(kw::STRUCTURE__ATOMS__POS, OptionalString()));
 }
 
-common::StructurePtr
-SsLibFactoryYaml::createStructure(const YAML::Node & structureNode) const
+build_cell::AtomsDescriptionPtr
+Factory::createAtomsDescription(const builder::SimpleAtomsDataEntry & options,
+    const io::AtomFormatParser< builder::SimpleAtomsData> & parser) const
 {
-  ::std::string sValue;
+  build_cell::AtomsDescriptionPtr atomsDescription;
 
-  common::StructurePtr structure(new common::Structure());
+  const boost::optional< AtomSpeciesCount> speciesCount = parser.getValue(
+      &builder::SimpleAtomsData::species, options);
+  if(!speciesCount)
+    return atomsDescription;
 
-  // Unit cell //////////////////////////
-  if(structureNode[kw::STRUCTURE__CELL])
-  {
-    structure->setUnitCell(createUnitCell(structureNode[kw::STRUCTURE__CELL]));
-  }
+  if(speciesCount->count.nullSpan() && speciesCount->count.min() == 0)
+    return atomsDescription;
 
-  // Atoms ////////////////////////////
+  atomsDescription.reset(
+      new build_cell::AtomsDescription(speciesCount->species,
+          speciesCount->count));
 
-  // First get any atom defaults if they exist
-  YAML::Node atomDefaults;
-  if(structureNode[kw::STRUCTURE__ATOM_DEFAULTS])
-  {
-    atomDefaults = structureNode[kw::STRUCTURE__ATOM_DEFAULTS];
-  }
+  atomsDescription->radius = parser.getValue(&builder::SimpleAtomsData::radius,
+      options);
+  const boost::optional< arma::rowvec3> pos = parser.getValue(
+      &builder::SimpleAtomsData::pos, options);
+  if(pos)
+    atomsDescription->position = pos->t();
 
-  AtomsInfoFormat atomInfoFormat;
-  if(structureNode[kw::STRUCTURE__ATOM_INFO_FORMAT])
-  {
-    const YAML::Node & formatNode = structureNode[kw::STRUCTURE__ATOM_INFO_FORMAT];
+  const boost::optional< std::string> label = parser.getValue(
+      &builder::SimpleAtomsData::label, options);
+  if(label)
+    atomsDescription->label = *label;
 
-    parseAtomsInfoFormat(formatNode, myStructureAtomInfoSet, atomInfoFormat);
-  }
+  return atomsDescription;
+}
+
+build_cell::AtomsGroupPtr
+Factory::createAtomsGroup(const builder::AtomsGroup & options,
+    io::AtomFormatParser< builder::SimpleAtomsData> & parser) const
+{
+  build_cell::AtomsGroupPtr atomsGenerator(new build_cell::AtomsGroup());
+
+  // Try creating a generator shape
+  UniquePtr< build_cell::GeneratorShape>::Type genShape;
+  if(options.genShape)
+    myShapeFactory.createShape(genShape, *options.genShape);
+
+  atomsGenerator->setNumReplicas(options.num);
+
+  if(options.pos)
+    atomsGenerator->setPosition(options.pos->t());
+  else
+    atomsGenerator->setTransformMode(
+        atomsGenerator->getTransformMode()
+            | build_cell::AtomsGroup::TransformMode::RAND_POS);
+
+  if(options.rot)
+    atomsGenerator->setRotation(options.rot->t());
   else
   {
-    atomInfoFormat = myDefaultStructureAtomsInfoFormat;
+    atomsGenerator->setTransformMode(
+        atomsGenerator->getTransformMode()
+            | build_cell::AtomsGroup::TransformMode::RAND_ROT_DIR
+            | build_cell::AtomsGroup::TransformMode::RAND_ROT_ANGLE);
   }
 
-  if(structureNode[kw::STRUCTURE__ATOMS])
+  // Check if there is a 'global' radius
+  if(options.atomsRadius)
+    parser.setDefault(&builder::SimpleAtomsData::radius, options.atomsRadius);
+
+  ///////////
+  // Atoms
+  BOOST_FOREACH(const builder::SimpleAtomsDataEntry & atomData, options.atoms)
   {
-    const YAML::Node & atomsNode = structureNode[kw::STRUCTURE__ATOMS];
-
-    if(atomsNode.IsSequence())
-    {
-      common::AtomSpeciesId::Value species;
-      ::arma::vec3 pos;
-
-      BOOST_FOREACH(const YAML::Node & atomNode, atomsNode)
-      {
-        if(atomNode.IsSequence())
-        {
-          //for(size_t i = 0; i < atomInfoFormat; ++i)
-          //{
-          //  
-          //}
-        }
-
-
-        // Get the species
-        if(!atomNode[kw::STRUCTURE__ATOMS__SPEC])
-        {
-          BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(REQUIRED_KEYWORD_MISSING) << NodeName(kw::STRUCTURE__ATOMS__SPEC));
-        }
-        const YAML::Node & type = atomNode[kw::STRUCTURE__ATOMS__SPEC];
-
-        species = myAtomSpeciesDb.getIdFromSymbol(type.as< ::std::string>());
-
-        // TODO: Get the position
-
-        structure->newAtom(species);
-      }
-    }
-    else
-    {
-      BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
-    }
+    build_cell::AtomsDescriptionPtr atomsDescription = createAtomsDescription(
+        atomData, parser);
+    if(atomsDescription.get())
+      atomsGenerator->insertAtoms(*atomsDescription);
   }
 
-  return structure;
+  // Species distances
+  if(options.pairDistances)
+  {
+    BOOST_FOREACH(PairDistances::const_reference entry, *options.pairDistances)
+      atomsGenerator->addSpeciesPairDistance(entry.first, entry.second);
+  }
+
+  return atomsGenerator;
 }
 
-common::UnitCellPtr
-SsLibFactoryYaml::createUnitCell(const YAML::Node & cellNode) const
+Factory::GeomOptimiserPtr
+Factory::createGeometryOptimiser(const Optimiser & options) const
 {
-  common::UnitCellPtr cell;
+  GeomOptimiserPtr opt;
 
-  if(cellNode[kw::STRUCTURE__CELL__ABC])
+  if(options.tpsd)
   {
-    const YAML::Node & abcNode = cellNode[kw::STRUCTURE__CELL__ABC];
+    potential::IPotentialPtr potential = createPotential(
+        options.tpsd->potential);
+    if(!potential.get())
+      return opt;
 
+    UniquePtr< potential::TpsdGeomOptimiser>::Type tpsd(
+        new potential::TpsdGeomOptimiser(potential));
 
+    tpsd->setMaxIterations(options.tpsd->maxIterations);
+    tpsd->setEnergyTolerance(options.tpsd->energyTolerance);
+    tpsd->setForceTolerance(options.tpsd->forceTolerance);
+
+    opt = tpsd;
+  }
+  else if(options.castep)
+  {
+    // Read in the settings
+    potential::CastepGeomOptimiseSettings settings;
+    settings.keepIntermediateFiles = options.castep->keepIntermediates;
+    settings.numRoughSteps = options.castep->numRoughSteps;
+    settings.numConsistentRelaxations = options.castep->numSelfConsistent;
+
+    opt.reset(
+        new potential::CastepGeomOptimiser(options.castep->runCommand,
+            options.castep->seed, settings));
+  }
+  else if(options.external)
+  {
+    opt.reset(new potential::ExternalOptimiser(options.external->exe));
+  }
+
+  return opt;
+}
+
+potential::OptimisationSettings
+Factory::createOptimisationSettings(const OptimiserSettings & options) const
+{
+  potential::OptimisationSettings settings;
+
+  settings.maxIter = options.maxIterations;
+  settings.energyTol = options.energyTolerance;
+  settings.forceTol = options.forceTolerance;
+  settings.stressTol = options.stressTolerance;
+
+  settings.pressure.reset(arma::zeros(3, 3));
+  settings.pressure->diag().fill(options.pressure);
+
+  return settings;
+}
+
+potential::IPotentialPtr
+Factory::createPotential(const Potential & options) const
+{
+  potential::IPotentialPtr pot;
+
+  if(options.lj)
+  {
+    pot.reset(
+        new potential::LennardJones(options.lj->species, options.lj->epsilon,
+            options.lj->sigma, options.lj->cutoff, options.lj->beta,
+            options.lj->powers(0), options.lj->powers(1),
+            options.lj->combiningRule));
+  }
+
+  return pot;
+}
+
+build_cell::RandomUnitCellPtr
+Factory::createRandomCellGenerator(
+    const builder::UnitCellBuilder & options) const
+{
+  using namespace utility::cell_params_enum;
+
+  build_cell::RandomUnitCellPtr cell(new build_cell::RandomUnitCellGenerator());
+
+  if(options.vol)
+    cell->setTargetVolume(*options.vol);
+
+  if(options.mul)
+    cell->setContentsMultiplier(*options.mul);
+
+  if(options.delta)
+    cell->setVolumeDelta(*options.delta);
+
+  if(options.angles)
+  {
+    if(options.angles->min)
+      cell->setMinAngles(*options.angles->min);
+    if(options.angles->max)
+      cell->setMaxAngles(*options.angles->max);
+  }
+
+  if(options.lengths)
+  {
+    if(options.lengths->min)
+      cell->setMinLengths(*options.lengths->min);
+    if(options.lengths->max)
+      cell->setMaxLengths(*options.lengths->max);
+    if(options.lengths->maxRatio)
+      cell->setMaxLengthRatio(*options.lengths->maxRatio);
+  }
+
+  // Do this after settings the general min/max length/angles as this is a more specific
+  // way of specifying the unit cell dimensions
+  if(options.abc)
+  {
+    SSLIB_ASSERT(options.abc->size() == 6);
+    for(size_t i = A; i <= GAMMA; ++i)
+    {
+      cell->setMin(i, (*options.abc)[i].min());
+      cell->setMax(i, (*options.abc)[i].max());
+    }
   }
 
   return cell;
 }
 
-ssbc::UnitCellBlueprintPtr
-SsLibFactoryYaml::createRandomCellGenerator(const YAML::Node & node)
+build_cell::StructureBuilderPtr
+Factory::createStructureBuilder(const builder::Builder & options) const
 {
-  using namespace utility::cell_params_enum;
+  build_cell::StructureBuilder::ConstructInfo constructInfo;
 
-  ssbc::RandomUnitCellPtr cell(new ssbc::RandomUnitCell());
+  if(options.overlap)
+    constructInfo.atomsOverlap = *options.overlap;
 
-  if(node[kw::RANDOM_CELL__PARAMS])
+  if(options.cluster)
+    constructInfo.isCluster = *options.cluster;
+
+  build_cell::StructureBuilderPtr builder(
+      new build_cell::StructureBuilder(constructInfo));
+
+  io::AtomFormatParser< builder::SimpleAtomsData> parser;
+  if(options.atomsFormat)
+    parser.setFormat(*options.atomsFormat);
+
+  parser.setDefault(&builder::SimpleAtomsData::radius, options.atomsRadius);
+
+  // Generators
+  if(options.atoms)
   {
-    const YAML::Node & paramsNode = node[kw::RANDOM_CELL__PARAMS];
+    build_cell::AtomsGroupPtr group(new build_cell::AtomsGroup());
 
-    if(paramsNode.IsSequence() && paramsNode.size() == 6)
+    // Try creating a generator shape
+    UniquePtr< build_cell::GeneratorShape>::Type genShape;
+    if(options.genShape)
+      myShapeFactory.createShape(genShape, *options.genShape);
+
+    ///////////
+    // Atoms
+    BOOST_FOREACH(const builder::SimpleAtomsDataEntry & atomData, *options.atoms)
     {
-      double params[6];
-      for(size_t i = A; i <= GAMMA; ++i)
-      {
-        try
-        {
-          params[i] = paramsNode[i].as<double>();
-        }
-        catch(YAML::TypedBadConversion<double> e)
-        {
-          BOOST_THROW_EXCEPTION(FactoryError() <<
-            ErrorType(MALFORMED_VALUE) <<
-            NodeName(kw::RANDOM_CELL__PARAMS) <<
-            ProblemValue(paramsNode[i].as< ::std::string>()));
-        }
-        cell->setMin(i, params[i]);
-        cell->setMax(i, params[i]);
-      }
+      build_cell::AtomsDescriptionPtr atomsDescription = createAtomsDescription(
+          atomData, parser);
+      if(atomsDescription.get())
+        group->insertAtoms(*atomsDescription);
     }
-    else
+
+    // Species distances
+    if(options.pairDistances)
     {
-      BOOST_THROW_EXCEPTION(FactoryError() <<
-        ErrorType(SEQUENCE_LENGTH_INVALID) <<
-        NodeName(kw::RANDOM_CELL__PARAMS));
+      BOOST_FOREACH(PairDistances::const_reference entry, *options.pairDistances)
+          group->addSpeciesPairDistance(entry.first, entry.second);
     }
+
+    builder->addGenerator(group);
   }
 
-  OptionalDouble dValue;
-
-  dValue = getNodeChildValueAs<double>(node, kw::RANDOM_CELL__VOL);
-  if(dValue)
+  if(options.groups)
   {
-    cell->setTargetVolume(*dValue);
-  }
-
-  if(node[kw::RANDOM_CELL__ANGLES])
-  {
-    const OptionalMinMax<double>::Type minMax = getMinMax<double>(node[kw::RANDOM_CELL__ANGLES]);
-    if(minMax.first)
+    BOOST_FOREACH(const builder::AtomsGroup & group, *options.groups)
     {
-      cell->setMinAngles(*minMax.first);
-    }
-    if(minMax.second)
-    {
-      cell->setMaxAngles(*minMax.second);
-    }
-  }
-
-  if(node[kw::RANDOM_CELL__LENGTHS])
-  {
-    const YAML::Node & lengths = node[kw::RANDOM_CELL__LENGTHS];
-    const OptionalMinMax<double>::Type minMax = getMinMax<double>(lengths);
-    if(minMax.first)
-    {
-      cell->setMinLengths(*minMax.first);
-    }
-    if(minMax.second)
-    {
-      cell->setMaxLengths(*minMax.second);
-    }
-    dValue = getNodeChildValueAs<double>(lengths, kw::RANDOM_CELL__LENGTHS__MAX_RATIO);
-    if(dValue)
-    {
-      cell->setMaxLengthRatio(dValue);
-    }
-  }
-
-  return (ssbc::UnitCellBlueprintPtr)cell;
-}
-
-ssbc::StructureDescriptionPtr
-SsLibFactoryYaml::createStructureDescription(const YAML::Node & node)
-{
-  //// Make sure we have a structure description node
-  //if(node.Scalar() != kw::STR_DESC)
-  //{
-  //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
-  //}
-
-  ssbc::StructureDescriptionPtr strDescription(new ssbc::StructureDescription());
-
-  const OptionalDouble atomsRadii = getNodeChildValueAs<double>(node, kw::RANDOM_STRUCTURE__ATOM_RADII);
-
-  // Atoms //
-  if(node[kw::STR_DESC__ATOMS])
-  {
-    const YAML::Node & atomsNode = node[kw::STR_DESC__ATOMS];
-
-    if(atomsNode.IsSequence())
-    {
-      BOOST_FOREACH(const YAML::Node & atomNode, atomsNode)
-      {
-        strDescription->addChild(createAtomsDescription(atomNode, atomsRadii));
-      }
-    }
-    else
-    {
-      BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
+      build_cell::AtomsGroupPtr atomsGenerator = createAtomsGroup(group,
+          parser);
+      if(atomsGenerator.get())
+        builder->addGenerator(atomsGenerator);
     }
   }
 
   // Unit cell
-  if(node[kw::RANDOM_CELL])
+  if(options.unitCellBuilder)
   {
-    strDescription->setUnitCell((ssbc::ConstUnitCellBlueprintPtr)createRandomCellGenerator(node[kw::RANDOM_CELL]));
+    build_cell::IUnitCellGeneratorPtr ucGen(
+        createRandomCellGenerator(*options.unitCellBuilder));
+    if(ucGen.get())
+      builder->setUnitCellGenerator(ucGen);
   }
 
-  // Assign the pointer so the caller gets the object
-  return strDescription;
-}
-
-ssp::IPotential * SsLibFactoryYaml::createPotential(const YAML::Node & node)
-{
-  //// Make sure we have a potential node
-  //if(node.Scalar() != kw::POTENTIAL)
-  //{
-  //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
-  //}
-
-  ssp::IPotential * pot = NULL;
-
-  // First check that we have the keywords that we require in this node
-  checkKeyword(kw::TYPE, node);
-
-  const ::std::string potType = node[kw::TYPE].as< ::std::string>();
-
-  if(potType == kw::POTENTIAL__TYPE___PAIR_POT)
+  // Symmetry
+  if(options.symmetry)
   {
-    // Check all the required keywords are there for the pair potential
-    checkKeyword(kw::POTENTIAL__PAIR_POT__E, node);
-    checkKeyword(kw::POTENTIAL__PAIR_POT__S, node);
-    checkKeyword(kw::POTENTIAL__PAIR_POT__CUT, node);
-    checkKeyword(kw::POTENTIAL__PAIR_POT__B, node);
-    checkKeyword(kw::POTENTIAL__PAIR_POT__POW, node);
-    checkKeyword(kw::POTENTIAL__PAIR_POT__COMB, node);
-
-    // Let's build it up one by one
-    const ArmaTriangularMat epsilon  = node[kw::POTENTIAL__PAIR_POT__E].as<ArmaTriangularMat>();
-    const ArmaTriangularMat sigma    = node[kw::POTENTIAL__PAIR_POT__S].as<ArmaTriangularMat>();
-    double                  cutoff   = node[kw::POTENTIAL__PAIR_POT__CUT].as<double>();
-    const ArmaTriangularMat beta     = node[kw::POTENTIAL__PAIR_POT__B].as<ArmaTriangularMat>();
-    const ::arma::vec       pow      = node[kw::POTENTIAL__PAIR_POT__POW].as< ::arma::vec>();
-    const ssp::SimplePairPotential::CombiningRule comb =
-      node[kw::POTENTIAL__PAIR_POT__COMB].as<ssp::SimplePairPotential::CombiningRule>();
-
-    const size_t numSpecies = epsilon.mat.n_rows;
-
-    if((numSpecies != sigma.mat.n_rows) || (numSpecies != beta.mat.n_rows))
+    if(options.symmetry->pointGroup)
     {
-      throw FactoryError() << ErrorType(MALFORMED_VALUE);
-    }
-
-    // TODO: HACK!! Fix this to read in the real values
-    const ::std::vector<ssc::AtomSpeciesId> species;
-
-    pot = new ssp::SimplePairPotential(
-      myAtomSpeciesDb,
-      numSpecies,
-      species,
-      epsilon.mat,
-      sigma.mat,
-      cutoff,
-      beta.mat,
-      pow(0),
-      pow(1),
-      comb
-    );
-
-    myPotentials.push_back(pot);
-  }
-  else
-  {
-    throw FactoryError() << ErrorType(UNRECOGNISED_KEYWORD) << ProblemValue(potType);
-  }
-
-
-
-  return pot;
-
-}
-
-
-
-ssp::IGeomOptimiser * SsLibFactoryYaml::createGeometryOptimiser(const YAML::Node & node)
-{
-  checkKeyword(kw::TYPE, node);
-
-  ssp::IGeomOptimiser * opt = NULL;
-
-  const ::std::string type = node[kw::TYPE].as< ::std::string>();
-
-  if(type == kw::OPTIMISER__TYPE___TPSD)
-  {
-    checkKeyword(kw::POTENTIAL, node);
-
-    ssp::IPotential * pp = createPotential(node[kw::POTENTIAL]);
-
-    if(pp)
-    {
-      opt = new ssp::TpsdGeomOptimiser(*pp);
+      build_cell::PointGroup group;
+      if(build_cell::getPointGroup(group, *options.symmetry->pointGroup))
+        builder->setPointGroup(group);
     }
   }
 
-  myOptimisers.push_back(opt);
-
-  return opt;
+  return builder;
 }
 
-::sstbx::utility::IStructureComparator *
-SsLibFactoryYaml::createStructureComparator(const YAML::Node & node)
+utility::IStructureComparatorPtr
+Factory::createStructureComparator(const Comparator & options) const
 {
-  //// Make sure we have a structure set node
-  //if(node.Scalar() != kw::STR_COMPARATOR)
-  //{
-  //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
-  //}
+  utility::IStructureComparatorPtr comparator;
 
-  checkKeyword(kw::TYPE, node);
-
-  const ::std::string type = node[kw::TYPE].as< ::std::string>();
-
-  ssu::IStructureComparator * comparator = NULL;
-
-  if(type == kw::STR_COMPARATOR__TYPE___SORTED_DIST)
+  if(options.sortedDist)
   {
-    comparator = new ssu::SortedDistanceComparator();
-    myStructureComparators.push_back(comparator);
-  }
-  else
-  {
-    throw FactoryError() << ErrorType(UNRECOGNISED_KEYWORD);
+    utility::SortedDistanceComparator::ConstructionInfo constructInfo;
+
+    constructInfo.tolerance = options.sortedDist->tolerance;
+    constructInfo.volumeAgnostic = options.sortedDist->volumeAgnostic;
+    constructInfo.usePrimitive = options.sortedDist->usePrimitive;
+
+    comparator.reset(new utility::SortedDistanceComparator(constructInfo));
   }
 
   return comparator;
 }
 
-SsLibFactoryYaml::UniqueStructureSetPtr
-SsLibFactoryYaml::createStructureSet(const YAML::Node & node)
+build_cell::IStructureGeneratorPtr
+Factory::createStructureGenerator(
+    const builder::StructureGenerator & options) const
 {
-  //// Make sure we have a structure set node
-  //if(node.Scalar() != kw::STR_SET)
-  //{
-  //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
-  //}
+  build_cell::IStructureGeneratorPtr generator;
 
-  // First try to create the comparator
-  checkKeyword(kw::STR_COMPARATOR, node);
+  if(options.builder)
+    generator = createStructureBuilder(*options.builder);
+#ifdef SPL_WITH_CGAL
+  else if(options.voronoiSlab)
+    generator = createVoronoiSlabGenerator(*options.voronoiSlab);
+#endif // SPL_WITH_CGAL
 
-  ssu::IStructureComparator * const comparator = createStructureComparator(node[kw::STR_COMPARATOR]);
-
-  UniqueStructureSetPtr strSet;
-  if(comparator)
-  {
-    strSet.reset(new ssu::UniqueStructureSet<>(*comparator));
-  }
-  
-  return strSet;
+  return generator;
 }
 
-::sstbx::io::IStructureWriter *
-SsLibFactoryYaml::createStructureWriter(const YAML::Node & node)
+#ifdef SPL_WITH_CGAL
+
+UniquePtr< build_cell::VoronoiSlabGenerator>::Type
+Factory::createVoronoiSlabGenerator(
+    const builder::VoronoiSlabGenerator & options) const
 {
-  //// Make sure we have a structure writer tag
-  //if(node.Scalar() != kw::STR_SET)
-  //{
-  //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
-  //}
-
-  // Check we have the required keywords
-  checkKeyword(kw::TYPE, node);
-
-  const ::std::string type = node[kw::TYPE].as< ::std::string>();
-
-  ssio::IStructureWriter * writer = NULL;
-  if(type == kw::STR_WRITER__TYPE___RES)
+  UniquePtr< build_cell::VoronoiSlabGenerator>::Type generator;
+  if(options.unitCell)
   {
-    writer = new ssio::ResReaderWriter();
-  }
-
-  if(writer)
-    myStructureWriters.push_back(writer);
-
-  return writer;
-}
-
-void SsLibFactoryYaml::checkKeyword(
-  const kw::KwTyp & kw,
-  const YAML::Node & node) const
-{
-  if(!node[kw])
-    throw FactoryError() << ErrorType(REQUIRED_KEYWORD_MISSING);
-}
-
-build_cell::AtomsDescriptionPtr
-SsLibFactoryYaml::createAtomsDescription(const YAML::Node & descNode, OptionalDouble atomsRadii) const
-{
-  std::string sValue;
-  unsigned int nAtoms = 1;
-  ssc::AtomSpeciesId::Value  specId;
-
-  if(descNode[kw::STRUCTURE__ATOMS__SPEC])
-  {
-    sValue = descNode[kw::STRUCTURE__ATOMS__SPEC].as< ::std::string>();
-    OptionalAtomSpeciesCount atomSpeciesCount = parseAtomTypeString(sValue);
-    if(atomSpeciesCount)
-    {
-      specId = atomSpeciesCount->first;
-      nAtoms = atomSpeciesCount->second;
-    }
-  }
-
-  build_cell::AtomsDescriptionPtr atomsDescription(new build_cell::AtomsDescription(specId, nAtoms));
-
-  // If there is a default atoms radii first set that and then try to see if there
-  // is a specific one for this atom
-  if(atomsRadii)
-    atomsDescription->setRadius(*atomsRadii);
-
-  if(descNode[kw::RANDOM_STRUCTURE__ATOMS__RADIUS])
-  {
-    atomsDescription->setRadius(descNode[kw::RANDOM_STRUCTURE__ATOMS__RADIUS].as<double>());
-  }
-
-
-  return atomsDescription;
-}
-
-
-ssbc::StructureConstraintDescription *
-SsLibFactoryYaml::createStructureConstraintDescription(const YAML::Node & descNode) const
-{
-  // TODO: No structure constraint
-  return NULL;
-}
-
-SsLibFactoryYaml::OptionalNode
-SsLibFactoryYaml::getChildNode(const YAML::Node & parent, const ::std::string & childNodeName) const
-{
-  OptionalNode childNode;
-
-  if(parent[childNodeName])
-  {
-    childNode.reset(parent[childNodeName]);
-  }
-
-  return childNode;
-}
-
-SsLibFactoryYaml::OptionalAtomSpeciesCount
-SsLibFactoryYaml::parseAtomTypeString(const ::std::string & atomSpecString) const
-{
-  OptionalAtomSpeciesCount atomSpeciesCount;
-
-  const Tok tok(atomSpecString, tokSep);
-
-  Tok::const_iterator it = tok.begin();
-
-  AtomSpeciesCount type;
-  bool successful = false;
-  if(it != tok.end())
-  {
-    try
-    {
-      type.second = ::boost::lexical_cast<unsigned int>(*it);
-      ++it;
-    }
-    catch(::boost::bad_lexical_cast)
-    {}
-
-    if(it != tok.end())
-    {
-      type.first = myAtomSpeciesDb.getIdFromSymbol(*it);
-      if(type.first != common::AtomSpeciesId::DUMMY)
-        successful = true;
-    }
-  }
-
-  if(successful)
-    atomSpeciesCount.reset(type);
-
-  return atomSpeciesCount;
-}
-
-void SsLibFactoryYaml::parseAtomsInfoFormat(
-  const YAML::Node & infoNode,
-  const AtomsInfoSet & allowedValues,
-  AtomsInfoFormat & formatOut) const
-{
-  if(infoNode.IsSequence())
-  {
-    BOOST_FOREACH(const YAML::Node & entryNode, infoNode)
-    {
-      formatOut.push_back(parseAtomsInfoFormatEntry(entryNode, allowedValues));
-    }
+    double abc[6];
+    std::copy(options.unitCell->abc.begin(), options.unitCell->abc.end(), abc);
+    generator.reset(
+        new build_cell::VoronoiSlabGenerator(common::UnitCell(abc)));
   }
   else
+    generator.reset(new build_cell::VoronoiSlabGenerator());
+
+  BOOST_FOREACH(const builder::VoronoiSlab & s, options.slabs)
   {
-    BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
-  }
-}
+    arma::mat44 transform;
+    transform.eye();
+    if(s.pos)
+      math::setTranslation(transform, s.pos->t());
+    if(s.rot)
+      math::setRotation(transform, s.rot->t());
 
-SsLibFactoryYaml::AtomsInfoEntry
-SsLibFactoryYaml::parseAtomsInfoFormatEntry(
-  const YAML::Node & entryNode,
-  const AtomsInfoSet & allowedValues) const
-{
-  AtomsInfoEntry entry;
-  ::std::string entryName;
-  ::std::string defaultValue;
+    build_cell::VoronoiSlabGenerator::Slab slab(transform);
+    if(s.debugSaveTriangulation && *s.debugSaveTriangulation)
+      slab.setSaveTriangulation(true);
 
-  if(entryNode.IsScalar())
-  {
-    entryName = ::boost::trim_copy(entryNode.as< ::std::string>());
-
-    // Check that the entry is one of the allowed values
-    if(allowedValues.find(entryName) == allowedValues.end())
+    // Create the regions for the slab
+    BOOST_FOREACH(const builder::VoronoiSlabRegion & r, s.regions)
     {
-      BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
-    }
-
-    entry.first = entryName;
-  }
-  else if(entryNode.IsMap())
-  {
-    if(entryNode.size() == 1)
-    {
-      const YAML::const_iterator it = entryNode.begin();
-
-      entryName = ::boost::trim_copy(it->first.as< ::std::string>());
-
-      // Check that the entry is one of the allowed values
-      if(allowedValues.find(entryName) == allowedValues.end())
+      UniquePtr< build_cell::VoronoiSlabGenerator::SlabRegion::Basis>::Type basis =
+          createVoronoiSlabRegionBasis(r.basis);
+      UniquePtr< build_cell::VoronoiSlabGenerator::SlabRegion>::Type region;
+      if(r.lattice)
       {
-        BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
+        build_cell::LatticeRegion::ConstructionInfo info;
+        BOOST_FOREACH(const arma::rowvec2 & bound, r.lattice->boundary)
+          info.boundary.push_back(bound.t());
+
+        info.vecA = r.lattice->lattice[0].t();
+        info.vecB = r.lattice->lattice[1].t();
+        if(r.lattice->startPoint)
+          info.startPoint = r.lattice->startPoint->t();
+        info.fixPoints = r.lattice->fixPoints;
+
+        region.reset(new build_cell::LatticeRegion(info, basis));
+      }
+      else if(r.random)
+      {
+        UniquePtr< build_cell::RandomRegion>::Type random;
+        std::vector< arma::vec2> boundary;
+        BOOST_FOREACH(const arma::rowvec2 & bound, r.random->boundary)
+          boundary.push_back(bound.t());
+
+        random.reset(
+            new build_cell::RandomRegion(boundary, r.random->numPoints,
+                r.random->minsep, basis));
+        if(r.random->polys)
+          random->setPolys(r.random->polyMode, *r.random->polys);
+
+        region = random;
       }
 
-      defaultValue = ::boost::trim_copy(it->second.as< ::std::string>());
+      if(region.get())
+        slab.addRegion(region);
+    }
 
-      // Add it into the format info with no default value
-      entry.first = entryName;
-      entry.second = defaultValue;
-    }
-    else
-    {
-      BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
-    }
+    generator->addSlab(slab);
   }
-  else
+  return generator;
+}
+
+#endif // SPL_WITH_CGAL
+
+const GenShapeFactory &
+Factory::getShapeFactory() const
+{
+  return myShapeFactory;
+}
+
+#ifdef SPL_WITH_CGAL
+
+UniquePtr< build_cell::VoronoiSlabGenerator::SlabRegion::Basis>::Type
+Factory::createVoronoiSlabRegionBasis(
+    const builder::VoronoiSlabRegionBasis & options) const
+{
+  UniquePtr< build_cell::VoronoiSlabGenerator::SlabRegion::Basis>::Type basis;
+  if(options.ordered)
   {
-    BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
+    basis.reset(new build_cell::OrderedBasis(*options.ordered));
   }
 
-  return entry;
+  return basis;
 }
+
+#endif // SPL_WITH_CGAL
 
 }
 }
 
-
-#endif /* SSLIB_USE_YAML */

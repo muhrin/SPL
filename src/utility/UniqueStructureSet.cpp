@@ -6,11 +6,15 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "utility/UniqueStructureSet.h"
+#include "spl/utility/UniqueStructureSet.h"
 
 
-namespace sstbx {
+namespace spl {
 namespace utility {
+
+UniqueStructureSet<common::Structure *>::UniqueStructureSet(IStructureComparatorPtr comparator):
+detail::UniqueStructureSetBase<common::Structure *>(comparator)
+{}
 
 UniqueStructureSet<common::Structure *>::UniqueStructureSet(const IStructureComparator & comparator):
 detail::UniqueStructureSetBase<common::Structure *>(comparator)
@@ -23,9 +27,5 @@ UniqueStructureSet<common::Structure *>::insert(common::Structure * structure)
   return insert_return_type(iterator(pair.first), pair.second);
 }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> d58c64683591480856d9a864079efb24c6a736a8
 }
 }

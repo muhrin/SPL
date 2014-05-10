@@ -6,75 +6,73 @@
  */
 
 // INCLUDES ///////////////
-#include "common/DistanceCalculatorDelegator.h"
+#include "spl/common/DistanceCalculatorDelegator.h"
 
-#include "common/ClusterDistanceCalculator.h"
-#include "common/OrthoCellDistanceCalculator.h"
-#include "common/UnitCell.h"
-#include "common/UniversalCrystalDistanceCalculator.h"
+#include "spl/common/ClusterDistanceCalculator.h"
+#include "spl/common/OrthoCellDistanceCalculator.h"
+#include "spl/common/UnitCell.h"
+#include "spl/common/UniversalCrystalDistanceCalculator.h"
 
-namespace sstbx {
+namespace spl {
 namespace common {
 
-DistanceCalculatorDelegator::DistanceCalculatorDelegator(const Structure & structure):
-DistanceCalculator(structure),
-myDelegate(new ClusterDistanceCalculator(structure)),
-myDelegateType(CalculatorType::CLUSTER)
+DistanceCalculatorDelegator::DistanceCalculatorDelegator(Structure & structure) :
+    myStructure(structure), myDelegate(new ClusterDistanceCalculator()), myDelegateType(
+        CalculatorType::CLUSTER)
 {
   // WARNING: Don't use structure here as it won't be initialised!!
 }
 
-void DistanceCalculatorDelegator::unitCellChanged()
+void
+DistanceCalculatorDelegator::setUnitCell(common::UnitCell * const unitCell)
 {
   updateDelegate();
 }
 
-void DistanceCalculatorDelegator::updateDelegate()
+void
+DistanceCalculatorDelegator::updateDelegate()
 {
-  const UnitCell * const unitCell = myStructure.getUnitCell();
+  UnitCell * const unitCell = myStructure.getUnitCell();
 
-  bool delegateChanged = false;
   if(unitCell == NULL)
-  {
-    delegateChanged = setDelegate(CalculatorType::CLUSTER);
-  }
+    setDelegate(CalculatorType::CLUSTER);
   else
   {
-    const UnitCell::LatticeSystem::Value latticeSystem = unitCell->getLatticeSystem(OrthoCellDistanceCalculator::VALID_ANGLE_TOLERANCE);
-    if(latticeSystem == UnitCell::LatticeSystem::TETRAGONAL ||
-      latticeSystem == UnitCell::LatticeSystem::CUBIC ||
-      latticeSystem == UnitCell::LatticeSystem::ORTHORHOMBIC)
-    {
-      delegateChanged = setDelegate(CalculatorType::ORTHO_CELL);
-    }
+    const UnitCell::LatticeSystem::Value latticeSystem =
+        unitCell->getLatticeSystem(
+            OrthoCellDistanceCalculator::VALID_ANGLE_TOLERANCE);
+    if(latticeSystem == UnitCell::LatticeSystem::TETRAGONAL
+        || latticeSystem == UnitCell::LatticeSystem::CUBIC
+        || latticeSystem == UnitCell::LatticeSystem::ORTHORHOMBIC)
+      setDelegate(CalculatorType::ORTHO_CELL);
     else
-    {
-      delegateChanged = setDelegate(CalculatorType::UNIVERSAL_CRYSTAL);
-    }
+      setDelegate(CalculatorType::UNIVERSAL_CRYSTAL);
   }
 
-  if(!delegateChanged)
-    myDelegate->unitCellChanged();
+  myDelegate->setUnitCell(unitCell);
 }
 
-bool DistanceCalculatorDelegator::setDelegate(const CalculatorType::Value calcType)
+bool
+DistanceCalculatorDelegator::setDelegate(const CalculatorType::Value calcType)
 {
   bool delegateChanged = false;
   if(myDelegateType != calcType)
   {
     if(calcType == CalculatorType::CLUSTER)
     {
-      myDelegate.reset(new ClusterDistanceCalculator(myStructure));
+      myDelegate.reset(new ClusterDistanceCalculator());
       delegateChanged = true;
     }
     else if(calcType == CalculatorType::UNIVERSAL_CRYSTAL)
     {
-      myDelegate.reset(new UniversalCrystalDistanceCalculator(myStructure));
+      myDelegate.reset(
+          new UniversalCrystalDistanceCalculator(myStructure.getUnitCell()));
       delegateChanged = true;
     }
     else if(calcType == CalculatorType::ORTHO_CELL)
     {
-      myDelegate.reset(new OrthoCellDistanceCalculator(myStructure));
+      myDelegate.reset(
+          new OrthoCellDistanceCalculator(myStructure.getUnitCell()));
       delegateChanged = true;
     }
     myDelegateType = calcType;
@@ -83,5 +81,5 @@ bool DistanceCalculatorDelegator::setDelegate(const CalculatorType::Value calcTy
   return delegateChanged;
 }
 
-} // namespace sstbx
+} // namespace spl
 } // namespace common

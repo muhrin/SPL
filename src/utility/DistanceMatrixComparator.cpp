@@ -6,54 +6,63 @@
  */
 
 // INCLUDES /////////////////////////////////////
+#include "spl/utility/DistanceMatrixComparator.h"
 
-#include "utility/DistanceMatrixComparator.h"
+#include <iterator>
 
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include "common/DistanceCalculator.h"
-#include "common/Structure.h"
-#include "utility/GenericBufferedComparator.h"
-#include "utility/Math.h"
-#include "utility/PermutationRange.h"
+#include "spl/common/DistanceCalculator.h"
+#include "spl/common/Structure.h"
+#include "spl/math/NumberAlgorithms.h"
+#include "spl/utility/GenericBufferedComparator.h"
+#include "spl/utility/PermutationRange.h"
 
 // Turn on or off DistanceMatrixComparator (DMC) debugging
 //#define SSLIB_DMC_DEBUG
 
-namespace sstbx {
+namespace spl {
 namespace utility {
 
-typedef ::std::pair<size_t, double> IndexDoublePair;
+typedef ::std::pair< size_t, double> IndexDoublePair;
 
-const double DistanceMatrixComparator::STRUCTURES_INCOMPARABLE = ::std::numeric_limits<double>::max();
+const double DistanceMatrixComparator::STRUCTURES_INCOMPARABLE =
+    ::std::numeric_limits< double>::max();
+const double DistanceMatrixComparator::DEFAULT_TOLERANCE = 0.001;
 
-bool indexDoubleLessThan(const IndexDoublePair & p1, const IndexDoublePair & p2)
-{ return p1.second < p2.second; }
+bool
+indexDoubleLessThan(const IndexDoublePair & p1, const IndexDoublePair & p2)
+{
+  return p1.second < p2.second;
+}
 
-
-DistanceMatrixComparisonData::DistanceMatrixComparisonData(const common::Structure & _structure)
+DistanceMatrixComparisonData::DistanceMatrixComparisonData(
+    const common::Structure & _structure)
 {
   // Get a primitive setting version of the structure, otherwise the algorithm could get confused
-  const UniquePtr<const common::Structure>::Type primitive(_structure.getPrimitiveCopy());
+  const UniquePtr< const common::Structure>::Type primitive(
+      _structure.getPrimitiveCopy());
 
-  const common::DistanceCalculator & distCalc = primitive->getDistanceCalculator(); 
+  const common::DistanceCalculator & distCalc =
+      primitive->getDistanceCalculator();
 
   const size_t numAtoms = primitive->getNumAtoms();
   ::arma::mat unsortedDistnacesMatrix(numAtoms, numAtoms);
   unsortedDistnacesMatrix.diag().zeros();
 
   // Copy over the species of all the atoms (ordered by index)
-  primitive->getAtomSpecies(speciesList);
+  primitive->getAtomSpecies(::std::back_inserter(speciesList));
 
-  size_t i, j;  // Loop indices used throughout
+  size_t i, j; // Loop indices used throughout
   const common::Atom * atomI;
   for(i = 0; i < numAtoms - 1; ++i)
   {
     atomI = &primitive->getAtom(i);
     for(size_t j = i + 1; j < numAtoms; ++j)
     {
-      unsortedDistnacesMatrix(i, j) = distCalc.getDistMinImg(*atomI, primitive->getAtom(j));
+      unsortedDistnacesMatrix(i, j) = distCalc.getDistMinImg(*atomI,
+          primitive->getAtom(j));
     }
   }
   // Copy over symmetric elements to bottom left
@@ -63,10 +72,11 @@ DistanceMatrixComparisonData::DistanceMatrixComparisonData(const common::Structu
   ::arma::rowvec sums = ::arma::sum(unsortedDistnacesMatrix);
 
   // Get the set of species (i.e. each species only appearing once)
-  ::std::set<common::AtomSpeciesId::Value> speciesSet(speciesList.begin(), speciesList.end());
-  
-  ::std::vector<size_t> indexRemapping(numAtoms);
-  ::std::vector<IndexDoublePair> indexLengthList;
+  ::std::set< common::AtomSpeciesId::Value> speciesSet(speciesList.begin(),
+      speciesList.end());
+
+  ::std::vector< size_t> indexRemapping(numAtoms);
+  ::std::vector< IndexDoublePair> indexLengthList;
   size_t currentIdx = 0;
   BOOST_FOREACH(const common::AtomSpeciesId::Value & species, speciesSet)
   {
@@ -80,7 +90,8 @@ DistanceMatrixComparisonData::DistanceMatrixComparisonData(const common::Structu
     }
 
     // Sort the species by total length of nearest neighbour distances (ascending)
-    ::std::sort(indexLengthList.begin(), indexLengthList.end(), indexDoubleLessThan);
+    ::std::sort(indexLengthList.begin(), indexLengthList.end(),
+        indexDoubleLessThan);
 
     for(j = 0; j < indexLengthList.size(); ++j)
     {
@@ -94,62 +105,75 @@ DistanceMatrixComparisonData::DistanceMatrixComparisonData(const common::Structu
   {
     for(j = 0; j < numAtoms; ++j)
     {
-      distancesMtx(i, j) = unsortedDistnacesMatrix(indexRemapping[i], indexRemapping[j]);
+      distancesMtx(i, j) = unsortedDistnacesMatrix(indexRemapping[i],
+          indexRemapping[j]);
     }
   }
 
 }
 
-DistanceMatrixComparator::DistanceMatrixComparator(const size_t fastComparisonAtomsLimit):
-myFastComparisonAtomsLimit(fastComparisonAtomsLimit)
+DistanceMatrixComparator::DistanceMatrixComparator(
+    const size_t fastComparisonAtomsLimit) :
+    myFastComparisonAtomsLimit(fastComparisonAtomsLimit), myTolerance(
+        DEFAULT_TOLERANCE)
 {
 }
 
-double DistanceMatrixComparator::compareStructures(
-	const common::Structure & str1,
-	const common::Structure & str2) const
+DistanceMatrixComparator::DistanceMatrixComparator(const double tolerance,
+    const size_t fastComparisonAtomsLimit) :
+    myFastComparisonAtomsLimit(fastComparisonAtomsLimit), myTolerance(tolerance)
+{
+}
+
+double
+DistanceMatrixComparator::compareStructures(const common::Structure & str1,
+    const common::Structure & str2) const
 {
   ComparisonDataPtr comp1(generateComparisonData(str1));
   ComparisonDataPtr comp2(generateComparisonData(str2));
   return compareStructures(*comp1.get(), *comp2.get());
 }
 
-bool DistanceMatrixComparator::areSimilar(
-	const common::Structure & str1,
-  const common::Structure & str2) const
+bool
+DistanceMatrixComparator::areSimilar(const common::Structure & str1,
+    const common::Structure & str2) const
 {
   ComparisonDataPtr comp1(generateComparisonData(str1));
   ComparisonDataPtr comp2(generateComparisonData(str2));
   return areSimilar(*comp1.get(), *comp2.get());
 }
 
-::boost::shared_ptr<IBufferedComparator> DistanceMatrixComparator::generateBuffered() const
+::boost::shared_ptr< IBufferedComparator>
+DistanceMatrixComparator::generateBuffered() const
 {
-  return ::boost::shared_ptr<IBufferedComparator>(new GenericBufferedComparator<DistanceMatrixComparator>(*this));
+  return ::boost::shared_ptr< IBufferedComparator>(
+      new GenericBufferedComparator< DistanceMatrixComparator>(*this));
 }
 
-::std::auto_ptr<DistanceMatrixComparisonData>
-DistanceMatrixComparator::generateComparisonData(const common::Structure & structure) const
+::std::auto_ptr< DistanceMatrixComparisonData>
+DistanceMatrixComparator::generateComparisonData(
+    const common::Structure & structure) const
 {
-  return ::std::auto_ptr<DistanceMatrixComparisonData>(new DistanceMatrixComparisonData(structure));
+  return ::std::auto_ptr< DistanceMatrixComparisonData>(
+      new DistanceMatrixComparisonData(structure));
 }
 
-
-bool DistanceMatrixComparator::areSimilar(
-  const DataTyp & str1Data,
-  const DataTyp & str2Data) const
+bool
+DistanceMatrixComparator::areSimilar(const DataTyp & str1Data,
+    const DataTyp & str2Data) const
 {
-  return compareStructures(str1Data, str2Data) < 0.001;
+  return compareStructures(str1Data, str2Data) < myTolerance;
 }
 
-double DistanceMatrixComparator::compareStructures(
-  const DataTyp & str1Data,
-  const DataTyp & str2Data) const
+double
+DistanceMatrixComparator::compareStructures(const DataTyp & str1Data,
+    const DataTyp & str2Data) const
 {
   if(!areComparable(str1Data, str2Data))
     return STRUCTURES_INCOMPARABLE;
 
-  const size_t maxAtoms = ::std::max(str1Data.distancesMtx.n_cols, str2Data.distancesMtx.n_cols);
+  const size_t maxAtoms = ::std::max(str1Data.distancesMtx.n_cols,
+      str2Data.distancesMtx.n_cols);
 
   if(maxAtoms < myFastComparisonAtomsLimit)
   {
@@ -163,42 +187,25 @@ double DistanceMatrixComparator::compareStructures(
   }
 }
 
-bool DistanceMatrixComparator::areComparable(
-  const DataTyp & str1Data,
-  const DataTyp & str2Data) const
+bool
+DistanceMatrixComparator::areComparable(const DataTyp & str1Data,
+    const DataTyp & str2Data) const
 {
-  size_t minAtoms, maxAtoms;
-
-  if(str1Data.distancesMtx.n_cols > str2Data.distancesMtx.n_cols)
-  {
-    minAtoms = str2Data.distancesMtx.n_cols;
-    maxAtoms = str1Data.distancesMtx.n_cols;
-  }
-  else
-  {
-    minAtoms = str1Data.distancesMtx.n_cols;
-    maxAtoms = str2Data.distancesMtx.n_cols;
-  }
-
-  if(minAtoms == 0)
-    return false;
-
-  return true;
-
+  return str1Data.distancesMtx.n_cols != 0 && str2Data.distancesMtx.n_cols != 0;
 }
 
-
-double DistanceMatrixComparator::compareStructuresFull(
-  const DataTyp & str1Data,
-  const DataTyp & str2Data) const
+double
+DistanceMatrixComparator::compareStructuresFull(const DataTyp & str1Data,
+    const DataTyp & str2Data) const
 {
-  typedef PermutationRange< ::std::vector<size_t>, size_t> Range;
+  typedef PermutationRange< ::std::vector< size_t>, size_t> Range;
 
   const size_t numAtoms1 = str1Data.distancesMtx.n_cols;
   const size_t numAtoms2 = str2Data.distancesMtx.n_cols;
-  const unsigned int leastCommonMultiple = math::leastCommonMultiple(numAtoms1, numAtoms2);
+  const unsigned int leastCommonMultiple = math::leastCommonMultiple(numAtoms1,
+      numAtoms2);
 
-  ::std::vector<size_t> indices(leastCommonMultiple);
+  ::std::vector< size_t> indices(leastCommonMultiple);
   for(size_t i = 0; i < leastCommonMultiple; ++i)
     indices[i] = i;
 
@@ -206,7 +213,7 @@ double DistanceMatrixComparator::compareStructuresFull(
 
   double r_ij1, r_ij2, distDiff;
   double sqSum = 0.0;
-  double minSqSum = ::std::numeric_limits<double>::max();
+  double minSqSum = ::std::numeric_limits< double>::max();
   bool speciesMismatch;
   size_t i, j, iRem, permIRem;
 
@@ -215,7 +222,8 @@ double DistanceMatrixComparator::compareStructuresFull(
     speciesMismatch = false;
     for(i = 0; i < leastCommonMultiple; ++i)
     {
-      if(str1Data.speciesList[i % numAtoms1] != str2Data.speciesList[perm[i] % numAtoms2])
+      if(str1Data.speciesList[i % numAtoms1]
+          != str2Data.speciesList[perm[i] % numAtoms2])
       {
         speciesMismatch = true;
         break;
@@ -237,7 +245,7 @@ double DistanceMatrixComparator::compareStructuresFull(
 
           if(r_ij1 + r_ij2 > 0)
           {
-            distDiff =  2.0 * (r_ij1 - r_ij2) / (r_ij1 + r_ij2);
+            distDiff = 2.0 * (r_ij1 - r_ij2) / (r_ij1 + r_ij2);
             sqSum += distDiff * distDiff;
           }
         }
@@ -250,13 +258,14 @@ double DistanceMatrixComparator::compareStructuresFull(
   return sqrt(minSqSum);
 }
 
-double DistanceMatrixComparator::compareStructuresFast(
-    const DataTyp & str1Data,
+double
+DistanceMatrixComparator::compareStructuresFast(const DataTyp & str1Data,
     const DataTyp & str2Data) const
 {
   const size_t numAtoms1 = str1Data.distancesMtx.n_cols;
   const size_t numAtoms2 = str2Data.distancesMtx.n_cols;
-  const unsigned int leastCommonMultiple = utility::math::leastCommonMultiple(numAtoms1, numAtoms2);
+  const unsigned int leastCommonMultiple = math::leastCommonMultiple(numAtoms1,
+      numAtoms2);
 
   size_t i, j, iRem1, iRem2;
   double r_ij1, r_ij2, distDiff;
@@ -272,7 +281,7 @@ double DistanceMatrixComparator::compareStructuresFast(
 
       if(r_ij1 + r_ij2 > 0)
       {
-        distDiff =  2.0 * (r_ij1 - r_ij2) / (r_ij1 + r_ij2);
+        distDiff = 2.0 * (r_ij1 - r_ij2) / (r_ij1 + r_ij2);
         sqSum += distDiff * distDiff;
       }
     }

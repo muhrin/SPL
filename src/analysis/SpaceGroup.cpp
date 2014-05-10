@@ -5,81 +5,135 @@
  *      Author: Martin Uhrin
  */
 
-#include "analysis/SpaceGroup.h"
+#include "spl/analysis/SpaceGroup.h"
+
+#include <iterator>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/foreach.hpp>
+#include <boost/scoped_array.hpp>
 
-extern "C"
-{
+extern "C" {
 #  include <spglib/spglib.h>
 }
 
-#include "common/Structure.h"
+#include "spl/common/Constants.h"
+#include "spl/common/Structure.h"
 
-namespace sstbx {
+namespace spl {
 namespace analysis {
 namespace space_group {
 
-//static const double DEFAULT_PRECISION = 0.05;
-
-bool getSpacegroupInfo(
-  SpacegroupInfo & outInfo,
-  const common::Structure & structure,
-  const double precision)
+class SpgData
 {
-  if(!structure.getUnitCell())
+public:
+  SpgData(SPGCONST double lattice[3][3], SPGCONST double positions[][3],
+      const int species[], const size_t numAtoms, const double precision) :
+      myDataset(
+          spg_get_dataset(lattice, positions, species,
+              static_cast< int>(numAtoms), precision))
+  {
+  }
+
+  ~SpgData()
+  {
+    // Clean up
+    if(myDataset)
+      spg_free_dataset(myDataset);
+  }
+
+  const SpglibDataset * const
+  operator ->() const
+  {
+    return myDataset;
+  }
+private:
+  SpglibDataset * const myDataset;
+};
+
+double
+getPrecision(const common::Structure & structure, const double precisionFactor)
+{
+  SSLIB_ASSERT(structure.getNumAtoms() != 0);
+  SSLIB_ASSERT(structure.getUnitCell());
+
+  const double volPerAtom = structure.getUnitCell()->getVolume()
+      / static_cast< double>(structure.getNumAtoms());
+  return precisionFactor * std::pow(volPerAtom, common::constants::ONE_THIRD);
+}
+
+bool
+getSpacegroupInfo(SpacegroupInfo & outInfo, const common::Structure & structure,
+    const double precision)
+{
+  typedef double (*PointsArray)[3];
+
+  if(!structure.getUnitCell() || structure.getNumAtoms() == 0)
     return false;
 
   double lattice[3][3];
-  const common::UnitCell * const cell = structure.getUnitCell();
-  const::arma::mat33 & orthoMtx = cell->getOrthoMtx();
+  const common::UnitCell & cell = *structure.getUnitCell();
+  const arma::mat33 & orthoMtx = cell.getOrthoMtx();
   for(size_t i = 0; i < 3; ++i)
   {
     for(size_t j = 0; j < 3; ++j)
     {
       // Row-major = column-major
+      // [row][col] = mtx(row, col)
       lattice[i][j] = orthoMtx(i, j);
     }
   }
 
   const size_t numAtoms = structure.getNumAtoms();
-  double (*positions)[3] = new double[numAtoms][3];
-  ::arma::mat posMtx;
+  boost::scoped_array< double> posStorage(new double[numAtoms * 3]);
+  PointsArray positions = reinterpret_cast< PointsArray>(posStorage.get());
+  arma::mat posMtx;
   structure.getAtomPositions(posMtx);
-  cell->cartsToFracInplace(posMtx);
+  cell.cartsToFracInplace(posMtx);
+  cell.wrapVecsFracInplace(posMtx);
   for(size_t i = 0; i < numAtoms; ++i)
   {
     for(size_t j = 0; j < 3; ++j)
     {
       // Row-major = column-major
+      // [atomIdx][X/Y/Z] = mtx(X/Y/Z, atomIdx)
       positions[i][j] = posMtx(j, i);
     }
   }
 
-  ::std::vector<common::AtomSpeciesId::Value> speciesVec;
-  structure.getAtomSpecies(speciesVec);
-  ::boost::scoped_array<int> species(new int[speciesVec.size()]);
-  for(size_t i = 0; i < speciesVec.size(); ++i)
+  std::vector< common::AtomSpeciesId::Value> speciesVec;
+  structure.getAtomSpecies(std::back_inserter(speciesVec));
+  std::map< common::AtomSpeciesId::Value, int> speciesIndices;
+  int idx = 0;
+  BOOST_FOREACH(const common::AtomSpeciesId::Value & speciesId, speciesVec)
   {
-    species[i] = speciesVec[i].ordinal();
+    if(speciesIndices.insert(std::make_pair(speciesId, idx)).second == true)
+      ++idx;
   }
-  
+
+  boost::scoped_array< int> species(new int[speciesVec.size()]);
+  for(size_t i = 0; i < speciesVec.size(); ++i)
+    species[i] = speciesIndices[speciesVec[i]];
+
   // Get the space group
-  SpglibDataset * spgData =
-    spg_get_dataset(lattice, positions, species.get(), numAtoms, precision);
+  SpgData spgData(lattice, positions, species.get(), numAtoms,
+      getPrecision(structure, precision));
 
   // Extract the spacegroup info
-  outInfo.number = (unsigned int)spgData->spacegroup_number;
-  outInfo.iucSymbol = spgData->international_symbol;
-  ::boost::algorithm::trim(outInfo.iucSymbol);
-  outInfo.hallSymbol = spgData->hall_symbol;
-  ::boost::algorithm::trim(outInfo.hallSymbol);
+  const bool foundSpacegroup = spgData->spacegroup_number != 0;
+  if(foundSpacegroup)
+  {
+    outInfo.number = static_cast< unsigned int>(spgData->spacegroup_number);
+    outInfo.iucSymbol = spgData->international_symbol;
+    boost::algorithm::trim(outInfo.iucSymbol);
+    outInfo.hallSymbol = spgData->hall_symbol;
+    boost::algorithm::trim(outInfo.hallSymbol);
+  }
 
   // Clean up
-  spg_free_dataset(spgData);
-  delete [] positions;
+  positions = NULL;
 
-  return true;
+  return foundSpacegroup;
 }
 
 }

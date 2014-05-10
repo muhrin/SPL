@@ -6,7 +6,7 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "common/Constants.h"
+#include "spl/common/Constants.h"
 
 
 // NAMESPACES ///////////////////////////////////
@@ -14,10 +14,20 @@
 
 // STATIC ///////////////////////////////////////
 
-namespace sstbx { namespace common {
+namespace spl {
+namespace common {
+namespace constants {
 
-const double Constants::PI(3.141592653589793238462643383279502884197);
-const double Constants::DEG_TO_RAD(PI/180.0);
-const double Constants::RAD_TO_DEG(180.0/PI);
+const double PI(3.141592653589793238462643383279502884197);
+const double TWO_PI(2.0 * PI);
+const double DEG_TO_RAD(PI/180.0);
+const double RAD_TO_DEG(180.0/PI);
 
-}}
+const double ONE_HALF = 1.0 / 2.0;
+const double ONE_THIRD = 1.0 / 3.0;
+const double THREE_FOURTHS = 3.0 / 4.0;
+const double FOUR_THIRDS = 4.0 / 3.0;
+
+}
+}
+}

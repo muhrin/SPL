@@ -11,43 +11,44 @@
 #include <iostream>
 
 #include <boost/exception/diagnostic_information.hpp>
+#include <boost/filesystem.hpp>
 
-#include <yaml-cpp/yaml.h>
+#include <spl/build_cell/BuildCellFwd.h>
+#include <spl/factory/FactoryError.h>
+#include <spl/factory/SsLibFactoryYaml.h>
+#include <spl/factory/SsLibYamlSchema.h>
 
-#include <build_cell/Types.h>
-#include <common/AtomSpeciesDatabase.h>
-#include <factory/FactoryError.h>
-#include <factory/SsLibFactoryYaml.h>
-#include <factory/SsLibYamlKeywords.h>
+using namespace spl;
 
-namespace ssbc = ::sstbx::build_cell;
-namespace ssc  = ::sstbx::common;
-namespace ssf = ::sstbx::factory;
+BOOST_AUTO_TEST_SUITE(YamlFactory)
 
-namespace kw = ::sstbx::factory::sslib_yaml_keywords;
-
-BOOST_AUTO_TEST_CASE(StructureDescriptionTest)
+BOOST_AUTO_TEST_CASE(StructureGenerator)
 {
-  // Settings ////////////////
-  const char simpleStructure[] = "RandomStructure.sslib";
+  //// Settings ////////////////
+  const char simpleStructure[] = "RandomStructure.yaml";
 
-  ssc::AtomSpeciesDatabase speciesDb;
+  factory::Factory factory;
 
-  ssf::SsLibFactoryYaml factory(speciesDb);
+  BOOST_REQUIRE(boost::filesystem::exists(boost::filesystem::path(simpleStructure)));
+  const YAML::Node loadedNode = YAML::LoadFile(simpleStructure);
+  BOOST_REQUIRE(loadedNode.IsDefined());
 
-  YAML::Node loadedNode = YAML::LoadFile(simpleStructure);
+  factory::builder::StructureGeneratorSchema schema;
+  factory::builder::StructureGenerator generator;
+  schemer::ParseLog log;
+  BOOST_REQUIRE(schema.nodeToValue(loadedNode, &generator, &log));
+  log.printErrors();
+  BOOST_REQUIRE(!log.hasErrors());
 
-  if(loadedNode[kw::RANDOM_STRUCTURE])
+  try
   {
-    const YAML::Node & strNode = loadedNode[kw::RANDOM_STRUCTURE];
-
-    try
-    {
-      ssbc::StructureDescriptionPtr strGen = factory.createStructureDescription(strNode);
-    }
-    catch(const ssf::FactoryError & e)
-    {
-      ::std::cout << ::boost::diagnostic_information(e) << ::std::endl;
-    }
+    build_cell::IStructureGeneratorPtr strGen = factory.createStructureGenerator(generator);
+    BOOST_CHECK(strGen.get());
+  }
+  catch(const factory::FactoryError & e)
+  {
+    std::cerr << boost::diagnostic_information(e) << std::endl;
   }
 }
+
+BOOST_AUTO_TEST_SUITE_END()

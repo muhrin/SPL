@@ -6,13 +6,13 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "utility/HeterogeneousMapKey.h"
+#include "spl/utility/HeterogeneousMapKey.h"
 
 #include <boost/foreach.hpp>
 
-#include "utility/HeterogeneousMap.h"
+#include "spl/utility/HeterogeneousMap.h"
 
-namespace sstbx {
+namespace spl {
 namespace utility {
 
 KeyId::~KeyId()
@@ -29,11 +29,18 @@ KeyId::~KeyId()
 
 void KeyId::insertedIntoMap(HeterogeneousMap & map)
 {
+#ifdef SSLIB_ENABLE_THREAD_AWARE
+  ::boost::lock_guard< ::boost::mutex> guard(myMutex);
+#endif
   myMaps.insert(&map);
 }
 
 void KeyId::removedFromMap(HeterogeneousMap & map)
 {
+#ifdef SSLIB_ENABLE_THREAD_AWARE
+  ::boost::lock_guard< ::boost::mutex> guard(myMutex);
+#endif
+
   MapsSet::iterator it = myMaps.find(&map);
   
   // We should know that we are in the map at the moment,

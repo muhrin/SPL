@@ -12,9 +12,9 @@
 
 #include <boost/foreach.hpp>
 
-#include <utility/MultiIdx.h>
+#include <spl/utility/MultiIdx.h>
 
-namespace ssu = ::sstbx::utility;
+namespace ssu = ::spl::utility;
 
 BOOST_AUTO_TEST_CASE(BasicTest)
 {
