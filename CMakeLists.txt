@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(SSLib)
+project(SPL)
 
 # Tell CMake where to find modules
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules/;${CMAKE_MODULE_PATH}")
@@ -12,28 +12,25 @@ set(SSLIB_VERSION "${SSLIB_VERSION_MAJOR}.${SSLIB_VERSION_MINOR}.${SSLIB_VERSION
 
 message(STATUS "Configuring SPL ${SSLIB_VERSION}")
 
-## FIND PACKAGES ########################################
+include(cmake/utility.cmake)
 
-# Tell CMake where to find modules
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules/")
+## FIND PACKAGES ########################################
 
 # Boost #
 # Disable auto-linking
 add_definitions(-DBOOST_ALL_NO_LIB)
 if(SSLIB_ENABLE_THREAD_AWARE)
-  find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem regex thread)
+  find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem regex thread QUIET)
 else()
-  find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem regex)
+  find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem regex QUIET)
 endif(SSLIB_ENABLE_THREAD_AWARE)
 
 #
 # Armadillo #
-if(NOT ARMADILLO_INCLUDE_DIRS)
-  find_package(Armadillo CONFIG REQUIRED)
-  if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
-    set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
-  endif()
-endif(NOT ARMADILLO_INCLUDE_DIRS)
+find_package(Armadillo REQUIRED)
+if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
+  set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
+endif()
 
 #
 # CGAL #
@@ -42,15 +39,9 @@ if(CGAL_FOUND)
   include( ${CGAL_USE_FILE} )
 endif(CGAL_FOUND)
 
-#
-# spglib, only look if it hasn't already been found
-if(NOT SPGLIB_LIBRARIES)
-  find_package(Spglib REQUIRED)
-endif(NOT SPGLIB_LIBRARIES)
-
-#
-# YamlCpp
+find_package(Spglib REQUIRED QUIET)
 find_package(YamlCpp QUIET)
+find_package_or_install(Schemer)
 
 ## END FIND PACKAGES ####################################
 
@@ -67,24 +58,40 @@ configure_file(
   "${PROJECT_SOURCE_DIR}/include/spl/SSLibConfig.h.in"
   "${PROJECT_BINARY_DIR}/include/spl/SSLibConfig.h"
 )
+configure_file(
+  "${PROJECT_SOURCE_DIR}/include/spl/version.h.in"
+  "${PROJECT_BINARY_DIR}/include/spl/version.h"
+)
+
+# Offer the user the choice of overriding the installation directories
+set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
+set(INSTALL_INCLUDE_DIR include CACHE PATH  "Installation directory for header files"
+)
+if(WIN32 AND NOT CYGWIN)
+  set(DEF_INSTALL_CMAKE_DIR CMake)
+else()
+  set(DEF_INSTALL_CMAKE_DIR share/SPL/cmake)
+endif()
+set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for
+ CMake files")
+
+# Make relative paths absolute (needed later on)
+foreach(p LIB INCLUDE CMAKE)
+  set(var INSTALL_${p}_DIR)
+  if(NOT IS_ABSOLUTE "${${var}}")
+    set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
+  endif()
+endforeach()
+
 
 ## END CONFIGURATION SETTINGS ##########################
-
-## EXTERNAL DEPENDENCIES ###############################
-
-if(SPL_WITH_YAML)
-  add_subdirectory(external/schemer)
-  include_directories(external/schemer/include)
-endif(SPL_WITH_YAML)
-
-## END EXTERNAL DEPENDENCIES ###########################
 
 ## INCLUDE DIRECTORIES ##################################
 
 set(SSLIB_LOCAL_INCLUDE_DIRS
-  ${PROJECT_BINARY_DIR}/include  # So that we find SSLibConfig.h
+  ${PROJECT_BINARY_DIR}/include  # So that we find cmake configured headers
   ${PROJECT_SOURCE_DIR}/include
-  CACHE INTERNAL "Internal variable used to set the local include directories used by SSLib"
+  CACHE INTERNAL "Internal variable used to set the local include directories used by SPL"
   FORCE
 )
 
@@ -94,6 +101,7 @@ include_directories(
   ${ARMADILLO_INCLUDE_DIRS}
   ${SSLIB_LOCAL_INCLUDE_DIRS}
   ${SPGLIB_INCLUDE_DIRS}
+  ${SCHEMER_INCLUDE_DIRS}
 )
 
 # Include YAML if we're using it
@@ -116,43 +124,89 @@ set(SSLIB_INCLUDE_DIRS
 )
 
 # Process header and source files
-include(IncludeLists.txt)
-include(SrcLists.txt)
+include(Include.cmake)
+include(Src.cmake)
 
-set_property(TARGET PROPERTY PROJECT_LABEL "SSLib")
+set_property(TARGET PROPERTY PROJECT_LABEL "SPL")
 
 ## BUILD SSLIB #############################################
 
-add_library(sslib
+add_library(spl
   ${sslib_Header_Files}
   ${sslib_Source_Files}
 )
 
 # Libraries we need to link to
-target_link_libraries(sslib
+target_link_libraries(spl
   ${Boost_LIBRARIES}
   ${SPGLIB_LIBRARIES}
   ${ARMADILLO_LIBRARIES}
+  ${SCHEMER_LIBRARIES}
 )
 
 if(SPL_WITH_YAML)
-  target_link_libraries(sslib
+  target_link_libraries(spl
     ${YAML_CPP_LIBRARIES}
     schemer
   )
 endif(SPL_WITH_YAML)
 
 if(SPL_WITH_CGAL)
-  target_link_libraries(sslib
+  target_link_libraries(spl
     ${CGAL_LIBRARY}
     ${CGAL_Core_LIBRARY}
   )
 endif(SPL_WITH_CGAL)
 
-install(TARGETS sslib
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
+install(TARGETS spl
+  EXPORT SPLTargets
+  PUBLIC_HEADER DESTINATION ${INSTALL_INCLUDE_DIR} COMPONENT dev
+  LIBRARY DESTINATION ${INSTALL_LIB_DIR} COMPONENT shlib
+  ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
 )
+install(DIRECTORY include/ DESTINATION ${INSTALL_INCLUDE_DIR}
+  COMPONENT dev
+  PATTERN "*.in" EXCLUDE
+)
+
+###
+### Configuration file settings
+###
+# Add all targets to the build-tree export set
+export(TARGETS spl FILE "${PROJECT_BINARY_DIR}/SchemerTargets.cmake")
+
+# Export the package for use from the build-tree
+# (this registers the build-tree with a global CMake-registry)
+export(PACKAGE SPL)
+
+# Create the SpglibConfig.cmake and SpglibConfigVersion.cmake files
+file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
+   "${INSTALL_INCLUDE_DIR}")
+
+# ... for the build tree
+set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
+configure_file(cmake/SPLConfig.cmake.in
+  "${PROJECT_BINARY_DIR}/SPLConfig.cmake" @ONLY)
+
+# ... for the install tree
+set(CONF_INCLUDE_DIRS "\${SPL_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+configure_file(cmake/SPLConfig.cmake.in
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/SPLConfig.cmake" @ONLY)
+
+# ... for both
+configure_file(cmake/SPLConfigVersion.cmake.in
+  "${PROJECT_BINARY_DIR}/SPLConfigVersion.cmake" @ONLY)
+
+# Install the *Config.cmake and *ConfigVersion.cmake
+install(FILES
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/SPLConfig.cmake"
+  "${PROJECT_BINARY_DIR}/SPLConfigVersion.cmake"
+  DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+
+# Install the export set for use with the install-tree
+install(EXPORT SPLTargets DESTINATION
+  "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+
 
 ###########
 ## Tests ##

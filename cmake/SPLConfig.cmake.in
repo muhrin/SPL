@@ -1,0 +1,19 @@
+# - Config file for the spglib package
+# It defines the following variables
+#  SPL_INCLUDE_DIRS - include directories for Spglib
+#  SPL_LIBRARIES    - libraries to link against
+ 
+# Compute paths
+get_filename_component(SPL_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(SPL_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+ 
+# Our library dependencies (contains definitions for IMPORTED targets)
+# guard against multiple inclusions, see:
+# http://public.kitware.com/pipermail/cmake-developers/2011-November/002456.html
+if(NOT SPL_TARGETS_INCLUDED)
+  set(SPL_TARGETS_INCLUDED 1)
+  include("${SPL_CMAKE_DIR}/SPLTargets.cmake")
+endif()
+ 
+# These are IMPORTED targets created by SchemerTargets.cmake
+set(SPL_LIBRARIES spl)
