@@ -62,6 +62,10 @@ configure_file(
   "${PROJECT_SOURCE_DIR}/include/spl/version.h.in"
   "${PROJECT_BINARY_DIR}/include/spl/version.h"
 )
+set(GENERATED_FILES
+  "${PROJECT_BINARY_DIR}/include/spl/SSLibConfig.h"
+  "${PROJECT_BINARY_DIR}/include/spl/version.h"
+)
 
 # Offer the user the choice of overriding the installation directories
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
@@ -168,6 +172,11 @@ install(DIRECTORY include/ DESTINATION ${INSTALL_INCLUDE_DIR}
   COMPONENT dev
   PATTERN "*.in" EXCLUDE
 )
+install(FILES ${GENERATED_FILES}
+  DESTINATION ${INSTALL_INCLUDE_DIR}
+  COMPONENT dev
+)
+
 
 ###
 ### Configuration file settings
