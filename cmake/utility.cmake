@@ -51,7 +51,7 @@ macro(find_package_or_install lib)
     if(INSTALL_PATH)
       # Add the build path of the library as a subdirectory so that
       # it is rebuilt if it changes
-      add_subdirectory("${CMAKE_BINARY_DIR}/${lib}" "${CMAKE_BINARY_DIR}")
+      add_subdirectory("${CMAKE_BINARY_DIR}/${lib}" "${CMAKE_BINARY_DIR}/${lib}")
       unset(INSTALL_PATH)
     endif(INSTALL_PATH)
   endif()
