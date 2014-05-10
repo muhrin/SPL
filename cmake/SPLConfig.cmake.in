@@ -15,5 +15,5 @@ if(NOT SPL_TARGETS_INCLUDED)
   include("${SPL_CMAKE_DIR}/SPLTargets.cmake")
 endif()
  
-# These are IMPORTED targets created by SchemerTargets.cmake
+# These are IMPORTED targets created by SPLTargets.cmake
 set(SPL_LIBRARIES spl)

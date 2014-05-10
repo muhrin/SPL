@@ -28,7 +28,9 @@ function(try_installing lib ret_install_path)
       "${INSTALL_PREFIX}" "." 
       WORKING_DIRECTORY ${BUILD_DIR} OUTPUT_QUIET)
     execute_process(COMMAND ${CMAKE_COMMAND} "--build" "." "--target"
-      WORKING_DIRECTORY ${BUILD_DIR} OUTPUT_QUIET)
+      WORKING_DIRECTORY ${BUILD_DIR})
+
+    # Tell our caller where we installed the lib to
     set(${ret_install_path}
       "${BUILD_DIR}/install" PARENT_SCOPE
     )
@@ -49,12 +51,12 @@ macro(find_package_or_install lib)
     if(INSTALL_PATH)
       # Add the build path of the library as a subdirectory so that
       # it is rebuilt if it changes
-      add_subdirectory("${CMAKE_BINARY_DIR}/${lib}")
+      add_subdirectory("${CMAKE_BINARY_DIR}/${lib}" "${CMAKE_BINARY_DIR}")
       unset(INSTALL_PATH)
     endif(INSTALL_PATH)
   endif()
   if(${${lib}_FOUND})
-    message(STATUS "Found ${lib}: ${${lib}_DIR} (${${lib}_VERSION})")
+    message(STATUS "Found ${lib}: ${${lib}_DIR} (v${${lib}_VERSION})")
   endif()
 
 endmacro(find_package_or_install)

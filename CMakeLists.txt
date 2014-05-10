@@ -173,7 +173,7 @@ install(DIRECTORY include/ DESTINATION ${INSTALL_INCLUDE_DIR}
 ### Configuration file settings
 ###
 # Add all targets to the build-tree export set
-export(TARGETS spl FILE "${PROJECT_BINARY_DIR}/SchemerTargets.cmake")
+export(TARGETS spl FILE "${PROJECT_BINARY_DIR}/SPLTargets.cmake")
 
 # Export the package for use from the build-tree
 # (this registers the build-tree with a global CMake-registry)
