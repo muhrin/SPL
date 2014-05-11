@@ -13,16 +13,9 @@
 #include <time.h>
 
 #include <boost/version.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/normal_distribution.hpp>
-#if BOOST_VERSION / 100000 <= 1 && BOOST_VERSION / 100 % 1000 <= 42
+#include <boost/random.hpp>
+#if BOOST_VERSION / 100000 <= 1 && BOOST_VERSION / 100 % 1000 <= 46
 #  define SSLIB_USE_BOOST_OLD_RANDOM
-#  include <boost/random/uniform_int.hpp>
-#  include <boost/random/uniform_real.hpp>
-#  include <boost/random/variate_generator.hpp>
-#else
-#  include <boost/random/uniform_int_distribution.hpp>
-#  include <boost/random/uniform_real_distribution.hpp>
 #endif
 #include <boost/type_traits/is_integral.hpp>
 
