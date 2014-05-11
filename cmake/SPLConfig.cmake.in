@@ -1,6 +1,6 @@
-# - Config file for the spglib package
+# - Config file
 # It defines the following variables
-#  SPL_INCLUDE_DIRS - include directories for Spglib
+#  SPL_INCLUDE_DIRS - include directories
 #  SPL_LIBRARIES    - libraries to link against
  
 # Compute paths

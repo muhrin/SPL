@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 2.6)
 
 project(SPL)
 
-# Tell CMake where to find modules
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules/;${CMAKE_MODULE_PATH}")
-
 set(SPL_VERSION_MAJOR 0)
 set(SPL_VERSION_MINOR 3)
 set(SPL_VERSION_PATCH 0)
