@@ -106,12 +106,12 @@ add_executable(spltest
   sslibtest.cpp
 )
 
-add_dependencies(spltest sslib)
+add_dependencies(spltest spl)
 
 # Libraries we need to link to
 target_link_libraries(spltest
   ${Boost_LIBRARIES}
   ${ARMADILLO_LIBRARIES}
   spglib
-  sslib
+  spl
 )
