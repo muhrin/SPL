@@ -21,7 +21,7 @@ namespace spl {
 namespace potential {
 
 // Using 2^(1/6) s is the equilibrium separation of the centres.
-const double LennardJones::EQUILIBRIUM_FACTOR = ::std::pow(2, 1.0 / 6.0);
+const double LennardJones::EQUILIBRIUM_FACTOR = std::pow(2, 1.0 / 6.0);
 const double LennardJones::MIN_SEPARATION_SQ = 1e-20;
 
 unsigned int
@@ -31,8 +31,8 @@ LennardJones::numParams(const unsigned int numSpecies)
 }
 
 LennardJones::LennardJones(const SpeciesList & speciesList,
-    const ::arma::mat & epsilon, const ::arma::mat & sigma,
-    const double cutoffFactor, const ::arma::mat & beta, const double m,
+    const arma::mat & epsilon, const arma::mat & sigma,
+    const double cutoffFactor, const arma::mat & beta, const double m,
     const double n, const CombiningRule::Value combiningRule) :
     myName("Simple pair potential"), myNumSpecies(speciesList.size()), mySpeciesList(
         speciesList), myEpsilon(epsilon), mySigma(sigma), myBeta(beta), myCutoffFactor(
@@ -77,8 +77,8 @@ LennardJones::initCutoff()
     }
   }
   // Copy over upper triangular
-  eShift = ::arma::trimatu(eShift);
-  fShift = ::arma::trimatl(fShift);
+  eShift = arma::trimatu(eShift);
+  fShift = arma::trimatu(fShift);
 }
 
 void
@@ -88,7 +88,7 @@ LennardJones::applyCombiningRule()
   applySizeRule(mySigma, myCombiningRule);
 }
 
-const ::std::string &
+const std::string &
 LennardJones::getName() const
 {
   return myName;
@@ -200,21 +200,21 @@ LennardJones::evaluate(const common::Structure & structure,
     SimplePairPotentialData & data) const
 {
   using namespace utility::cart_coords_enum;
-  using ::std::vector;
-  using ::std::pow;
-  using ::std::sqrt;
+  using std::vector;
+  using std::pow;
+  using std::sqrt;
 
   double rSq;
   double prefactor;
   double sigmaOModR, invRM, invRN;
   double dE, modR, modF, interaction;
   size_t speciesI, speciesJ; // Species indices
-  ::arma::vec3 f; // Displacement and force vectors
-  ::arma::vec3 posI, posJ; // Position vectors
+  arma::vec3 f; // Displacement and force vectors
+  arma::vec3 posI, posJ; // Position vectors
 
   resetAccumulators(data);
 
-  vector< ::arma::vec3> imageVectors;
+  vector< arma::vec3> imageVectors;
 
   const common::DistanceCalculator & distCalc =
       structure.getDistanceCalculator();
@@ -250,7 +250,7 @@ LennardJones::evaluate(const common::Structure & structure,
       interaction = (i == j) ? 0.5 : 1.0;
       prefactor = 4.0 * myEpsilon(speciesI, speciesJ);
 
-      BOOST_FOREACH(const ::arma::vec & r, imageVectors)
+      BOOST_FOREACH(const arma::vec & r, imageVectors)
       {
         // Get the distance squared
         rSq = dot(r, r);
@@ -280,6 +280,8 @@ LennardJones::evaluate(const common::Structure & structure,
           // Make sure we get energy/force correct for self-interaction
           f *= interaction;
           dE *= interaction;
+
+          std::cout << modR << " " << dE << "\n";
 
           // Update system values
           // energy
@@ -327,9 +329,9 @@ LennardJones::evaluate(const common::Structure & structure,
 
 ::boost::optional< double>
 LennardJones::getPotentialRadius(
-    const ::spl::common::AtomSpeciesId::Value id) const
+    const spl::common::AtomSpeciesId::Value id) const
 {
-  ::boost::optional< double> radius = getSpeciesPairDistance(id, id);
+  boost::optional< double> radius = getSpeciesPairDistance(id, id);
   if(radius)
     *radius *= 0.5;
 
@@ -341,9 +343,9 @@ LennardJones::getSpeciesPairDistance(common::AtomSpeciesId::Value s1,
     common::AtomSpeciesId::Value s2) const
 {
   if(s1 < s2)
-    ::std::swap(s1, s2);
+    std::swap(s1, s2);
 
-  ::boost::optional< double> dist;
+  boost::optional< double> dist;
   int idx1 = -1, idx2 = -1;
   for(size_t i = 0; i < mySpeciesList.size(); ++i)
   {
@@ -366,11 +368,11 @@ LennardJones::getSpeciesPairDistance(common::AtomSpeciesId::Value s1,
 LennardJones::createEvaluator(const spl::common::Structure & structure) const
 {
   // Build the data from the structure
-  ::std::auto_ptr< SimplePairPotentialData> data(
+  std::auto_ptr< SimplePairPotentialData> data(
       new SimplePairPotentialData(structure, mySpeciesList));
 
   // Create the evaluator
-  return ::boost::shared_ptr< IPotentialEvaluator>(
+  return boost::shared_ptr< IPotentialEvaluator>(
       new Evaluator(*this, structure, data));
 }
 
@@ -401,7 +403,7 @@ LennardJones::updateEquilibriumSeparations()
     // TODO: Use root finder to solve for the F(r) = 0 point
   }
   // Copy over upper triangular
-  myEquilibriumSeps = ::arma::symmatu(myEquilibriumSeps);
+  myEquilibriumSeps = arma::symmatu(myEquilibriumSeps);
 }
 
 }
