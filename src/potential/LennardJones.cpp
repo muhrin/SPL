@@ -281,8 +281,6 @@ LennardJones::evaluate(const common::Structure & structure,
           f *= interaction;
           dE *= interaction;
 
-          std::cout << modR << " " << dE << "\n";
-
           // Update system values
           // energy
           data.internalEnergy += dE;
