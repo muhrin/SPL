@@ -9,7 +9,7 @@
 #define UNIT_CELL_H
 
 // INCLUDES ///////////////////////////////////
-#include "spl/SSLibTypes.h"
+#include "spl/SSLib.h"
 
 #include <set>
 

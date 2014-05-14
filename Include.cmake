@@ -283,7 +283,7 @@ set(sslib_Header_Files__
   ${PROJECT_BINARY_DIR}/include/spl/SSLibConfig.h
   include/spl/SSLibAssert.h
   include/spl/SSLib.h
-  include/spl/SSLibTypes.h
+  include/spl/Types.h
 )
 source_group("Header Files" FILES ${sslib_Header_Files__})
 

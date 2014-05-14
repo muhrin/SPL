@@ -30,24 +30,23 @@ class AtomSpeciesDatabase;
 class Structure;
 }
 namespace build_cell {
-typedef utility::OrderedPair< std::string> SpeciesPair;
 class BuildAtomInfo;
 class StructureContents;
 class SymmetryGroup;
 
 class StructureBuild
 {
-  typedef ::std::map< const common::Atom *, BuildAtomInfo *> AtomInfoMap;
-  typedef ::boost::ptr_vector< BuildAtomInfo> AtomInfoList;
+  typedef std::map< const common::Atom *, BuildAtomInfo *> AtomInfoMap;
+  typedef boost::ptr_vector< BuildAtomInfo> AtomInfoList;
 public:
-  typedef ::std::set< size_t> FixedSet;
+  typedef std::set< size_t> FixedSet;
   typedef UniquePtr< SymmetryGroup>::Type SymmetryGroupPtr;
   typedef AtomInfoList::iterator AtomInfoIterator;
   typedef UniquePtr< GeneratorShape>::Type GenShapePtr;
-  typedef ::std::vector< ::arma::mat44> TransformStack;
+  typedef std::vector< arma::mat44> TransformStack;
 
-  typedef ::std::map< SpeciesPair, double> SpeciesPairDistances;
-  typedef ::std::vector< SpeciesPairDistances> SpeciesPairDistancesStack;
+  typedef std::map< SpeciesPair, double> SpeciesPairDistances;
+  typedef std::vector< SpeciesPairDistances> SpeciesPairDistancesStack;
 
   class RadiusCalculator
   {
@@ -63,10 +62,10 @@ public:
     bool isMultiplier;
   };
 
-  class TransformPusher : ::boost::noncopyable
+  class TransformPusher : boost::noncopyable
   {
   public:
-    TransformPusher(StructureBuild & build, const ::arma::mat44 & trans) :
+    TransformPusher(StructureBuild & build, const arma::mat44 & trans) :
         myBuild(build)
     {
       myBuild.pushTransform(trans);
@@ -79,7 +78,7 @@ public:
     StructureBuild & myBuild;
   };
 
-  class SpeciesDistancesPusher : ::boost::noncopyable
+  class SpeciesDistancesPusher : boost::noncopyable
   {
   public:
     SpeciesDistancesPusher(StructureBuild & build,
@@ -142,10 +141,10 @@ public:
   separateAtoms();
 
   void
-  pushTransform(const ::arma::mat44 & transform);
+  pushTransform(const arma::mat44 & transform);
   void
   popTransform();
-  const ::arma::mat44 &
+  const arma::mat44 &
   getTransform() const;
 
   void
@@ -160,7 +159,7 @@ private:
   atomInserted(BuildAtomInfo & atomInfo, common::Atom & atom);
   void
   atomRemoved(common::Atom & atom);
-  ::arma::mat
+  arma::mat
   generateSepSqMatrix() const;
 
   common::Structure & myStructure;
@@ -174,7 +173,7 @@ private:
   const double myAtomsOverlap;
 
   TransformStack myTransformStack;
-  mutable ::arma::mat44 myTransform;
+  mutable arma::mat44 myTransform;
   mutable bool myTransformCurrent;
 
   SpeciesPairDistancesStack mySpeciesPairDistancesStack;

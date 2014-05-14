@@ -277,7 +277,7 @@ StructureBuild::generateSepSqMatrix() const
   const size_t numAtoms = myStructure.getNumAtoms();
   ::arma::mat sepSq = ::arma::zeros(numAtoms, numAtoms);
 
-  common::SpeciesPair pair;
+  SpeciesPair pair;
   for(size_t i = 0; i < numAtoms; ++i)
   {
     const common::Atom & atomI = myStructure.getAtom(i);

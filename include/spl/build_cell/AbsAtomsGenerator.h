@@ -9,7 +9,6 @@
 #define ABS_ATOMS_GENERATOR_H
 
 // INCLUDES /////////////////////////////////
-
 #include "spl/SSLib.h"
 
 #include <map>
@@ -25,7 +24,6 @@
 
 namespace spl {
 namespace build_cell {
-typedef utility::OrderedPair< std::string> SpeciesPair;
 class BuildAtomInfo;
 struct AtomsGeneratorConstructionInfo;
 class StructureBuild;

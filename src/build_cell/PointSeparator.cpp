@@ -41,7 +41,7 @@ SeparationData::SeparationData(const common::Structure & structure,
 {
   typedef std::vector< common::AtomSpeciesId::Value> Labels;
   typedef std::set< common::AtomSpeciesId::Value> Species;
-  typedef std::map< common::SpeciesPair, double> SepList;
+  typedef std::map< SpeciesPair, double> SepList;
 
   const size_t numPoints = structure.getNumAtoms();
   init(numPoints);
@@ -59,7 +59,7 @@ SeparationData::SeparationData(const common::Structure & structure,
   {
     for(Species::const_iterator j = i; j != species.end(); ++j)
     {
-      const common::SpeciesPair pair(*i, *j);
+      const SpeciesPair pair(*i, *j);
       dist = db.getSpeciesPairDistance(pair);
       if(dist)
         sepList[pair] = *dist;

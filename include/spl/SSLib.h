@@ -11,8 +11,7 @@
 // INCLUDES ///////////////////////////////////////////////
 
 #include "spl/SSLibConfig.h"
-
-#include "spl/SSLibTypes.h"
+#include "spl/Types.h"
 
 // DEFINES ///////////////////////////////////////////////
 #ifndef NULL

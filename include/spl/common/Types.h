@@ -10,7 +10,7 @@
 #define COMMON__TYPES_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "spl/SSLibTypes.h"
+#include "spl/SSLib.h"
 
 #include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
@@ -28,13 +28,9 @@ class DistanceCalculator;
 class Structure;
 class UnitCell;
 
-typedef utility::OrderedPair< std::string> SpeciesPair;
-
 typedef UniquePtr<Structure>::Type StructurePtr;
 
 typedef UniquePtr<UnitCell>::Type UnitCellPtr;
-
-typedef UniquePtr<DistanceCalculator>::Type DistanceCalculatorPtr;
 
 namespace types {
 
@@ -42,7 +38,6 @@ typedef UniquePtr<Structure>::Type StructurePtr;
 
 typedef UniquePtr<UnitCell>::Type UnitCellPtr;
 
-typedef UniquePtr<DistanceCalculator>::Type DistanceCalculatorPtr;
 
 }
 }
