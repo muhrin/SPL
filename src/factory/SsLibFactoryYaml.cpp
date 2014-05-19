@@ -203,11 +203,13 @@ Factory::createPotential(const Potential & options) const
 
   if(options.lj)
   {
-    pot.reset(
-        new potential::LennardJones(options.lj->species, options.lj->epsilon,
-            options.lj->sigma, options.lj->cutoff, options.lj->beta,
-            options.lj->powers(0), options.lj->powers(1),
-            options.lj->combiningRule));
+    typedef std::map< SpeciesPair, std::vector< double> > Params;
+    UniquePtr< potential::LennardJones>::Type lj(new potential::LennardJones());
+
+    BOOST_FOREACH(Params::const_reference p, options.lj->params)
+      lj->addInteraction(p.first, p.second[0], p.second[1], p.second[2],
+          p.second[3], p.second[4]);
+    pot = lj;
   }
 
   return pot;
@@ -307,7 +309,7 @@ Factory::createStructureBuilder(const builder::Builder & options) const
     if(options.pairDistances)
     {
       BOOST_FOREACH(PairDistances::const_reference entry, *options.pairDistances)
-          group->addSpeciesPairDistance(entry.first, entry.second);
+        group->addSpeciesPairDistance(entry.first, entry.second);
     }
 
     builder->addGenerator(group);

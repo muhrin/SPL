@@ -14,7 +14,6 @@
 
 #include <armadillo>
 
-#include "spl/common/Structure.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
@@ -24,14 +23,13 @@ namespace potential {
 struct PotentialData
 {
   PotentialData();
-  explicit
-  PotentialData(const spl::common::Structure & structure);
 
-  ::std::size_t numParticles;
   double internalEnergy;
-  ::arma::mat pos;
-  ::arma::mat forces;
-  ::arma::mat33 stressMtx;
+  arma::mat forces;
+  arma::mat33 stressMtx;
+
+  void
+  reset();
 };
 
 }

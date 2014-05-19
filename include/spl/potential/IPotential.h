@@ -10,12 +10,13 @@
 #define I_POTENTIAL_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "PotentialData.h"
+#include "spl/SSLib.h"
 
 #include <boost/optional.hpp>
 #include <boost/smart_ptr.hpp>
 
 #include "spl/common/AtomSpeciesId.h"
+#include "spl/potential/PotentialData.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
@@ -38,18 +39,8 @@ public:
   {
   }
 
-  // Get the name of this potential.
-  virtual const ::std::string &
-  getName() const = 0;
-
-  // Get the potential radius for a particular atom species.  Return value is optional as the potential may
-  // not know or may not deal with the species specified.
   virtual ::boost::optional< double>
-  getPotentialRadius(const ::spl::common::AtomSpeciesId::Value id) const = 0;
-
-  virtual ::boost::optional< double>
-  getSpeciesPairDistance(common::AtomSpeciesId::Value s1,
-      common::AtomSpeciesId::Value s2) const = 0;
+  getSpeciesPairDistance(const SpeciesPair & pair) const = 0;
 
   virtual ::boost::shared_ptr< IPotentialEvaluator>
   createEvaluator(const spl::common::Structure & structure) const = 0;

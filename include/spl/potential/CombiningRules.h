@@ -14,12 +14,10 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-
 // DEFINITION //////////////////////////////////////////////
 
 namespace spl {
 namespace potential {
-
 
 // Combining rules for setting off-diagonal length/energy scale terms. See
 // http://www.sklogwiki.org/SklogWiki/index.php/Combining_rules
@@ -29,21 +27,20 @@ struct CombiningRule
 {
   enum Value
   {
-    NONE,
-    LORENTZ,
-    BERTHELOT,
-    LORENTZ_BERTHELOT,
-    UHRIN_PICKARD,
-    UNKNOWN
+    NONE, LORENTZ, BERTHELOT, UHRIN_PICKARD,
+
+    NUM_RULES
   };
 };
 
-bool applyEnergyRule(::arma::mat & energyParams, const CombiningRule::Value rule);
-bool applySizeRule(::arma::mat & sizeParams, const CombiningRule::Value rule);
+std::ostream &
+operator <<(std::ostream & os, const CombiningRule::Value & rule);
 
-CombiningRule::Value getRuleFromString(const ::std::string str);
-::std::string getStringFromRule(const CombiningRule::Value rule);
+std::istream &
+operator >>(std::istream & is, CombiningRule::Value & rule);
 
+double
+applyRule(const CombiningRule::Value rule, const double x1, const double x2);
 
 }
 }

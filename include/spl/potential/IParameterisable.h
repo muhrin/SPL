@@ -13,6 +13,7 @@
 #include <armadillo>
 
 #include <utility>
+#include <string>
 #include <vector>
 
 // DEFINES //////////////////////////////////////////////
@@ -28,24 +29,23 @@ namespace potential {
 class IParameterisable
 {
 public:
-  typedef ::std::vector< double> PotentialParams;
-
   virtual
   ~IParameterisable()
   {
   }
 
-  // Returns the number of parameters that this potential has.
-  virtual size_t
-  getNumParams() const = 0;
-
   // Get the current parameters vector for this potential.
-  virtual PotentialParams
+  virtual std::vector< std::string>
   getParams() const = 0;
 
-  // Set the parameters for this potential.
-  virtual void
-  setParams(const PotentialParams & params) = 0;
+  // Set the parameters for this potential
+  virtual bool
+  setParams(const std::vector< std::string> & params)
+  {
+    return setParams(params, NULL);
+  }
+  virtual bool
+  setParams(const std::vector< std::string> & params, std::string * const errorMsg) = 0;
 
   virtual bool
   updateSpeciesDb(common::AtomSpeciesDatabase * const speciesDb) const = 0;

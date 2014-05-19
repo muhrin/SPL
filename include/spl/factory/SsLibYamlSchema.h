@@ -55,13 +55,8 @@ SCHEMER_MAP(MinMaxSchema, MinMax)
 
 struct LennardJones
 {
-  std::vector< std::string> species;
-  arma::mat epsilon;
-  arma::mat sigma;
-  arma::mat beta;
-  arma::rowvec2 powers;
+  std::map< SpeciesPair, std::vector<double> > params;
   potential::CombiningRule::Value combiningRule;
-  double cutoff;
 };
 
 SCHEMER_ENUM(CombiningRuleSchema, potential::CombiningRule::Value)
@@ -69,24 +64,14 @@ SCHEMER_ENUM(CombiningRuleSchema, potential::CombiningRule::Value)
   enumeration("none", potential::CombiningRule::NONE);
   enumeration("lorentz", potential::CombiningRule::LORENTZ);
   enumeration("berthelot", potential::CombiningRule::BERTHELOT);
-  enumeration("lorentzBerthelot", potential::CombiningRule::LORENTZ_BERTHELOT);
-  enumeration("geometric", potential::CombiningRule::UHRIN_PICKARD);
+  enumeration("lj", potential::CombiningRule::UHRIN_PICKARD);
 }
 
 SCHEMER_MAP(LennardJonesSchema, LennardJones)
 {
-  element< StringsVector>("spec", &LennardJones::species);
-  element< TriangularMatrix>("eps", &LennardJones::epsilon);
-  element< TriangularMatrix>("sig", &LennardJones::sigma);
-  element< TriangularMatrix>("beta", &LennardJones::beta);
-
-  arma::rowvec2 powers;
-  powers(0) = 12;
-  powers(1) = 6;
-  element< Rowvec2>("pow", &LennardJones::powers)->defaultValue(powers);
+  element("params", &LennardJones::params);
   element< CombiningRuleSchema>("combining", &LennardJones::combiningRule)->defaultValue(
       potential::CombiningRule::NONE);
-  element("cut", &LennardJones::cutoff)->defaultValue(2.5);
 }
 
 struct Potential

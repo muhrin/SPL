@@ -184,12 +184,14 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
   PotentialData & data = evaluator.getData();
 
   double h, h0, dH;
+  const size_t numParticles = structure.getNumAtoms();
 
-  // Position matrices, current are in data.myPos
-  arma::mat deltaPos(3, data.numParticles);
+  // Position matrices
+  arma::mat pos(3, numParticles), deltaPos(3, numParticles);
+  structure.getAtomPositions(pos);
   // Forces, current are in data.myForces
-  arma::mat f0(3, data.numParticles), deltaF(3, data.numParticles);
-  arma::rowvec fSqNorm(arma::zeros(1, data.numParticles));
+  arma::mat f0(3, numParticles), deltaF(3, numParticles);
+  arma::rowvec fSqNorm(arma::zeros(1, numParticles));
   arma::mat33 absResidualStress;
 
   double xg, gg;
@@ -202,7 +204,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
   dH = std::numeric_limits< double>::max();
   h = 1.0;
 
-  const double dNumAtoms = static_cast< double>(data.numParticles);
+  const double dNumAtoms = static_cast< double>(numParticles);
 
   bool converged = false;
   size_t numLastEvaluationsWithProblem = 0;
@@ -219,6 +221,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
     f0 = data.forces;
 
     // Evaluate the potential
+    data.reset();
     if(!evaluator.evalPotential().second)
     {
       // Couldn't evaluate potential for some reason.  Probably the unit cell
@@ -254,10 +257,10 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
         deltaPos = stepsize * data.forces;
     }
 
-    data.pos += deltaPos;
+    pos += deltaPos;
 
     // Tell the structure about the new positions
-    structure.setAtomPositions(data.pos);
+    structure.setAtomPositions(pos);
 
     dH = h - h0;
     converged = hasConverged(dH / dNumAtoms, fSqNorm.max(), 0.0, settings);
@@ -306,6 +309,9 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
   TpsdGeomOptimiserDebugger debugger;
 #endif
 
+
+  const size_t numParticles = structure.getNumAtoms();
+
   // Set up the external pressure
   const arma::mat33 pressureMtx = *settings.pressure;
 
@@ -314,11 +320,12 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
 
   // Stress matrices
   arma::mat33 s, s0, deltaS, deltaLatticeCar;
-  // Position matrices, current are in data.myPos
-  arma::mat deltaPos(3, data.numParticles);
+  // Position matrices
+  arma::mat pos(3, numParticles), deltaPos(3, numParticles);
+  structure.getAtomPositions(pos);
   // Forces, current are in data.myForces
-  arma::mat f0(3, data.numParticles), deltaF(3, data.numParticles);
-  arma::rowvec fSqNorm(arma::zeros(1, data.numParticles));
+  arma::mat f0(3, numParticles), deltaF(3, numParticles);
+  arma::rowvec fSqNorm(arma::zeros(1, numParticles));
   arma::mat33 residualStress;
 
   arma::mat33 latticeCar;
@@ -336,7 +343,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
   double h0;
   s.zeros();
 
-  const double dNumAtoms = static_cast< double>(data.numParticles);
+  const double dNumAtoms = static_cast< double>(numParticles);
 
   bool converged = false;
   size_t numLastEvaluationsWithProblem = 0;
@@ -355,6 +362,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
     volume = unitCell.getVolume();
 
     // Evaluate the potential
+    data.reset();
     if(!evaluator.evalPotential().second)
     {
       // Couldn't evaluate potential for some reason.  Probably the unit cell
@@ -413,11 +421,11 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
     }
 
     if(*settings.optimisationType & OptimisationSettings::Optimise::ATOMS)
-      data.pos += deltaPos; // Move the particles on by a step
+      pos += deltaPos; // Move the particles on by a step
 
     // Fractionalise coordinates and wrap coordinates
-    unitCell.cartsToFracInplace(data.pos);
-    unitCell.wrapVecsFracInplace(data.pos);
+    unitCell.cartsToFracInplace(pos);
+    unitCell.wrapVecsFracInplace(pos);
 
     if(*settings.optimisationType & OptimisationSettings::Optimise::LATTICE)
     {
@@ -435,10 +443,10 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
     }
 
     // Finally re-orthogonalise the ion positions
-    unitCell.fracsToCartInplace(data.pos);
+    unitCell.fracsToCartInplace(pos);
 
     // Tell the structure about the new positions
-    structure.setAtomPositions(data.pos);
+    structure.setAtomPositions(pos);
 
     dH = h - h0;
 
@@ -460,7 +468,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
   }
 
   // Wrap the particle positions so they stay in the central unit cell
-  unitCell.wrapVecsInplace(data.pos);
+  unitCell.wrapVecsInplace(pos);
 
   // Only a successful optimisation if it has converged
   // and the last potential evaluation had no problems

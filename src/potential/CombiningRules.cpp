@@ -8,125 +8,101 @@
 // INCLUDES //////////////////////////////////
 #include "spl/potential/CombiningRules.h"
 
+#include "spl/SSLib.h"
+
+#include <map>
+
+#include <boost/foreach.hpp>
+
 // NAMESPACES ////////////////////////////////
 
 namespace spl {
 namespace potential {
 
-bool
-applyEnergyRule(arma::mat & energyParams, const CombiningRule::Value rule)
+class Rules
 {
-  if(!energyParams.is_square())
-    return false;
-
-  if(rule == CombiningRule::BERTHELOT
-      || rule == CombiningRule::LORENTZ_BERTHELOT)
+  static std::map< CombiningRule::Value, std::string> map;
+public:
+  static std::string
+  toString(const CombiningRule::Value c)
   {
-    // Apply the Berthelot combining rule
-    for(size_t i = 0; i < energyParams.n_rows - 1; ++i)
+    init();
+    return Rules::map[c];
+  }
+  static CombiningRule::Value
+  fromString(const std::string & s)
+  {
+    typedef std::pair< CombiningRule::Value, std::string> RulePair;
+    init();
+
+    BOOST_FOREACH(const RulePair & r, Rules::map)
     {
-      for(size_t j = i + 1; j < energyParams.n_cols; ++j)
+      if(s == r.second)
       {
-        energyParams(i, j) = energyParams(j, i) = std::sqrt(
-            energyParams(i, i) * energyParams(j, j));
+        return r.first;
+        std::cout << s << " == " << r.second;
       }
+      else
+        std::cout << s << " != " << r.second;
+      std::cout << "\n";
     }
+    return CombiningRule::NUM_RULES;
   }
-  else if(rule == CombiningRule::UHRIN_PICKARD)
+private:
+  Rules()
   {
-    double sum = 0.0;
-    // Apply the Berthelot combining rule
-    for(size_t i = 0; i < energyParams.n_rows - 1; ++i)
-    {
-      for(size_t j = i + 1; j < energyParams.n_cols; ++j)
-      {
-        sum = energyParams(i, i) + energyParams(j, j);
-        energyParams(i, j) = energyParams(j, i) = std::sqrt(16.0 - sum * sum);
-      }
-    }
   }
-
-  return false;
-}
-
-bool
-applySizeRule(arma::mat & sizeParams, const CombiningRule::Value rule)
-{
-  if(!sizeParams.is_square())
-    return false;
-
-  if(rule == CombiningRule::LORENTZ || rule == CombiningRule::LORENTZ_BERTHELOT)
+  static void
+  init()
   {
-    for(size_t i = 0; i < sizeParams.n_rows - 1; ++i)
+    static bool initialised = false;
+    if(!initialised)
     {
-      for(size_t j = i + 1; j < sizeParams.n_cols; ++j)
-        sizeParams(i, j) = sizeParams(j, i) = 0.5
-            * (sizeParams(i, i) + sizeParams(j, j));
+      Rules::map[CombiningRule::NONE] = "none";
+      Rules::map[CombiningRule::LORENTZ] = "lorentz";
+      Rules::map[CombiningRule::BERTHELOT] = "berthelot";
+      Rules::map[CombiningRule::UHRIN_PICKARD] = "lj";
+      initialised = true;
     }
-    return true;
   }
+};
+std::map< CombiningRule::Value, std::string> Rules::map;
 
-  return false;
+std::ostream &
+operator <<(std::ostream & os, const CombiningRule::Value & rule)
+{
+  os << Rules::toString(rule);
+  return os;
 }
 
-CombiningRule::Value
-getRuleFromString(const std::string str)
+std::istream &
+operator >>(std::istream & is, CombiningRule::Value & rule)
 {
-  CombiningRule::Value rule = CombiningRule::NONE;
-
-  if(str == "lorentz")
-    rule = CombiningRule::LORENTZ;
-  else if(str == "berthelot")
-    rule = CombiningRule::BERTHELOT;
-  else if(str == "lorentzBerthelot")
-    rule = CombiningRule::LORENTZ_BERTHELOT;
-  else if(str == "uhrinPickard")
-    rule = CombiningRule::UHRIN_PICKARD;
-  else if(str == "unknown")
-    rule = CombiningRule::UNKNOWN;
-
-  return rule;
+  std::stringstream ss;
+  ss << is;
+  const CombiningRule::Value r = Rules::fromString(ss.str());
+  if(r == CombiningRule::NUM_RULES) // Used to indicate malformed rule
+    is.setstate(is.failbit);
+  else
+    rule = r;
+  return is;
 }
 
-::std::string
-getStringFromRule(const CombiningRule::Value rule)
+double
+applyRule(const CombiningRule::Value rule, const double x1, const double x2)
 {
-  std::string ruleString;
-
   switch(rule)
   {
-  case CombiningRule::NONE:
-  {
-    ruleString = "none";
-    break;
-  }
-  case CombiningRule::LORENTZ:
-  {
-    ruleString = "lorentz";
-    break;
-  }
   case CombiningRule::BERTHELOT:
-  {
-    ruleString = "berthelot";
-    break;
-  }
-  case CombiningRule::LORENTZ_BERTHELOT:
-  {
-    ruleString = "lorentzBerthelot";
-    break;
-  }
+    return sqrt(x1 * x2);
   case CombiningRule::UHRIN_PICKARD:
-  {
-    ruleString = "uhrinPickard";
-    break;
+    return sqrt(16 - (x1 + x2) * (x1 + x2));
+  case CombiningRule::LORENTZ:
+    return 0.5 * (x1 + x2);
   }
-  default:
-  {
-    ruleString = "unknown";
-    break;
-  }
-  }
-  return ruleString;
+
+  SSLIB_ASSERT("Unknown combining rule supplied.");
+  return 0.0;
 }
 
 }

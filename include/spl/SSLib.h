@@ -12,6 +12,7 @@
 
 #include "spl/SSLibConfig.h"
 #include "spl/Types.h"
+#include "spl/SSLibAssert.h"
 
 // DEFINES ///////////////////////////////////////////////
 #ifndef NULL

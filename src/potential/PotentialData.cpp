@@ -10,24 +10,20 @@
 
 // NAMESPACES ////////////////////////////////
 
-
 namespace spl {
 namespace potential {
 
-PotentialData::PotentialData():
-numParticles(0),
-internalEnergy(0.0)
+PotentialData::PotentialData()
 {
+  reset();
 }
 
-PotentialData::PotentialData(const spl::common::Structure & structure)
+void
+PotentialData::reset()
 {
-	numParticles = structure.getNumAtoms();
-	internalEnergy = 0.0;
-	structure.getAtomPositions(pos);
-	forces.set_size(3, numParticles);
-	forces.zeros();
-	stressMtx.zeros();
+  internalEnergy = 0.0;
+  forces.zeros();
+  stressMtx.zeros();
 }
 
 }

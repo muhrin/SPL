@@ -118,7 +118,6 @@ set(sslib_Source_Files__potential
   src/potential/CombiningRules.cpp
   src/potential/ExternalOptimiser.cpp
   src/potential/LennardJones.cpp
-  src/potential/LennardJonesData.cpp
   src/potential/PotentialData.cpp
   src/potential/StructureProperties.cpp
   src/potential/TpsdGeomOptimiser.cpp

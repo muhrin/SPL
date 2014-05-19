@@ -190,12 +190,9 @@ set(sslib_Header_Files__potential
   include/spl/potential/IPotential.h
   include/spl/potential/IPotentialEvaluator.h
   include/spl/potential/LennardJones.h
-  include/spl/potential/LennardJonesData.h
   include/spl/potential/OptimisationSettings.h
   include/spl/potential/PotentialData.h
   include/spl/potential/StructureProperties.h
-  include/spl/potential/TersoffPotential.h
-  include/spl/potential/TersoffPotentialData.h
   include/spl/potential/TpsdGeomOptimiser.h
   include/spl/potential/Types.h
 )
