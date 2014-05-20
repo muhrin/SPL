@@ -25,6 +25,12 @@ namespace potential {
 // Using 2^(1/6) s is the equilibrium separation of the centres.
 const double LennardJones::MIN_SEPARATION_SQ = 1e-20;
 
+LennardJones::LennardJones() :
+    myEpsilonCombining(CombiningRule::NONE), mySigmaCombining(
+        CombiningRule::NONE)
+{
+}
+
 void
 LennardJones::init()
 {
@@ -82,6 +88,7 @@ LennardJones::getParams() const
     params.push_back(lexical_cast< string>(inter.second.sigma));
     params.push_back(lexical_cast< string>(inter.second.m));
     params.push_back(lexical_cast< string>(inter.second.n));
+    params.push_back(lexical_cast< string>(inter.second.cutoff / inter.second.sigma));
   }
 
   params.push_back(lexical_cast< string>(myEpsilonCombining));
@@ -152,7 +159,8 @@ LennardJones::setParams(const std::vector< std::string> & params,
   }
 
   // Do the combining rules
-  CombiningRule::Value epsilonCombining, sigmaCombining;
+  CombiningRule::Value epsilonCombining = CombiningRule::NONE, sigmaCombining =
+      CombiningRule::NONE;
   if(numCombining > 0)
   {
     ParamsIter it = params.begin() + (numInteractions * 6);
@@ -277,29 +285,25 @@ LennardJones::evaluate(const common::Structure & structure,
           data.stressMtx.diag() -= f % r;
 
           data.stressMtx(Y, Z) -= 0.5 * (f(Y) * r(Z) + f(Z) * r(Y));
-          data.stressMtx(Z, X) -= 0.5 * (f(Z) * r(X) + f(X) * r(Z));
+          data.stressMtx(X, Z) -= 0.5 * (f(X) * r(Z) + f(Z) * r(X));
           data.stressMtx(X, Y) -= 0.5 * (f(X) * r(Y) + f(Y) * r(X));
         }
       }
     }
   }
 
-// Symmetrise stress matrix
-  data.stressMtx(2, 1) = data.stressMtx(1, 2);
-  data.stressMtx(0, 2) = data.stressMtx(2, 0);
-  data.stressMtx(1, 0) = data.stressMtx(0, 1);
+  // Symmetrise stress matrix and convert to absolute values
+  data.stressMtx = arma::symmatu(data.stressMtx);
+  const common::UnitCell * const unitCell = structure.getUnitCell();
+  if(unitCell)
+    data.stressMtx *= 1.0 / unitCell->getVolume();
 
-// Now balance forces
-// (do sum of values for each component and divide by number of particles)
+  // Now balance forces
+  // (do sum of values for each component and divide by number of particles)
   f = sum(data.forces, 1) / static_cast< double>(numParticles);
   data.forces.row(X) -= f(Y);
   data.forces.row(Y) -= f(X);
   data.forces.row(Z) -= f(Z);
-
-// Convert stress matrix to absolute values
-  const common::UnitCell * const unitCell = structure.getUnitCell();
-  if(unitCell)
-    data.stressMtx *= 1.0 / unitCell->getVolume();
 
 // Completed successfully
   return !problemDuringCalculation;
@@ -360,10 +364,10 @@ LennardJones::getSpeciesPairDistance(const SpeciesPair & pair) const
 boost::shared_ptr< IPotentialEvaluator>
 LennardJones::createEvaluator(const spl::common::Structure & structure) const
 {
-// Build the data from the structure
-  UniquePtr< PotentialData>::Type data(new PotentialData());
+  // Build the data from the structure
+  UniquePtr< PotentialData>::Type data(new PotentialData(structure.getNumAtoms()));
 
-// Create the evaluator
+  // Create the evaluator
   return boost::shared_ptr< IPotentialEvaluator>(
       new Evaluator(*this, structure, data));
 }

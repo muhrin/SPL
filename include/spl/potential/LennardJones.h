@@ -55,8 +55,10 @@ public:
   typedef std::map< SpeciesPair, Params> Interactions;
   typedef PotentialData DataType;
 
-  static const unsigned int MAX_INTERACTION_VECTORS = 5000;
+  static const unsigned int MAX_INTERACTION_VECTORS = 50000;
   static const unsigned int MAX_CELL_MULTIPLES = 500;
+
+  LennardJones();
 
   // From Parameterisable ////////////////////////////////////////
   virtual std::vector< std::string>

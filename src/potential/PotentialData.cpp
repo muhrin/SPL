@@ -13,7 +13,8 @@
 namespace spl {
 namespace potential {
 
-PotentialData::PotentialData()
+PotentialData::PotentialData(const size_t numParticles):
+    forces(3, numParticles)
 {
   reset();
 }

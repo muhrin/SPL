@@ -64,9 +64,9 @@ private:
 // CONSTANTS ////////////////////////////////////////////////
 
 const unsigned int TpsdGeomOptimiser::DEFAULT_MAX_ITERATIONS = 10000;
-const double TpsdGeomOptimiser::DEFAULT_ENERGY_TOLERANCE = 1e-10;
-const double TpsdGeomOptimiser::DEFAULT_FORCE_TOLERANCE = 1e-8;
-const double TpsdGeomOptimiser::DEFAULT_STRESS_TOLERANCE = 1e-5;
+const double TpsdGeomOptimiser::DEFAULT_ENERGY_TOLERANCE = 5e-11;
+const double TpsdGeomOptimiser::DEFAULT_FORCE_TOLERANCE = 3e-4;
+const double TpsdGeomOptimiser::DEFAULT_STRESS_TOLERANCE = 5e-5;
 const unsigned int TpsdGeomOptimiser::CHECK_CELL_EVERY_N_STEPS = 20;
 const double TpsdGeomOptimiser::CELL_MIN_NORM_VOLUME = 0.02;
 const double TpsdGeomOptimiser::CELL_MAX_ANGLE_SUM = 360.0;
@@ -197,6 +197,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
   double xg, gg;
   arma::vec3 f;
 
+  data.forces.set_size(3, numParticles);
   data.forces.ones();
   deltaPos.zeros();
 
@@ -309,39 +310,42 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
   TpsdGeomOptimiserDebugger debugger;
 #endif
 
-
   const size_t numParticles = structure.getNumAtoms();
 
   // Set up the external pressure
   const arma::mat33 pressureMtx = *settings.pressure;
+  const double extPressure = arma::trace(pressureMtx) / 3.0;
 
   // Get data about the structure to be optimised
   PotentialData & data = evaluator.getData();
 
-  // Stress matrices
+  // Stress and lattice matrices
   arma::mat33 s, s0, deltaS, deltaLatticeCar;
   // Position matrices
   arma::mat pos(3, numParticles), deltaPos(3, numParticles);
   structure.getAtomPositions(pos);
-  // Forces, current are in data.myForces
+  // Forces, current are in data.force
   arma::mat f0(3, numParticles), deltaF(3, numParticles);
   arma::rowvec fSqNorm(arma::zeros(1, numParticles));
   arma::mat33 residualStress;
 
-  arma::mat33 latticeCar;
-  double volume, pressure;
+  double volume;
   double xg, gg;
 
-  data.forces.zeros();
+  data.forces.set_size(3, numParticles);
+  data.forces.ones();
   deltaPos.zeros();
   deltaLatticeCar.zeros();
-  latticeCar = unitCell.getOrthoMtx();
 
-  // Initialisation of variables
-  double dH = std::numeric_limits< double>::max(); // Change in enthalpy between steps
-  double h = 0.0; // Enthalpy = U + pV
-  double h0;
-  s.zeros();
+  // Niggli reduce the unit cell as it makes cell optimisation faster
+  unitCell.niggliReduce();
+  arma::mat33 latticeCar = unitCell.getOrthoMtx();
+
+  // Change in enthalpy between steps
+  double dH = std::numeric_limits< double>::max();
+  // Enthalpy = U + pV
+  double h0, h = 1.0;
+  s.ones();
 
   const double dNumAtoms = static_cast< double>(numParticles);
 
@@ -375,10 +379,9 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
       numLastEvaluationsWithProblem = 0;
     }
 
-    pressure = arma::trace(data.stressMtx) / -3.0;
     s = data.stressMtx * latticeCar;
     // Calculate the enthalpy
-    h = data.internalEnergy + pressure * volume;
+    h = data.internalEnergy + extPressure * volume;
 
     deltaF = data.forces - f0;
 
@@ -431,7 +434,6 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
     {
       // Move on cell vectors to relax stress
       latticeCar += deltaLatticeCar;
-
       if(!unitCell.setOrthoMtx(latticeCar))
       {
         // The unit cell matrix has become singular
@@ -547,8 +549,8 @@ TpsdGeomOptimiser::hasConverged(const double deltaEnergyPerIon,
     return false;
 
   if(*options.optimisationType & OptimisationSettings::Optimise::ATOMS)
-    converged &= std::abs(deltaEnergyPerIon) < myEnergyTolerance
-        && maxForceSq < myForceTolerance * myForceTolerance;
+    converged &= std::abs(deltaEnergyPerIon) < *options.energyTol
+        && maxForceSq < *options.forceTol * *options.forceTol;
 
   return converged;
 }

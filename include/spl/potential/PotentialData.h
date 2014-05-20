@@ -22,7 +22,7 @@ namespace potential {
 
 struct PotentialData
 {
-  PotentialData();
+  PotentialData(const size_t numParticles);
 
   double internalEnergy;
   arma::mat forces;

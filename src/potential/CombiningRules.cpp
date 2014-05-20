@@ -38,13 +38,7 @@ public:
     BOOST_FOREACH(const RulePair & r, Rules::map)
     {
       if(s == r.second)
-      {
         return r.first;
-        std::cout << s << " == " << r.second;
-      }
-      else
-        std::cout << s << " != " << r.second;
-      std::cout << "\n";
     }
     return CombiningRule::NUM_RULES;
   }
@@ -78,9 +72,9 @@ operator <<(std::ostream & os, const CombiningRule::Value & rule)
 std::istream &
 operator >>(std::istream & is, CombiningRule::Value & rule)
 {
-  std::stringstream ss;
-  ss << is;
-  const CombiningRule::Value r = Rules::fromString(ss.str());
+  std::string ruleString;
+  is >> ruleString;
+  const CombiningRule::Value r = Rules::fromString(ruleString);
   if(r == CombiningRule::NUM_RULES) // Used to indicate malformed rule
     is.setstate(is.failbit);
   else

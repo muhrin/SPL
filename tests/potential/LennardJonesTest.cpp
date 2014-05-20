@@ -9,6 +9,7 @@
 #include "sslibtest.h"
 
 #include <vector>
+#include <fstream>
 
 #include <boost/lexical_cast.hpp>
 
@@ -27,7 +28,8 @@ BOOST_AUTO_TEST_CASE(Energy)
   using std::sqrt;
   using boost::lexical_cast;
 
-  std::string (*toString)(const double & arg) = boost::lexical_cast<std::string>;
+  std::string
+  (*toString)(const double & arg) = boost::lexical_cast<std::string>;
 
   static const double EPSILON = 1.0;
   static const double SIGMA = 1.0;
@@ -49,10 +51,11 @@ BOOST_AUTO_TEST_CASE(Energy)
   potential::LennardJones lj;
   lj.addInteraction(SpeciesPair("A"), EPSILON, SIGMA, M, N, CUTOFF);
 
-  potential::PotentialData potData;
-
-  BOOST_REQUIRE(lj.evaluate(structure, potData));
-  BOOST_CHECK_CLOSE(potData.internalEnergy, -EPSILON, TOL);
+  {
+    potential::PotentialData potData(structure.getNumAtoms());
+    BOOST_REQUIRE(lj.evaluate(structure, potData));
+    BOOST_CHECK_CLOSE(potData.internalEnergy, -EPSILON, TOL);
+  }
 
   // Use parameter list to set the interactions
   std::vector< std::string> params;
@@ -85,18 +88,50 @@ BOOST_AUTO_TEST_CASE(Energy)
   lj.setParams(params, &err);
 
   BOOST_CHECK(params == lj.getParams());
-  std::vector< std::string> ljParams = lj.getParams();
-  BOOST_FOREACH(const std::string & x, ljParams)
-    std::cout << x << "\n";
 
   // Build up tetrahedron of particles
   structure.newAtom("B").setPosition(0.5 * R_0, sqrt(3) / 2.0 * R_0, 0.0);
   structure.newAtom("B").setPosition(0.5 * R_0, sqrt(3) / 6.0 * R_0,
       sqrt(6) / 3.0 * R_0);
 
-  potData.reset();
-  BOOST_REQUIRE(lj.evaluate(structure, potData));
-  BOOST_CHECK_CLOSE(potData.internalEnergy, 6.0 * -EPSILON, TOL);
+  {
+    potential::PotentialData potData(structure.getNumAtoms());
+    BOOST_REQUIRE(lj.evaluate(structure, potData));
+    BOOST_CHECK_CLOSE(potData.internalEnergy, 6.0 * -EPSILON, TOL);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(PotentialProfile)
+{
+  static const double NUM_SAMPLES = 300;
+  static const double SAMPLE_SPACING = 0.01;
+  static const double CUTOFF = 2.5;
+
+  potential::LennardJones lj;
+  lj.addInteraction(SpeciesPair("A"), 1.0, 1.0, 12, 6, CUTOFF);
+
+  common::Structure structure;
+  // Create two atoms at the origin
+  structure.newAtom("A");
+  common::Atom & atom = structure.newAtom("A");
+
+  std::ofstream os("lj_profile.dat");
+
+  potential::PotentialData potData(structure.getNumAtoms());
+  for(int i = 1; i < NUM_SAMPLES; ++i)
+  {
+    const double r = static_cast< double>(i) * SAMPLE_SPACING;
+    atom.setPosition(r, 0.0, 0.0);
+    lj.evaluate(structure, potData);
+
+    os << r << " " << potData.internalEnergy << "\n";
+    if(r >= CUTOFF)
+      BOOST_CHECK_EQUAL(potData.internalEnergy, 0.0);
+
+    potData.reset();
+  }
+
+  os.close();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

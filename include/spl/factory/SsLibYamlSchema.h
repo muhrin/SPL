@@ -38,6 +38,7 @@ typedef schemer::Scalar< arma::rowvec3> Rowvec3;
 typedef schemer::Scalar< arma::rowvec4> Rowvec4;
 typedef schemer::Scalar< AtomSpeciesCount> AtomSpeciesCountScalar;
 typedef schemer::Scalar< yaml::VecAsString< utility::Range< double> >::Type> DoubleRanges;
+typedef schemer::Scalar< SpeciesPair> SpeciesPairSchema;
 
 struct MinMax
 {
@@ -53,9 +54,14 @@ SCHEMER_MAP(MinMaxSchema, MinMax)
 
 // POTENTIALS ////////////////////////////////////////////////
 
+SCHEMER_HOMO_MAP_KEY_TYPED(LjParam, schemer::Scalar<SpeciesPair>,
+    schemer::List<schemer::Scalar<double> >)
+{
+}
+
 struct LennardJones
 {
-  std::map< SpeciesPair, std::vector<double> > params;
+  std::map< SpeciesPair, std::vector< double> > params;
   potential::CombiningRule::Value combiningRule;
 };
 
@@ -69,7 +75,7 @@ SCHEMER_ENUM(CombiningRuleSchema, potential::CombiningRule::Value)
 
 SCHEMER_MAP(LennardJonesSchema, LennardJones)
 {
-  element("params", &LennardJones::params);
+  element< LjParam>("params", &LennardJones::params);
   element< CombiningRuleSchema>("combining", &LennardJones::combiningRule)->defaultValue(
       potential::CombiningRule::NONE);
 }
