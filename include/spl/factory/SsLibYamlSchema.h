@@ -54,8 +54,12 @@ SCHEMER_MAP(MinMaxSchema, MinMax)
 
 // POTENTIALS ////////////////////////////////////////////////
 
-SCHEMER_HOMO_MAP_KEY_TYPED(LjParam, schemer::Scalar<SpeciesPair>,
-    schemer::List<schemer::Scalar<double> >)
+SCHEMER_LIST(LjParams, schemer::Scalar<double>)
+{
+  length(5);
+}
+
+SCHEMER_HOMO_MAP_KEY_TYPED(LjInteraction, schemer::Scalar<SpeciesPair>, LjParams)
 {
 }
 
@@ -75,7 +79,7 @@ SCHEMER_ENUM(CombiningRuleSchema, potential::CombiningRule::Value)
 
 SCHEMER_MAP(LennardJonesSchema, LennardJones)
 {
-  element< LjParam>("params", &LennardJones::params);
+  element< LjInteraction>("params", &LennardJones::params);
   element< CombiningRuleSchema>("combining", &LennardJones::combiningRule)->defaultValue(
       potential::CombiningRule::NONE);
 }

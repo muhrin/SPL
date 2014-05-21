@@ -6,7 +6,10 @@
 # Compute paths
 get_filename_component(SPL_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 set(SPL_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
- 
+
+set(SPL_CXX_FLAGS "@CMAKE_CXX_FLAGS@")
+set(CMAKE_CXX_FLAGS "${SPL_CXX_FLAGS}" CACHE STRING "C++ compiler flags for both Release and Debug")
+
 # Our library dependencies (contains definitions for IMPORTED targets)
 # guard against multiple inclusions, see:
 # http://public.kitware.com/pipermail/cmake-developers/2011-November/002456.html

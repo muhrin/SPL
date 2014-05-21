@@ -80,7 +80,6 @@ foreach(p LIB INCLUDE CMAKE)
   endif()
 endforeach()
 
-
 ## END CONFIGURATION SETTINGS ##########################
 
 ## INCLUDE DIRECTORIES ##################################
