@@ -1,8 +1,8 @@
 Overview
 ========
 
-SSLib (Structure Searching Library) is a C++ library that contains methods for manipulating
-chemical structures centered around the activity of structure prediction.
+SPL (Structure Prediction Library) is a C++ library that contains methods for manipulating
+crystal structures centered around the activity of structure prediction.
 
 License
 =======
