@@ -18,41 +18,43 @@
 namespace spl {
 namespace common {
 
-AtomsFormula::AtomsFormula(const ::std::string & species)
+AtomsFormula::AtomsFormula(const std::string & species)
 {
   myFormula[species] = 1;
 }
 
-AtomsFormula::AtomsFormula(const ::std::string & species, const int number)
+AtomsFormula::AtomsFormula(const std::string & species, const int number)
 {
   myFormula[species] = number;
 }
 
-bool AtomsFormula::fromString(const ::std::string & str)
+bool
+AtomsFormula::fromString(const std::string & str)
 {
-  static const boost::regex FORM_EXPRESSION("([[:upper:]][[:lower:]]*)([[:digit:]]*)");
+  static const boost::regex FORM_EXPRESSION(
+      "([[:upper:]][[:lower:]]*)([[:digit:]]*)");
 
   if(str.empty())
     return false;
 
-  ::std::string::const_iterator start = str.begin();
-  const ::std::string::const_iterator end = str.end();
-  boost::match_results< ::std::string::const_iterator> match;
+  std::string::const_iterator start = str.begin();
+  const std::string::const_iterator end = str.end();
+  boost::match_results< std::string::const_iterator> match;
   boost::match_flag_type flags = boost::match_default;
   while(::boost::regex_search(start, end, match, FORM_EXPRESSION, flags))
   {
     // Get the species
-    Entry entry(::std::string(match[1].first, match[1].second), 1);
+    Entry entry(std::string(match[1].first, match[1].second), 1);
 
     // Get the number
-    ::std::string numStr(match[2].first, match[2].second);
+    std::string numStr(match[2].first, match[2].second);
     if(!numStr.empty())
     {
       try
       {
-        entry.second = ::boost::lexical_cast<int>(numStr);
+        entry.second = boost::lexical_cast< int>(numStr);
       }
-      catch(const ::boost::bad_lexical_cast & /*e*/)
+      catch(const boost::bad_lexical_cast & /*e*/)
       {
         return false;
       }
@@ -69,29 +71,42 @@ bool AtomsFormula::fromString(const ::std::string & str)
   return !isEmpty();
 }
 
-unsigned int AtomsFormula::reduce()
+unsigned int
+AtomsFormula::reduce()
 {
   // Divide the counts by the greatest common divisor
-  ::std::vector<unsigned int> counts;
+  std::vector< unsigned int> counts;
   BOOST_FOREACH(Formula::const_reference e, myFormula)
     counts.push_back(e.second);
   const unsigned int gcd = math::greatestCommonDivisor(counts);
   BOOST_FOREACH(Formula::reference e, myFormula)
-    e.second /= static_cast<int>(gcd);
+    e.second /= static_cast< int>(gcd);
   return gcd;
 }
 
-bool AtomsFormula::isEmpty() const
+bool
+AtomsFormula::isEmpty() const
 {
   return myFormula.empty();
 }
 
-int AtomsFormula::numSpecies() const
+int
+AtomsFormula::numSpecies() const
 {
   return myFormula.size();
 }
 
-bool AtomsFormula::operator ==(const AtomsFormula & rhs) const
+int
+AtomsFormula::total() const
+{
+  int tot;
+  BOOST_FOREACH(Formula::const_reference e, myFormula)
+    tot += e.second;
+  return tot;
+}
+
+bool
+AtomsFormula::operator ==(const AtomsFormula & rhs) const
 {
   BOOST_FOREACH(Formula::const_reference e, myFormula)
   {
@@ -101,7 +116,8 @@ bool AtomsFormula::operator ==(const AtomsFormula & rhs) const
   return true;
 }
 
-bool AtomsFormula::operator <(const AtomsFormula & rhs) const
+bool
+AtomsFormula::operator <(const AtomsFormula & rhs) const
 {
   for(Formula::const_iterator it = myFormula.begin(), end = myFormula.end(),
       rhsIt = rhs.myFormula.begin(), rhsEnd = rhs.myFormula.end();
@@ -120,21 +136,32 @@ bool AtomsFormula::operator <(const AtomsFormula & rhs) const
   return myFormula.size() < rhs.myFormula.size();
 }
 
-AtomsFormula & AtomsFormula::operator +=(const AtomsFormula rhs)
+AtomsFormula &
+AtomsFormula::operator +=(const AtomsFormula rhs)
 {
   BOOST_FOREACH(Formula::const_reference e, rhs)
-  {
     myFormula[e.first] += e.second;
-  }
+
   return *this;
 }
 
-bool AtomsFormula::remove(const AtomsFormula & toRemove)
+AtomsFormula &
+AtomsFormula::operator *=(const int timesBy)
+{
+  BOOST_FOREACH(Formula::reference e, myFormula)
+    e.second *= timesBy;
+
+  return *this;
+}
+
+bool
+AtomsFormula::remove(const AtomsFormula & toRemove)
 {
   return remove(toRemove, 1);
 }
 
-bool AtomsFormula::remove(const AtomsFormula & toRemove, const int numToRemove)
+bool
+AtomsFormula::remove(const AtomsFormula & toRemove, const int numToRemove)
 {
   // Find out how many of those to remove we have
   const int num = wholeNumberOf(toRemove);
@@ -154,32 +181,38 @@ bool AtomsFormula::remove(const AtomsFormula & toRemove, const int numToRemove)
   return true;
 }
 
-int & AtomsFormula::operator [](const ::std::string & species)
+int &
+AtomsFormula::operator [](const std::string & species)
 {
   return myFormula[species];
 }
 
-AtomsFormula::const_iterator AtomsFormula::begin() const
+AtomsFormula::const_iterator
+AtomsFormula::begin() const
 {
   return myFormula.begin();
 }
 
-AtomsFormula::const_iterator AtomsFormula::end() const
+AtomsFormula::const_iterator
+AtomsFormula::end() const
 {
   return myFormula.end();
 }
 
-bool AtomsFormula::contains(const ::std::string & species) const
+bool
+AtomsFormula::contains(const std::string & species) const
 {
   return myFormula.find(species) != myFormula.end();
 }
 
-bool AtomsFormula::contains(const AtomsFormula & formula) const
+bool
+AtomsFormula::contains(const AtomsFormula & formula) const
 {
   return wholeNumberOf(formula) != 0;
 }
 
-int AtomsFormula::numberOf(const std::string & species) const
+int
+AtomsFormula::numberOf(const std::string & species) const
 {
   const Formula::const_iterator it = myFormula.find(species);
   if(it == myFormula.end())
@@ -188,12 +221,14 @@ int AtomsFormula::numberOf(const std::string & species) const
   return it->second;
 }
 
-AtomsFormula::Fraction AtomsFormula::numberOf(const Entry & entry) const
+AtomsFormula::Fraction
+AtomsFormula::numberOf(const Entry & entry) const
 {
   return Fraction(numberOf(entry.first), entry.second);
 }
 
-int AtomsFormula::wholeNumberOf(const AtomsFormula & formula) const
+int
+AtomsFormula::wholeNumberOf(const AtomsFormula & formula) const
 {
   if(formula.isEmpty() || formula.numSpecies() > numSpecies())
     return 0;
@@ -212,7 +247,8 @@ int AtomsFormula::wholeNumberOf(const AtomsFormula & formula) const
   return min.first / min.second;
 }
 
-int AtomsFormula::numMultiples(const AtomsFormula & formula) const
+int
+AtomsFormula::numMultiples(const AtomsFormula & formula) const
 {
   if(numSpecies() != formula.numSpecies())
     return 0;
@@ -234,9 +270,10 @@ int AtomsFormula::numMultiples(const AtomsFormula & formula) const
   return multiple;
 }
 
-::std::string AtomsFormula::toString() const
+std::string
+AtomsFormula::toString() const
 {
-  ::std::stringstream ss;
+  std::stringstream ss;
   BOOST_FOREACH(Formula::const_reference e, myFormula)
   {
     ss << e.first;
@@ -246,12 +283,14 @@ int AtomsFormula::numMultiples(const AtomsFormula & formula) const
   return ss.str();
 }
 
-void AtomsFormula::print(::std::ostream & os) const
+void
+AtomsFormula::print(std::ostream & os) const
 {
   os << toString();
 }
 
-bool AtomsFormula::simplify(::std::pair<int, int> & fraction) const
+bool
+AtomsFormula::simplify(std::pair< int, int> & fraction) const
 {
   if(fraction.first == 0 || fraction.second == 0)
     return false;
@@ -266,15 +305,20 @@ bool AtomsFormula::simplify(::std::pair<int, int> & fraction) const
 }
 
 const AtomsFormula::Fraction AtomsFormula::ZERO = AtomsFormula::Fraction(0, 1);
-const AtomsFormula::Fraction AtomsFormula::MAX = AtomsFormula::Fraction(::std::numeric_limits<int>::max(), 1);
+const AtomsFormula::Fraction AtomsFormula::MAX = AtomsFormula::Fraction(
+    std::numeric_limits< int>::max(), 1);
 
-AtomsFormula::Fraction AtomsFormula::min(const Fraction & f1, const Fraction & f2) const
+AtomsFormula::Fraction
+AtomsFormula::min(const Fraction & f1, const Fraction & f2) const
 {
-  return static_cast<long>(f1.first) * static_cast<long>(f2.second)
-      < static_cast<long>(f1.second) * static_cast<long>(f2.first) ? f1 : f2;
+  return
+      static_cast< long>(f1.first) * static_cast< long>(f2.second)
+          < static_cast< long>(f1.second) * static_cast< long>(f2.first) ?
+          f1 : f2;
 }
 
-::std::ostream & operator <<(::std::ostream & os, const AtomsFormula & formula)
+std::ostream &
+operator <<(std::ostream & os, const AtomsFormula & formula)
 {
   formula.print(os);
   return os;

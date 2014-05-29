@@ -6,8 +6,8 @@
  *      Author: Martin Uhrin
  */
 
-#ifndef I_POTENTIAL_H
-#define I_POTENTIAL_H
+#ifndef SPL__POTENTIAL__POTENTIAL_H_
+#define SPL__POTENTIAL__POTENTIAL_H_
 
 // INCLUDES /////////////////////////////////////////////
 #include "spl/SSLib.h"
@@ -22,17 +22,18 @@
 
 namespace spl {
 namespace common {
+class AtomSpeciesDatabase;
 class Structure;
 }
 namespace potential {
 
 class IParameterisable;
-class IPotentialInfo;
 class IPotentialEvaluator;
 
 class IPotential
 {
 public:
+  typedef UniquePtr< IPotentialEvaluator>::Type EvaluatorPtr;
 
   virtual
   ~IPotential()
@@ -42,14 +43,17 @@ public:
   virtual ::boost::optional< double>
   getSpeciesPairDistance(const SpeciesPair & pair) const = 0;
 
-  virtual ::boost::shared_ptr< IPotentialEvaluator>
+  virtual EvaluatorPtr
   createEvaluator(const spl::common::Structure & structure) const = 0;
 
   virtual IParameterisable *
   getParameterisable() = 0;
+
+  virtual bool
+  updateSpeciesDb(common::AtomSpeciesDatabase * const speciesDb) const = 0;
 };
 
 }
 }
 
-#endif /* I_POTENTIAL_H */
+#endif /* SPL__POTENTIAL__POTENTIAL_H */

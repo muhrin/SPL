@@ -22,63 +22,93 @@ namespace common {
 
 class AtomsFormula
 {
-  typedef ::std::map< ::std::string, int> Formula;
+  typedef std::map< std::string, int> Formula;
 public:
   typedef Formula::value_type Entry;
   typedef Formula::value_type value_type;
   typedef Formula::const_reference const_reference;
   typedef Formula::const_iterator const_iterator;
   typedef const_iterator iterator; // Only const iteration allowed
-  typedef ::std::pair<int, int> Fraction;
+  typedef std::pair< int, int> Fraction;
 
-  AtomsFormula() {}
-  explicit AtomsFormula(const ::std::string & species);
-  AtomsFormula(const ::std::string & species, const int number);
+  AtomsFormula()
+  {
+  }
+  explicit
+  AtomsFormula(const std::string & species);
+  AtomsFormula(const std::string & species, const int number);
 
-  bool fromString(const ::std::string & str);
+  bool
+  fromString(const std::string & str);
 
-  bool isEmpty() const;
-  int numSpecies() const;
+  bool
+  isEmpty() const;
+  int
+  numSpecies() const;
+  int
+  total() const;
 
-  unsigned int reduce();
+  unsigned int
+  reduce();
 
-  bool operator ==(const AtomsFormula & rhs) const;
-  bool operator <(const AtomsFormula & rhs) const;
+  bool
+  operator ==(const AtomsFormula & rhs) const;
+  bool
+  operator <(const AtomsFormula & rhs) const;
 
-  int & operator [](const ::std::string & species);
-  AtomsFormula & operator +=(const AtomsFormula rhs);
+  int &
+  operator [](const std::string & species);
+  AtomsFormula &
+  operator +=(const AtomsFormula rhs);
+  AtomsFormula &
+  operator *=(const int timesBy);
 
-  bool remove(const AtomsFormula & toRemove);
-  bool remove(const AtomsFormula & toRemove, const int num);
+  bool
+  remove(const AtomsFormula & toRemove);
+  bool
+  remove(const AtomsFormula & toRemove, const int num);
 
-  const_iterator begin() const;
-  const_iterator end() const;
+  const_iterator
+  begin() const;
+  const_iterator
+  end() const;
 
-  bool contains(const ::std::string & species) const;
-  bool contains(const AtomsFormula & formula) const;
-  int numberOf(const std::string & species) const;
-  Fraction numberOf(const Entry & entry) const;
-  int wholeNumberOf(const AtomsFormula & formula) const;
-  int numMultiples(const AtomsFormula & formula) const;
+  bool
+  contains(const std::string & species) const;
+  bool
+  contains(const AtomsFormula & formula) const;
+  int
+  numberOf(const std::string & species) const;
+  Fraction
+  numberOf(const Entry & entry) const;
+  int
+  wholeNumberOf(const AtomsFormula & formula) const;
+  int
+  numMultiples(const AtomsFormula & formula) const;
 
-  void clear();
+  void
+  clear();
 
-  ::std::string toString() const;
-  void print(::std::ostream & os) const;
+  std::string
+  toString() const;
+  void
+  print(std::ostream & os) const;
 
-  bool simplify(::std::pair<int, int> & fraction) const;
+  bool
+  simplify(std::pair< int, int> & fraction) const;
 
 private:
-
   static const Fraction ZERO;
   static const Fraction MAX;
 
-  Fraction min(const Fraction & f1, const Fraction & f2) const;
+  Fraction
+  min(const Fraction & f1, const Fraction & f2) const;
 
   Formula myFormula;
 };
 
-::std::ostream & operator <<(::std::ostream & os, const AtomsFormula & formula);
+std::ostream &
+operator <<(std::ostream & os, const AtomsFormula & formula);
 
 }
 }

@@ -88,7 +88,8 @@ LennardJones::getParams() const
     params.push_back(lexical_cast< string>(inter.second.sigma));
     params.push_back(lexical_cast< string>(inter.second.m));
     params.push_back(lexical_cast< string>(inter.second.n));
-    params.push_back(lexical_cast< string>(inter.second.cutoff / inter.second.sigma));
+    params.push_back(
+        lexical_cast< string>(inter.second.cutoff / inter.second.sigma));
   }
 
   params.push_back(lexical_cast< string>(myEpsilonCombining));
@@ -361,14 +362,15 @@ LennardJones::getSpeciesPairDistance(const SpeciesPair & pair) const
   return boost::optional< double>();
 }
 
-boost::shared_ptr< IPotentialEvaluator>
+UniquePtr< IPotentialEvaluator>::Type
 LennardJones::createEvaluator(const spl::common::Structure & structure) const
 {
   // Build the data from the structure
-  UniquePtr< PotentialData>::Type data(new PotentialData(structure.getNumAtoms()));
+  UniquePtr< PotentialData>::Type data(
+      new PotentialData(structure.getNumAtoms()));
 
   // Create the evaluator
-  return boost::shared_ptr< IPotentialEvaluator>(
+  return UniquePtr< IPotentialEvaluator>::Type(
       new Evaluator(*this, structure, data));
 }
 

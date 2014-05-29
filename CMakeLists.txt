@@ -82,6 +82,10 @@ endforeach()
 
 ## END CONFIGURATION SETTINGS ##########################
 
+# Process header and source files
+include(Include.cmake)
+include(Src.cmake)
+
 ## INCLUDE DIRECTORIES ##################################
 
 set(SSLIB_LOCAL_INCLUDE_DIRS
@@ -91,13 +95,15 @@ set(SSLIB_LOCAL_INCLUDE_DIRS
   FORCE
 )
 
-# Include directories with header files
-include_directories(
+# Include directories with header files, have to use BEFORE
+# so that these get used before the system and local include dirs
+# otherwise the project may not use the library locations we want
+include_directories(BEFORE
   ${Boost_INCLUDE_DIRS}
   ${ARMADILLO_INCLUDE_DIRS}
-  ${SSLIB_LOCAL_INCLUDE_DIRS}
   ${SPGLIB_INCLUDE_DIRS}
   ${SCHEMER_INCLUDE_DIRS}
+  ${SSLIB_LOCAL_INCLUDE_DIRS}
 )
 
 # Include YAML if we're using it
@@ -111,17 +117,6 @@ if(SPL_WITH_CGAL)
     "${CGAL_INCLUDE_DIRS}"
   )
 endif(SPL_WITH_CGAL)
-
-get_property(SSLIB_INCLUDE_DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-set(SSLIB_INCLUDE_DIRS
-  ${SSLIB_INCLUDE_DIRS}
-  CACHE INTERNAL "Internal variable used to store all the include directories used by SSLib (including external libraries)"
-  FORCE
-)
-
-# Process header and source files
-include(Include.cmake)
-include(Src.cmake)
 
 set_property(TARGET PROPERTY PROJECT_LABEL "SPL")
 

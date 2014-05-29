@@ -77,45 +77,8 @@ static const double INITIAL_STEPSIZE = 0.001;
 // IMPLEMENTATION //////////////////////////////////////////////////////////
 
 TpsdGeomOptimiser::TpsdGeomOptimiser(PotentialPtr potential) :
-    myPotential(potential), myEnergyTolerance(DEFAULT_ENERGY_TOLERANCE), myForceTolerance(
-        DEFAULT_FORCE_TOLERANCE), myMaxIterations(DEFAULT_MAX_ITERATIONS)
+    myPotential(potential)
 {
-}
-
-double
-TpsdGeomOptimiser::getEnergyTolerance() const
-{
-  return myEnergyTolerance;
-}
-
-void
-TpsdGeomOptimiser::setEnergyTolerance(const double tolerance)
-{
-  myEnergyTolerance = tolerance;
-}
-
-double
-TpsdGeomOptimiser::getForceTolerance() const
-{
-  return myForceTolerance;
-}
-
-void
-TpsdGeomOptimiser::setForceTolerance(const double tolerance)
-{
-  myForceTolerance = tolerance;
-}
-
-unsigned int
-TpsdGeomOptimiser::getMaxIterations() const
-{
-  return myMaxIterations;
-}
-
-void
-TpsdGeomOptimiser::setMaxIterations(const int maxIterations)
-{
-  myMaxIterations = maxIterations;
 }
 
 IPotential *
@@ -142,21 +105,21 @@ OptimisationOutcome
 TpsdGeomOptimiser::optimise(spl::common::Structure & structure,
     OptimisationData & data, const OptimisationSettings & options) const
 {
-  boost::shared_ptr< IPotentialEvaluator> evaluator =
+  UniquePtr< IPotentialEvaluator>::Type evaluator =
       myPotential->createEvaluator(structure);
 
   common::UnitCell * const unitCell = structure.getUnitCell();
   OptimisationSettings localSettings = options;
 
   if(!localSettings.maxIter)
-    localSettings.maxIter.reset(myMaxIterations);
+    localSettings.maxIter = DEFAULT_MAX_ITERATIONS;
   if(!localSettings.pressure)
-    localSettings.pressure.reset(arma::zeros< arma::mat>(3, 3));
+    localSettings.pressure = arma::zeros< arma::mat>(3, 3);
   if(!localSettings.optimisationType)
-    localSettings.optimisationType.reset(
-        OptimisationSettings::Optimise::ATOMS_AND_LATTICE);
+    localSettings.optimisationType =
+        OptimisationSettings::Optimise::ATOMS_AND_LATTICE;
   if(!localSettings.stressTol)
-    localSettings.stressTol.reset(DEFAULT_STRESS_TOLERANCE);
+    localSettings.stressTol = DEFAULT_STRESS_TOLERANCE;
 
   OptimisationOutcome outcome;
   if(unitCell)
@@ -596,7 +559,6 @@ TpsdGeomOptimiser::capStepsize(const common::Structure & structure,
     {
       *stepsize = originalStepsize * DEFAULT_MAX_DELTA_LATTICE_FACTOR * meanDist
           / maxDeltaPos;
-      ;
       cappedStep = true;
     }
   }

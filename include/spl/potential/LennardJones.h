@@ -19,7 +19,6 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
 
@@ -73,7 +72,7 @@ public:
   // From IPotential /////////////
   virtual boost::optional< double>
   getSpeciesPairDistance(const SpeciesPair & pair) const;
-  virtual boost::shared_ptr< IPotentialEvaluator>
+  virtual UniquePtr< IPotentialEvaluator>::Type
   createEvaluator(const spl::common::Structure & structure) const;
   virtual IParameterisable *
   getParameterisable();

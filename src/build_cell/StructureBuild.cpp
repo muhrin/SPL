@@ -13,7 +13,7 @@
 #include "spl/OptionalTypes.h"
 #include "spl/build_cell/BuildAtomInfo.h"
 #include "spl/build_cell/GenSphere.h"
-#include "spl/build_cell/Sphere.h"
+#include "spl/build_cell/Shapes.h"
 #include "spl/build_cell/StructureContents.h"
 #include "spl/build_cell/SymmetryGroup.h"
 #include "spl/common/AtomSpeciesDatabase.h"
@@ -39,7 +39,7 @@ StructureBuild::RadiusCalculator::getRadius(const double vol) const
   if(isMultiplier)
   {
     if(vol != 0.0)
-      return radius * Sphere::radius(vol);
+      return radius * sphere::radius(vol);
     else
       return FALLBACK_RADIUS;
   }

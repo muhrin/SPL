@@ -10,8 +10,6 @@
 #define I_PARAMETERISABLE_H
 
 // INCLUDES /////////////////////////////////////////////
-#include <armadillo>
-
 #include <utility>
 #include <string>
 #include <vector>
@@ -20,9 +18,6 @@
 
 namespace spl {
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace common {
-class AtomSpeciesDatabase;
-}
 
 namespace potential {
 
@@ -46,9 +41,6 @@ public:
   }
   virtual bool
   setParams(const std::vector< std::string> & params, std::string * const errorMsg) = 0;
-
-  virtual bool
-  updateSpeciesDb(common::AtomSpeciesDatabase * const speciesDb) const = 0;
 };
 
 }

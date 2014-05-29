@@ -56,7 +56,7 @@ set(sslib_Header_Files__build_cell
   include/spl/build_cell/PointGroups.h
   include/spl/build_cell/PointSeparator.h
   include/spl/build_cell/RandomUnitCellGenerator.h
-  include/spl/build_cell/Sphere.h
+  include/spl/build_cell/Shapes.h
   include/spl/build_cell/StructureBuild.h
   include/spl/build_cell/StructureBuilder.h
   include/spl/build_cell/StructureContents.h
@@ -65,6 +65,7 @@ set(sslib_Header_Files__build_cell
   include/spl/build_cell/SymmetryFunctions.h
   include/spl/build_cell/SymmetryGroup.h
   include/spl/build_cell/SymmetryGroupBuilder.h
+  include/spl/build_cell/Utility.h
   include/spl/build_cell/VoronoiSlabGenerator.h
   include/spl/build_cell/VoronoiSlabRegions.h
 )

@@ -154,10 +154,6 @@ Factory::createGeometryOptimiser(const Optimiser & options) const
     UniquePtr< potential::TpsdGeomOptimiser>::Type tpsd(
         new potential::TpsdGeomOptimiser(potential));
 
-    tpsd->setMaxIterations(options.tpsd->maxIterations);
-    tpsd->setEnergyTolerance(options.tpsd->energyTolerance);
-    tpsd->setForceTolerance(options.tpsd->forceTolerance);
-
     opt = tpsd;
   }
   else if(options.castep)

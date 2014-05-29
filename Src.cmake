@@ -28,12 +28,12 @@ set(sslib_Source_Files__build_cell
   src/build_cell/PointGroups.cpp
   src/build_cell/PointSeparator.cpp
   src/build_cell/RandomUnitCellGenerator.cpp
-  src/build_cell/Sphere.cpp
   src/build_cell/StructureBuild.cpp
   src/build_cell/StructureBuilder.cpp
   src/build_cell/SymmetryFunctions.cpp
   src/build_cell/SymmetryGroup.cpp
   src/build_cell/SymmetryGroupBuilder.cpp
+  src/build_cell/Utility.cpp
   src/build_cell/VoronoiSlabGenerator.cpp
   src/build_cell/VoronoiSlabRegions.cpp
 )

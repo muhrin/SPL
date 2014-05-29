@@ -9,8 +9,8 @@
  *      Author: Martin Uhrin
  */
 
-#ifndef TPSD_GEOM_OPTIMISER_H
-#define TPSD_GEOM_OPTIMISER_H
+#ifndef SPL__POTENTIAL__TPSD_GEOM_OPTIMISER_H_
+#define SPL__POTENTIAL__TPSD_GEOM_OPTIMISER_H_
 
 // INCLUDES /////////////////////////////////////////////
 #include <limits>
@@ -37,7 +37,7 @@ namespace potential {
 class TpsdGeomOptimiser : public GeomOptimiser
 {
 public:
-  typedef ::spl::UniquePtr< IPotential>::Type PotentialPtr;
+  typedef UniquePtr< IPotential>::Type PotentialPtr;
 
   static const unsigned int DEFAULT_MAX_ITERATIONS;
   static const double DEFAULT_ENERGY_TOLERANCE;
@@ -48,21 +48,6 @@ public:
 
   TpsdGeomOptimiser(PotentialPtr potential);
 
-  double
-  getEnergyTolerance() const;
-  void
-  setEnergyTolerance(const double tolerance);
-
-  double
-  getForceTolerance() const;
-  void
-  setForceTolerance(const double tolerance);
-
-  unsigned int
-  getMaxIterations() const;
-  void
-  setMaxIterations(const int maxIterations);
-
   // IGeomOptimiser interface //////////////////////////////
   virtual IPotential *
   getPotential();
@@ -70,12 +55,11 @@ public:
   getPotential() const;
 
   virtual OptimisationOutcome
-  optimise(::spl::common::Structure & structure,
+  optimise(common::Structure & structure,
       const OptimisationSettings & options) const;
   virtual OptimisationOutcome
-  optimise(::spl::common::Structure & structure, OptimisationData & data,
+  optimise(common::Structure & structure, OptimisationData & data,
       const OptimisationSettings & options) const;
-
   // End IGeomOptimiser interface
 
   OptimisationOutcome
@@ -106,18 +90,13 @@ private:
 
   bool
   capStepsize(const common::Structure & structure,
-      const ::arma::mat * const deltaPos,
-      const ::arma::mat * const deltaLatticeCar,
+      const arma::mat * const deltaPos, const arma::mat * const deltaLatticeCar,
       const OptimisationSettings & settings, double * const stepsize) const;
 
   PotentialPtr myPotential;
-
-  double myEnergyTolerance;
-  double myForceTolerance;
-  int myMaxIterations;
 };
 
 }
 }
 
-#endif /* TPSD_GEOM_OPTIMISER_H */
+#endif /* SPL__POTENTIAL__TPSD_GEOM_OPTIMISER_H_ */

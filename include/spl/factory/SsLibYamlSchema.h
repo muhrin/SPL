@@ -117,14 +117,13 @@ SCHEMER_MAP(OptimiserSettingsSchema, OptimiserSettings)
   element("pressure", &OptimiserSettings::pressure)->defaultValue(0.0);
 }
 
-struct OptimiserWithPotentialSettings : public OptimiserSettings
+struct OptimiserWithPotentialSettings
 {
   Potential potential;
 };
 
 SCHEMER_MAP(OptimiserWithPotentialSettingsSchema, OptimiserWithPotentialSettings)
 {
-  extends< OptimiserSettingsSchema>();
   element("potential", &OptimiserWithPotentialSettings::potential);
 }
 
