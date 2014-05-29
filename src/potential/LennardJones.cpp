@@ -32,14 +32,12 @@ LennardJones::LennardJones() :
 }
 
 void
-LennardJones::init()
+LennardJones::applyCombiningRules()
 {
-  applyCombiningRule();
-}
+  if(myEpsilonCombining == CombiningRule::NONE
+      && mySigmaCombining == CombiningRule::NONE)
+    return;
 
-void
-LennardJones::applyCombiningRule()
-{
   // Get all the interactions that are between the same species e.g. A~A
   std::vector< Interactions::const_iterator> species;
   for(Interactions::const_iterator it = myInteractions.begin(), end =
@@ -47,7 +45,6 @@ LennardJones::applyCombiningRule()
   {
     if(it->first.first() == it->first.second())
       species.push_back(it);
-
   }
 
   for(size_t i = 0; i < species.size(); ++i)
@@ -56,16 +53,36 @@ LennardJones::applyCombiningRule()
     for(size_t j = i + 1; j < species.size(); ++j)
     {
       const Params & pJ = species[j]->second;
+      const SpeciesPair speciesPair = SpeciesPair(species[i]->first.first(),
+          species[j]->first.first());
 
-      // Can only apply the rule if they both have their other parameters the same
-      if(pI.m == pJ.m && pI.n == pJ.n)
+      const Interactions::iterator it = myInteractions.find(speciesPair);
+
+      if(it != myInteractions.end())
       {
-        const Interactions::const_iterator it = myInteractions.find(
-            SpeciesPair(species[i]->first.first(), species[j]->first.first()));
+        // Update the interaction according to the rules
+        const double epsilon =
+            myEpsilonCombining == CombiningRule::NONE ?
+                it->second.epsilon :
+                applyRule(myEpsilonCombining, pI.epsilon, pJ.epsilon);
+        const double sigma =
+            mySigmaCombining == CombiningRule::NONE ?
+                it->second.sigma :
+                applyRule(mySigmaCombining, pI.sigma, pJ.sigma);
 
-        if(it == myInteractions.end())
+        it->second = getParams(epsilon, sigma, it->second.m, it->second.n,
+            it->second.cutoff / it->second.sigma);
+      }
+      else if(myEpsilonCombining != CombiningRule::NONE
+          && mySigmaCombining != CombiningRule::NONE)
+      {
+        // Check the two to be combined are the same in their other parameters
+        if(pI.m == pJ.m && pI.n == pJ.n
+            && (pI.cutoff / pI.sigma) == (pJ.cutoff / pI.sigma))
         {
-          getParams(applyRule(myEpsilonCombining, pI.epsilon, pJ.epsilon),
+          // Create the interaction
+          myInteractions[speciesPair] = getParams(
+              applyRule(myEpsilonCombining, pI.epsilon, pJ.epsilon),
               applyRule(mySigmaCombining, pI.sigma, pJ.sigma), pI.m, pI.n,
               pI.cutoff / pI.sigma);
         }
@@ -92,9 +109,6 @@ LennardJones::getParams() const
         lexical_cast< string>(inter.second.cutoff / inter.second.sigma));
   }
 
-  params.push_back(lexical_cast< string>(myEpsilonCombining));
-  params.push_back(lexical_cast< string>(mySigmaCombining));
-
   return params;
 }
 
@@ -113,16 +127,14 @@ LennardJones::setParams(const std::vector< std::string> & params,
     return true;
   }
 
-  Interactions newInteractions;
-
-  const size_t numCombining = params.size() % 6;
-  const size_t numInteractions = params.size() / 6;
-  if(numCombining > 2)
+  if(params.size() % 6 != 0)
   {
     if(errorMsg)
       *errorMsg = "Wrong number of parameters given.";
     return false;
   }
+  const size_t numInteractions = params.size() / 6;
+  Interactions newInteractions;
 
   SpeciesPair species;
   double paramsList[5];
@@ -159,31 +171,8 @@ LennardJones::setParams(const std::vector< std::string> & params,
         paramsList[1], paramsList[2], paramsList[3], paramsList[4]);
   }
 
-  // Do the combining rules
-  CombiningRule::Value epsilonCombining = CombiningRule::NONE, sigmaCombining =
-      CombiningRule::NONE;
-  if(numCombining > 0)
-  {
-    ParamsIter it = params.begin() + (numInteractions * 6);
-    try
-    {
-      epsilonCombining = lexical_cast< CombiningRule::Value>(*it);
-      if(numCombining > 1)
-        sigmaCombining = lexical_cast< CombiningRule::Value>(*++it);
-    }
-    catch(const boost::bad_lexical_cast & e)
-    {
-      if(errorMsg)
-        *errorMsg = (*it) + " is not a valid combining rule.";
-      return false;
-    }
-  }
-
   myInteractions = newInteractions;
-  myEpsilonCombining = epsilonCombining;
-  mySigmaCombining = sigmaCombining;
-  // Initialise everything with the new params
-  init();
+  applyCombiningRules();
 
   return true;
 }
@@ -293,14 +282,14 @@ LennardJones::evaluate(const common::Structure & structure,
     }
   }
 
-  // Symmetrise stress matrix and convert to absolute values
+// Symmetrise stress matrix and convert to absolute values
   data.stressMtx = arma::symmatu(data.stressMtx);
   const common::UnitCell * const unitCell = structure.getUnitCell();
   if(unitCell)
     data.stressMtx *= 1.0 / unitCell->getVolume();
 
-  // Now balance forces
-  // (do sum of values for each component and divide by number of particles)
+// Now balance forces
+// (do sum of values for each component and divide by number of particles)
   f = sum(data.forces, 1) / static_cast< double>(numParticles);
   data.forces.row(X) -= f(Y);
   data.forces.row(Y) -= f(X);
@@ -323,9 +312,36 @@ LennardJones::addInteraction(const SpeciesPair & species, const double epsilon,
       myInteractions.insert(
           std::make_pair(species,
               getParams(epsilon, sigma, m, n, cutoffFactor)));
-  init();
+
+  applyCombiningRules();
 
   return ret;
+}
+
+CombiningRule::Value
+LennardJones::getEpsilonCombining() const
+{
+  return myEpsilonCombining;
+}
+
+void
+LennardJones::setEpsilonCombining(const CombiningRule::Value rule)
+{
+  myEpsilonCombining = rule;
+  applyCombiningRules();
+}
+
+CombiningRule::Value
+LennardJones::getSigmaCombining() const
+{
+  return mySigmaCombining;
+}
+
+void
+LennardJones::setSigmaCombining(const CombiningRule::Value rule)
+{
+  mySigmaCombining = rule;
+  applyCombiningRules();
 }
 
 std::pair< double, double>
@@ -365,11 +381,11 @@ LennardJones::getSpeciesPairDistance(const SpeciesPair & pair) const
 UniquePtr< IPotentialEvaluator>::Type
 LennardJones::createEvaluator(const spl::common::Structure & structure) const
 {
-  // Build the data from the structure
+// Build the data from the structure
   UniquePtr< PotentialData>::Type data(
       new PotentialData(structure.getNumAtoms()));
 
-  // Create the evaluator
+// Create the evaluator
   return UniquePtr< IPotentialEvaluator>::Type(
       new Evaluator(*this, structure, data));
 }

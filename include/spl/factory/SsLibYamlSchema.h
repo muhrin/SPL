@@ -66,7 +66,8 @@ SCHEMER_HOMO_MAP_KEY_TYPED(LjInteraction, schemer::Scalar<SpeciesPair>, LjParams
 struct LennardJones
 {
   std::map< SpeciesPair, std::vector< double> > params;
-  potential::CombiningRule::Value combiningRule;
+  potential::CombiningRule::Value epsilonCombiningRule;
+  potential::CombiningRule::Value sigmaCombiningRule;
 };
 
 SCHEMER_ENUM(CombiningRuleSchema, potential::CombiningRule::Value)
@@ -80,7 +81,11 @@ SCHEMER_ENUM(CombiningRuleSchema, potential::CombiningRule::Value)
 SCHEMER_MAP(LennardJonesSchema, LennardJones)
 {
   element< LjInteraction>("params", &LennardJones::params);
-  element< CombiningRuleSchema>("combining", &LennardJones::combiningRule)->defaultValue(
+  element< CombiningRuleSchema>("epsilonCombining",
+      &LennardJones::epsilonCombiningRule)->defaultValue(
+      potential::CombiningRule::NONE);
+  element< CombiningRuleSchema>("sigmaCombining",
+      &LennardJones::sigmaCombiningRule)->defaultValue(
       potential::CombiningRule::NONE);
 }
 

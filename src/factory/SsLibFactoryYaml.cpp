@@ -201,6 +201,8 @@ Factory::createPotential(const Potential & options) const
   {
     typedef std::map< SpeciesPair, std::vector< double> > Params;
     UniquePtr< potential::LennardJones>::Type lj(new potential::LennardJones());
+    lj->setEpsilonCombining(options.lj->epsilonCombiningRule);
+    lj->setSigmaCombining(options.lj->sigmaCombiningRule);
 
     BOOST_FOREACH(Params::const_reference p, options.lj->params)
       lj->addInteraction(p.first, p.second[0], p.second[1], p.second[2],

@@ -86,6 +86,16 @@ public:
       const double sigma, const double m, const double n,
       const double cutoffFactor);
 
+  CombiningRule::Value
+  getEpsilonCombining() const;
+  void
+  setEpsilonCombining(const CombiningRule::Value rule);
+
+  CombiningRule::Value
+  getSigmaCombining() const;
+  void
+  setSigmaCombining(const CombiningRule::Value rule);
+
 private:
   typedef GenericPotentialEvaluator< LennardJones> Evaluator;
 
@@ -95,9 +105,7 @@ private:
   evaluate(const double r, const Params & params) const;
 
   void
-  init();
-  void
-  applyCombiningRule();
+  applyCombiningRules();
   double
   equilibriumSeparation(const Params & params) const;
   Params
