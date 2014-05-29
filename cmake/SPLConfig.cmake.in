@@ -17,6 +17,8 @@ if(NOT SPL_TARGETS_INCLUDED)
   set(SPL_TARGETS_INCLUDED 1)
   include("${SPL_CMAKE_DIR}/SPLTargets.cmake")
 endif()
+
+set(SPL_USE_CGAL "@SPL_WITH_CGAL@")
  
 # These are IMPORTED targets created by SPLTargets.cmake
 set(SPL_LIBRARIES spl)
