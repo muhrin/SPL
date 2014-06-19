@@ -6,8 +6,8 @@
  *      Author: Martin Uhrin
  */
 
-#ifndef SS_LIB_FACTORY_YAML_H
-#define SS_LIB_FACTORY_YAML_H
+#ifndef SPL__FACTORY__FACTORY_H_
+#define SPL__FACTORY__FACTORY_H_
 
 // INCLUDES /////////////////////////////////////////////
 #include "spl/SSLib.h"
@@ -85,7 +85,8 @@ public:
   createStructureGenerator(const builder::StructureGenerator & options) const;
 #ifdef SPL_WITH_CGAL
   UniquePtr< build_cell::VoronoiSlabGenerator>::Type
-  createVoronoiSlabGenerator(const builder::VoronoiSlabGenerator & options) const;
+  createVoronoiSlabGenerator(
+      const builder::VoronoiSlabGenerator & options) const;
 #endif // SPL_WITH_CGAL
 
   const GenShapeFactory &
@@ -93,8 +94,9 @@ public:
 
 private:
 #ifdef SPL_WITH_CGAL
-  UniquePtr<build_cell::VoronoiSlabGenerator::SlabRegion::Basis>::Type
-  createVoronoiSlabRegionBasis(const builder::VoronoiSlabRegionBasis & options) const;
+  UniquePtr< build_cell::VoronoiSlabGenerator::SlabRegion::Basis>::Type
+  createVoronoiSlabRegionBasis(
+      const builder::VoronoiSlabRegionBasis & options) const;
 #endif // SPL_WITH_CGAL
 
   const GenShapeFactory myShapeFactory;
@@ -103,5 +105,5 @@ private:
 }
 }
 
-#endif /* SS_LIB_FACTORY_YAML_H */
+#endif /* SPL__FACTORY__FACTORY_H_ */
 

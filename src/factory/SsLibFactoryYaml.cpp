@@ -185,6 +185,7 @@ Factory::createOptimisationSettings(const OptimiserSettings & options) const
   settings.energyTol = options.energyTolerance;
   settings.forceTol = options.forceTolerance;
   settings.stressTol = options.stressTolerance;
+  settings.optimisationType = options.optimise;
 
   settings.pressure.reset(arma::zeros(3, 3));
   settings.pressure->diag().fill(options.pressure);
@@ -204,9 +205,12 @@ Factory::createPotential(const Potential & options) const
     lj->setEpsilonCombining(options.lj->epsilonCombiningRule);
     lj->setSigmaCombining(options.lj->sigmaCombiningRule);
 
-    BOOST_FOREACH(Params::const_reference p, options.lj->params)
-      lj->addInteraction(p.first, p.second[0], p.second[1], p.second[2],
-          p.second[3], p.second[4]);
+    if(options.lj->params)
+    {
+      BOOST_FOREACH(Params::const_reference p, *options.lj->params)
+        lj->addInteraction(p.first, p.second[0], p.second[1], p.second[2],
+            p.second[3], p.second[4]);
+    }
     pot = lj;
   }
 

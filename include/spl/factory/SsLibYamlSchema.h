@@ -21,6 +21,7 @@
 
 #include "spl/build_cell/VoronoiSlabRegions.h"
 #include "spl/potential/CombiningRules.h"
+#include "spl/potential/OptimisationSettings.h"
 #include "spl/potential/TpsdGeomOptimiser.h"
 #include "spl/utility/SortedDistanceComparator.h"
 #include "spl/yaml/Transcode.h"
@@ -65,7 +66,7 @@ SCHEMER_HOMO_MAP_KEY_TYPED(LjInteraction, schemer::Scalar<SpeciesPair>, LjParams
 
 struct LennardJones
 {
-  std::map< SpeciesPair, std::vector< double> > params;
+  boost::optional< std::map< SpeciesPair, std::vector< double> > > params;
   potential::CombiningRule::Value epsilonCombiningRule;
   potential::CombiningRule::Value sigmaCombiningRule;
 };
@@ -107,7 +108,16 @@ struct OptimiserSettings
   double forceTolerance;
   double stressTolerance;
   double pressure;
+  potential::OptimisationSettings::Optimise::Value optimise;
 };
+
+SCHEMER_ENUM(OptimisationType, potential::OptimisationSettings::Optimise::Value)
+{
+  enumeration("atoms", potential::OptimisationSettings::Optimise::ATOMS);
+  enumeration("atomsAndLattice",
+      potential::OptimisationSettings::Optimise::ATOMS_AND_LATTICE);
+  enumeration("lattice", potential::OptimisationSettings::Optimise::LATTICE);
+}
 
 SCHEMER_MAP(OptimiserSettingsSchema, OptimiserSettings)
 {
@@ -120,6 +130,8 @@ SCHEMER_MAP(OptimiserSettingsSchema, OptimiserSettings)
   element("stressTol", &OptimiserSettings::stressTolerance)->defaultValue(
       potential::TpsdGeomOptimiser::DEFAULT_STRESS_TOLERANCE);
   element("pressure", &OptimiserSettings::pressure)->defaultValue(0.0);
+  element< OptimisationType>("optimise", &OptimiserSettings::optimise)->defaultValue(
+      potential::OptimisationSettings::Optimise::ATOMS_AND_LATTICE);
 }
 
 struct OptimiserWithPotentialSettings
