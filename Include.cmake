@@ -5,6 +5,7 @@ set(sslib_Header_Files__analysis
   include/spl/analysis/AbsConvexHullGenerator.h
   include/spl/analysis/AnchorArrangement.h
   include/spl/analysis/AnchorArrangementOutputter.h
+  include/spl/analysis/ArrangementMapOutputter.h
   include/spl/analysis/ArrangementSmoothing.h
   include/spl/analysis/CgalCustomKernel.h
   include/spl/analysis/CgalPointDWithId.h
@@ -16,11 +17,19 @@ set(sslib_Header_Files__analysis
   include/spl/analysis/GnuplotAnchorArrangementPlotter.h
   include/spl/analysis/GnuplotConvexHullPlotter.h
   include/spl/analysis/Histogram.h
+  include/spl/analysis/MapArrangementTraits.h
+  include/spl/analysis/MatplotlibMapOutputter.h
   include/spl/analysis/SpaceGroup.h
   include/spl/analysis/StructureConvexHullInfoSupplier.h
   include/spl/analysis/StructureTriangulation.h
+  include/spl/analysis/TraceCurve.h
   include/spl/analysis/VectorAnchorArrangementOutputter.h
   include/spl/analysis/VoronoiEdgeTracer.h
+  include/spl/analysis/VoronoiPath.h
+  include/spl/analysis/VoronoiPathArrangement.h
+  include/spl/analysis/VoronoiPathDecompose.h
+  include/spl/analysis/VoronoiPathTracer.h
+  include/spl/analysis/VoronoiPathUtility.h
 )
 source_group("Header Files\\analysis" FILES ${sslib_Header_Files__analysis})
 
@@ -31,8 +40,15 @@ set(sslib_Header_Files__analysis__detail
   include/spl/analysis/detail/ArrangementSmoothing.h
   include/spl/analysis/detail/ConvexHullStructures.h
   include/spl/analysis/detail/GnuplotAnchorArrangementPlotter.h
+  include/spl/analysis/detail/MatplotlibMapOutputter.h
+  include/spl/analysis/detail/TraceCurve.h
   include/spl/analysis/detail/VectorAnchorArrangementOutputter.h
   include/spl/analysis/detail/VoronoiEdgeTracer.h
+  include/spl/analysis/detail/VoronoiPath.h
+  include/spl/analysis/detail/VoronoiPathArrangement.h
+  include/spl/analysis/detail/VoronoiPathDecompose.h
+  include/spl/analysis/detail/VoronoiPathTracer.h
+  include/spl/analysis/detail/VoronoiPathUtility.h
 )
 source_group("Header Files\\analysis\\detail" FILES ${sslib_Header_Files__analysis__detail})
 
