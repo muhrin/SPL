@@ -8,7 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "spl/yaml/ProgramOptions.h"
 
-#ifdef SPL_WITH_YAML
+#ifdef SPL_USE_YAML
 
 #include <vector>
 
@@ -70,5 +70,5 @@ bool insertScalars(YAML::Node & node, const ::std::vector< ::std::string> & valu
 }
 }
 
-#endif /* SPL_WITH_YAML */
+#endif /* SPL_USE_YAML */
 

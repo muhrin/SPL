@@ -48,12 +48,12 @@ find_package_or_install(Schemer)
 set(SPL_BUILD_TESTS FALSE CACHE BOOL "Build spl tests")
 set(SSLIB_ENABLE_THREAD_AWARE TRUE CACHE BOOL "Enable awareness of multithreaded environment (requires Boost thread)")
 
-set(SPL_WITH_CGAL ${CGAL_FOUND} CACHE INTERNAL "Build SPL with CGAL support.")
-set(SPL_WITH_YAML ${YamlCpp_FOUND} CACHE INTERNAL "Build SPL with Yaml support.")
+set(SPL_USE_CGAL ${CGAL_FOUND} CACHE INTERNAL "Build SPL with CGAL support.")
+set(SPL_USE_YAML ${YamlCpp_FOUND} CACHE INTERNAL "Build SPL with Yaml support.")
 
 configure_file(
-  "${PROJECT_SOURCE_DIR}/include/spl/SSLibConfig.h.in"
-  "${PROJECT_BINARY_DIR}/include/spl/SSLibConfig.h"
+  "${PROJECT_SOURCE_DIR}/include/spl/config.h.in"
+  "${PROJECT_BINARY_DIR}/include/spl/config.h"
 )
 configure_file(
   "${PROJECT_SOURCE_DIR}/include/spl/version.h.in"
@@ -107,16 +107,14 @@ include_directories(BEFORE
 )
 
 # Include YAML if we're using it
-if(SPL_WITH_YAML)
+if(SPL_USE_YAML)
   include_directories(${YAML_CPP_INCLUDE_DIRS})
-endif(SPL_WITH_YAML)
+endif(SPL_USE_YAML)
 
 # Include CGAL if we're using it
-if(SPL_WITH_CGAL)
-  include_directories(
-    "${CGAL_INCLUDE_DIRS}"
-  )
-endif(SPL_WITH_CGAL)
+if(SPL_USE_CGAL)
+  include_directories("${CGAL_INCLUDE_DIRS}" )
+endif(SPL_USE_CGAL)
 
 set_property(TARGET PROPERTY PROJECT_LABEL "SPL")
 
@@ -135,19 +133,19 @@ target_link_libraries(spl
   ${SCHEMER_LIBRARIES}
 )
 
-if(SPL_WITH_YAML)
+if(SPL_USE_YAML)
   target_link_libraries(spl
     ${YAML_CPP_LIBRARIES}
     schemer
   )
-endif(SPL_WITH_YAML)
+endif(SPL_USE_YAML)
 
-if(SPL_WITH_CGAL)
+if(SPL_USE_CGAL)
   target_link_libraries(spl
     ${CGAL_LIBRARY}
     ${CGAL_Core_LIBRARY}
   )
-endif(SPL_WITH_CGAL)
+endif(SPL_USE_CGAL)
 
 install(TARGETS spl
   EXPORT SPLTargets

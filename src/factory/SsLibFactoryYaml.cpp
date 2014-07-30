@@ -378,15 +378,15 @@ Factory::createStructureGenerator(
 
   if(options.builder)
     generator = createStructureBuilder(*options.builder);
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
   else if(options.voronoiSlab)
     generator = createVoronoiSlabGenerator(*options.voronoiSlab);
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL
 
   return generator;
 }
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 UniquePtr< build_cell::VoronoiSlabGenerator>::Type
 Factory::createVoronoiSlabGenerator(
@@ -461,7 +461,7 @@ Factory::createVoronoiSlabGenerator(
   return generator;
 }
 
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL
 
 const GenShapeFactory &
 Factory::getShapeFactory() const
@@ -469,7 +469,7 @@ Factory::getShapeFactory() const
   return myShapeFactory;
 }
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 UniquePtr< build_cell::VoronoiSlabGenerator::SlabRegion::Basis>::Type
 Factory::createVoronoiSlabRegionBasis(
@@ -484,7 +484,7 @@ Factory::createVoronoiSlabRegionBasis(
   return basis;
 }
 
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL
 
 }
 }

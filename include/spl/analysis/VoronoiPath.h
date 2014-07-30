@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <map>
 #include <vector>
@@ -100,9 +100,6 @@ template< typename VD>
     const Edge &
     edgeBack() const;
 
-    void
-    reverse();
-
     size_t
     numVertices() const;
 
@@ -171,5 +168,5 @@ template< typename VD>
 
 #include "spl/analysis/detail/VoronoiPath.h"
 
-#endif /* SPL_WITH_CGAL */
+#endif /* SPL_USE_CGAL */
 #endif /* VORONOI_PATH_H */

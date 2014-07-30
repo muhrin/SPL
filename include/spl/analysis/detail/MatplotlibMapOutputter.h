@@ -10,8 +10,12 @@
 
 // INCLUDES ///////////////////
 #include <boost/foreach.hpp>
+#include <boost/algorithm/string.hpp>
 
-// FORWARD DECLARATIONS ///////
+#include <CGAL/centroid.h>
+#include <CGAL/Polygon_2.h>
+
+#include <spl/math/Random.h>
 
 // DEFINITION ///////////////////////
 
@@ -21,22 +25,26 @@ namespace analysis {
 template< typename MapTraits>
   class MatplotlibMapOutputter< MapTraits>::FacePath
   {
-    typedef typename MapTraits::ArrTraits::Rat_point_2 Point;
     typedef typename Arrangement::X_monotone_curve_2 Curve;
+
   public:
     explicit
-    FacePath(std::ostream * const os) :
-        myOs(os)
+    FacePath(std::ostream * const os, const std::string & colour) :
+        myOs(os), myColour(colour)
     {
       *myOs << "face_data = [\n";
     }
     ~FacePath()
     {
-      *myOs << INDENT << "]\n";
+      *myOs << INDENT << "(" << PATH << ".CLOSEPOLY, (0, 0))";
+      *myOs << "]\n";
       *myOs << "face_codes, face_verts = zip(*face_data)\n";
       *myOs << "face_path = " << PATH << "(face_verts, face_codes)\n";
-      *myOs << "face_patch = " << PATH_PATCH
-          << "(face_path, facecolor='r', alpha=0.5)\n";
+      *myOs << "face_patch = " << PATH_PATCH << "(face_path";
+      if(!myColour.empty())
+        *myOs << ", facecolor=" << myColour;
+      *myOs << ", alpha=0.5";
+      *myOs << ")\n";
       *myOs << PLOT << ".add_patch(face_patch)\n";
     }
 
@@ -45,18 +53,20 @@ template< typename MapTraits>
     {
       *myOs << INDENT << "(" << PATH << ".MOVETO, " << point(p) << "),\n";
     }
+
     void
     lineTo(const Point & p)
     {
       *myOs << INDENT << "(" << PATH << ".LINETO, " << point(p) << "),\n";
     }
-    template< typename InputIterator>
-      void
-      curveTo(InputIterator first, InputIterator last)
-      {
-        for(InputIterator it = first; it != last; ++it)
-          *myOs << INDENT << "(" << PATH << ".CURVE4, " << point(*it) << "),\n";
-      }
+
+    void
+    curveTo(const Bezier & bezier)
+    {
+      for(size_t i = 1; i < 4; ++i)
+        *myOs << INDENT << "(" << PATH << ".CURVE4, "
+            << point(bezier.control[i]) << "),\n";
+    }
 
   private:
     std::string
@@ -68,8 +78,8 @@ template< typename MapTraits>
       return ss.str();
     }
 
-    Point myPos;
     std::ostream * const myOs;
+    const std::string myColour;
   };
 
 template< typename MapTraits>
@@ -93,9 +103,9 @@ template< typename MapTraits>
 template< typename MapTraits>
   void
   MatplotlibMapOutputter< MapTraits>::outputArrangement(const Arrangement & map,
-      const LabelNames & labelNames, std::ostream * const os) const
+      const LabelProperties & labelProperties, std::ostream * const os) const
   {
-    out(map, &labelNames, os);
+    out(map, &labelProperties, os);
   }
 
 template< typename MapTraits>
@@ -108,25 +118,49 @@ template< typename MapTraits>
 template< typename MapTraits>
   void
   MatplotlibMapOutputter< MapTraits>::out(const Arrangement & map,
-      const LabelNames * const names, std::ostream * const os) const
+      const LabelProperties * const labelProperties,
+      std::ostream * const os) const
   {
-    std::cout << map.number_of_faces() << std::endl;
+    const boost::iterator_range< typename Arrangement::Face_const_iterator> faces(
+        map.faces_begin(), map.faces_end());
 
     *os << "import matplotlib.path as mpath\n"
         << "import matplotlib.patches as mpatches\n"
         << "import matplotlib.pyplot as plt\n\n"
         << "fig, ax = plt.subplots()\n\n";
 
-    BOOST_FOREACH(const Face & face,
-        boost::make_iterator_range(map.faces_begin(), map.faces_end()))
+    const ColourMap & colourMap = getColourMap(labelProperties, faces);
+    printProperties(labelProperties, colourMap, os);
+
+    std::string colour, labelName;
+    BOOST_FOREACH(const Face & face, faces)
     {
-      drawFace(face, os);
-      if(names && face.data().label)
+      colour = "";
+      labelName = "";
+
+      // Try to find the colour we should used for this face based on the label
+      typename ColourMap::const_iterator it;
+      if(face.data().label
+          && colourMap.find(*face.data().label) != colourMap.end())
       {
-        const typename LabelNames::const_iterator it = names->find(
-            *face.data().label);
-//        drawLabel(it->second, pos, os);
+        std::stringstream ss;
+        ss << "labels['" << *face.data().label << "']['colour']";
+        colour = ss.str();
       }
+
+      if(labelProperties && face.data().label)
+      {
+        const typename LabelProperties::const_iterator it =
+            labelProperties->find(*face.data().label);
+        if(it != labelProperties->end() && it->second.name)
+        {
+          std::stringstream ss;
+          ss << "labels['" << *face.data().label << "']['name']";
+          labelName = ss.str();
+        }
+      }
+
+      drawFace(face, os, labelName, colour);
     }
 
     *os << "\nax.autoscale_view()\n";
@@ -136,40 +170,175 @@ template< typename MapTraits>
 template< typename MapTraits>
   void
   MatplotlibMapOutputter< MapTraits>::drawFace(const Face & face,
-      std::ostream * const os) const
+      std::ostream * const os, const std::string & label,
+      const std::string & colour) const
   {
     if(!face.is_unbounded())
     {
-      const typename Arrangement::Ccb_halfedge_const_circulator first =
-          nextCurveHalfedge(face.outer_ccb());
-      FacePath draw(os);
-      draw.moveTo(first->curve().supporting_curve().control_point(0));
+      // Build up the polygon for this face
+      CGAL::Polygon_2< typename MapTraits::Kernel> poly;
 
-      typename Arrangement::Ccb_halfedge_const_circulator cl = first;
-      do
+      { // Draw the path, keep in this scope as FacePath uses destructor to finish up
+        FacePath path(os, colour);
+
+        const typename Arrangement::Ccb_halfedge_const_circulator first =
+            face.outer_ccb();
+
+        // Set the start point
+        if(first->twin()->data().bezier)
+          poly.push_back(first->target()->point());
+        else
+          poly.push_back(first->source()->point());
+        path.moveTo(poly.container().back());
+
+        typename Arrangement::Ccb_halfedge_const_circulator cl = first;
+        do
+        {
+          if(cl->data().bezier)
+            path.curveTo(*cl->data().bezier);
+          else if(cl->twin()->data().bezier)
+          {
+            Bezier bezier = *cl->twin()->data().bezier;
+            bezier.reverse();
+            path.curveTo(bezier);
+          }
+          else
+            path.lineTo(cl->target()->point());
+
+          poly.push_back(cl->target()->point());
+
+          ++cl;
+        } while(cl != first);
+      }
+
+      if(!label.empty())
       {
-        drawCurveTo(cl->curve().supporting_curve(), &draw);
-        cl = nextCurveHalfedge(cl);
-      } while(cl != first);
+        //drawText(*poly.vertices_begin(), label, os);
+        drawText(CGAL::centroid(poly.vertices_begin(), poly.vertices_end()),
+            label, os);
+      }
     }
   }
 
 template< typename MapTraits>
-  void
-  MatplotlibMapOutputter< MapTraits>::drawCurveTo(
-      const typename MapTraits::ArrTraits::Curve_2 & curve,
-      FacePath * const draw) const
+  typename MatplotlibMapOutputter< MapTraits>::ColourMap
+  MatplotlibMapOutputter< MapTraits>::getColourMap(
+      const LabelProperties * const labelProperties,
+      const boost::iterator_range< typename Arrangement::Face_const_iterator> & faces) const
   {
-    const size_t nPoints = curve.number_of_control_points();
-    if(nPoints == 2)
-      draw->lineTo(curve.control_point(1));
-    else
+    // Use algorithm described here:
+    // http://stackoverflow.com/questions/43044/algorithm-to-randomly-generate-an-aesthetically-pleasing-color-palette
+    // to randomly generate 'pleasing' colours.
+    static const int MIX_RED = 255;
+    static const int MIX_GREEN = 255;
+    static const int MIX_BLUE = 255;
+
+    std::map< Label, std::string> colourMap;
+
+    if(labelProperties && !labelProperties->empty())
     {
-      std::list< typename MapTraits::ArrTraits::Rat_point_2> pts;
-      for(size_t i = 1; i < nPoints; ++i)
-        pts.push_back(curve.control_point(i));
-      draw->curveTo(pts.begin(), pts.end());
+      // Put in all the colours from the labels info
+      BOOST_FOREACH(typename LabelProperties::const_reference i, *labelProperties)
+      {
+        if(i.second.colour)
+          colourMap[i.first] = toHexString(*i.second.colour);
+      }
     }
+
+    BOOST_FOREACH(const Face & face, faces)
+    {
+      const boost::optional< Label> & label = face.data().label;
+      if(label)
+      {
+        if(colourMap.find(*label) == colourMap.end())
+        {
+          // Not seen this label before, so make up a colour
+          const int red = (math::randu< int>(256) + MIX_RED) / 2;
+          const int green = (math::randu< int>(256) + MIX_GREEN) / 2;
+          const int blue = (math::randu< int>(256) + MIX_BLUE) / 2;
+
+          colourMap[*label] = toHexString(rgbColour(red, green, blue));
+        }
+      }
+    }
+    return colourMap;
+  }
+
+template< typename MapTraits>
+  void
+  MatplotlibMapOutputter< MapTraits>::printProperties(
+      const LabelProperties * const properties, const ColourMap & colourMap,
+      std::ostream * const os) const
+  {
+    SSLIB_ASSERT(os);
+    if(colourMap.empty())
+      return;
+
+    typename LabelProperties::const_iterator it;
+    *os << "labels = dict()\n";
+    BOOST_FOREACH(typename ColourMap::const_reference c, colourMap)
+    {
+      *os << "labels['" << c.first << "'] = {";
+      *os << "'colour': '" << c.second << "'";
+      if(properties)
+      {
+        it = properties->find(c.first);
+        if(it != properties->end() && it->second.name)
+          *os << ", 'name': '" << *it->second.name << "'";
+
+      }
+      *os << "}\n";
+    }
+
+    *os << "\n";
+  }
+
+template< typename MapTraits>
+  std::string
+  MatplotlibMapOutputter< MapTraits>::toHexString(const int colour) const
+  {
+    const int cappedColour = std::max(std::min(colour, 0xffffff), 0);
+    // Convert the code to hex string representation
+    std::stringstream ss;
+    ss << "#";
+    ss << std::hex // Print in hexadecimal
+        << std::noshowbase // Don't show 0x in front of number
+        << std::setfill('0') // Fill with leading 0's if necessary
+        << std::internal // Use the internal width (i.e. after 0x)
+        << std::setw(6) // Make the internal width 6 numbers
+        << cappedColour;
+    return ss.str();
+  }
+
+template< typename MapTraits>
+  void
+  MatplotlibMapOutputter< MapTraits>::drawText(const Point pt,
+      const std::string & label, std::ostream * const os) const
+  {
+    using std::string;
+    using boost::lexical_cast;
+
+    *os << "ax.text(";
+
+    std::vector< string> params;
+    params.push_back(lexical_cast< string>(pt.x()));
+    params.push_back(lexical_cast< string>(pt.y()));
+    params.push_back(label);
+    params.push_back("horizontalalignment='center'");
+    params.push_back("verticalalignment='center'");
+    *os << boost::algorithm::join(params, ", ") << ")\n";
+  }
+
+template< typename MapTraits>
+  int
+  MatplotlibMapOutputter< MapTraits>::rgbColour(const int red, const int green,
+      const int blue) const
+  {
+    // Clip the colours
+    const int r = std::min(std::max(red, 0), 255);
+    const int g = std::min(std::max(green, 0), 255);
+    const int b = std::min(std::max(blue, 0), 255);
+    return (r << 16) + (g << 8) + b;
   }
 
 }

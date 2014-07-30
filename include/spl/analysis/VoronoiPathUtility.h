@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <boost/foreach.hpp>
 #include <boost/range/iterator_range.hpp>
@@ -123,5 +123,5 @@ template< typename MapTraits, typename VD>
 
 #include "spl/analysis/detail/VoronoiPathUtility.h"
 
-#endif /* SPL_WITH_CGAL */
+#endif /* SPL_USE_CGAL */
 #endif /* VORONOI_PATH_UTILITY_H */

@@ -8,7 +8,7 @@
 // INCLUEDES /////////////
 #include "spl/build_cell/VoronoiSlabGenerator.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <boost/range/iterator_range.hpp>
 
@@ -497,4 +497,4 @@ new_clone(const VoronoiSlabGenerator::SlabRegion & region)
 } // namespace build_cell
 } // namespace spl
 
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL

@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <map>
 #include <set>
@@ -242,5 +242,5 @@ template< typename LabelType, class VertexDataType = arrangement_data::Vertex<
 
 #include "spl/analysis/detail/VoronoiEdgeTracer.h"
 
-#endif /* SPL_WITH_CGAL */
+#endif /* SPL_USE_CGAL */
 #endif /* VORONOI_EDGE_TRACER_H */

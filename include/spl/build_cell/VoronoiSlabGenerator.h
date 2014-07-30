@@ -11,7 +11,7 @@
 // INCLUDES /////////////////////////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <map>
 #include <vector>
@@ -244,5 +244,5 @@ template< typename DG>
 }
 }
 
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL
 #endif /* VORONOI_SLAB_GENERATOR_H */

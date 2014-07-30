@@ -11,10 +11,12 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <map>
 #include <ostream>
+
+#include <boost/optional.hpp>
 
 // DEFINITION ///////////////////////
 
@@ -29,7 +31,12 @@ template< typename MapTraits>
   {
   public:
     typedef typename MapTraits::Arrangement Arrangement;
-    typedef std::map< typename MapTraits::Label, std::string> LabelNames;
+
+    struct LabelProperties
+    {
+      boost::optional< std::string> name;
+      boost::optional< int> colour;
+    };
 
     virtual
     ~ArrangementMapOutputter()
@@ -40,7 +47,8 @@ template< typename MapTraits>
     outputArrangement(const Arrangement & map,
         std::ostream * const os) const = 0;
     virtual void
-    outputArrangement(const Arrangement & map, const LabelNames & labelNames,
+    outputArrangement(const Arrangement & map,
+        const std::map< typename MapTraits::Label, LabelProperties> & labelsInfo,
         std::ostream * const os) const = 0;
     virtual std::string
     fileExtension() const = 0;
@@ -49,5 +57,5 @@ template< typename MapTraits>
 }
 }
 
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL
 #endif /* ARRANGEMENT_MAP_OUTPUTTER_H */

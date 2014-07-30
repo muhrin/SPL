@@ -8,7 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "spl/potential/ExternalOptimiser.h"
 
-#ifdef SPL_WITH_YAML
+#ifdef SPL_USE_YAML
 
 #include <fstream>
 

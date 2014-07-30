@@ -12,7 +12,7 @@
 // INCLUDES /////////////////////////////////////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 #  include <CGAL/Point_2.h>
 #  include <CGAL/Vector_2.h>
 #endif
@@ -24,7 +24,7 @@
 namespace spl {
 namespace utility {
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 template< typename K>
   CGAL::Point_2< K>

@@ -11,7 +11,7 @@
 // INCLUDES //////////////////////////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_YAML
+#ifdef SPL_USE_YAML
 
 #include <boost/filesystem/path.hpp>
 
@@ -32,5 +32,5 @@ struct convert< ::boost::filesystem::path>
 
 }
 
-#endif /* SPL_WITH_YAML */
+#endif /* SPL_USE_YAML */
 #endif /* TRANSCODE_IO_H */

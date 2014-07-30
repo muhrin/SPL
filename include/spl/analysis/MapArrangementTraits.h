@@ -11,23 +11,23 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
-
-#include <CGAL/basic.h>
-
-// We need CORE library for Bezier curves, may remove this dependency in the future
-#ifdef CGAL_USE_CORE
+#ifdef SPL_USE_CGAL
 
 #include <utility>
 
 #include <boost/optional.hpp>
 
-#include <CGAL/Cartesian.h>
-#include <CGAL/CORE_algebraic_number_traits.h>
-#include <CGAL/Arr_Bezier_curve_traits_2.h>
+#include <CGAL/Arr_segment_traits_2.h>
+#include <CGAL/Arrangement_2.h>
 #include <CGAL/Arrangement_2.h>
 #include <CGAL/Arr_extended_dcel.h>
+#include <CGAL/Cartesian.h>
+#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/MP_Float.h>
+#include <CGAL/Quotient.h>
+
+#include "spl/analysis/BezierCurve.h"
 
 // FORWARD DECLARATIONS ///////
 
@@ -41,17 +41,8 @@ template< typename LabelType>
   {
   public:
     typedef LabelType Label;
-    typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
-    typedef typename K::Point_2 Point;
-    typedef std::pair< Point, Label> PointLabel;
-
-    typedef CGAL::CORE_algebraic_number_traits NtTraits;
-    typedef typename NtTraits::Rational NT;
-    typedef typename NtTraits::Rational Rational;
-    typedef typename NtTraits::Algebraic Algebraic;
-    typedef CGAL::Cartesian< Rational> RatKernel;
-    typedef CGAL::Cartesian< Algebraic> AlgKernel;
-    typedef RatKernel::Point_2 ArrPoint;
+    typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
+    typedef BezierCurve< Kernel> Bezier;
 
     struct VertexInfo
     {
@@ -64,6 +55,7 @@ template< typename LabelType>
       {
       }
       boost::optional< Label> label;
+      boost::optional< Bezier> bezier;
     };
 
     struct FaceInfo
@@ -72,7 +64,8 @@ template< typename LabelType>
     };
 
     // Arrangements stuff
-    typedef CGAL::Arr_Bezier_curve_traits_2< RatKernel, AlgKernel, NtTraits> ArrTraits;
+    typedef CGAL::Arr_segment_traits_2<Kernel> ArrTraits;
+    typedef typename ArrTraits::Point_2 ArrPoint;
     typedef CGAL::Arr_extended_dcel< ArrTraits, VertexInfo, HalfedgeInfo,
         FaceInfo> Dcel;
     typedef CGAL::Arrangement_2< ArrTraits, Dcel> Arrangement;
@@ -81,6 +74,5 @@ template< typename LabelType>
 }
 }
 
-#endif /* SPL_WITH_CGAL */
-#endif // CGAL_USE_CORE
+#endif /* SPL_USE_CGAL */
 #endif /* MAP_ARRANGEMENT_H */

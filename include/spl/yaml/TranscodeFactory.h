@@ -11,7 +11,7 @@
 // INCLUDES //////////////////////////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_YAML
+#ifdef SPL_USE_YAML
 
 #include <yaml-cpp/yaml.h>
 
@@ -34,5 +34,5 @@ template< >
 
 }
 
-#endif /* SPL_WITH_YAML */
+#endif /* SPL_USE_YAML */
 #endif /* TRANSCODE_FACTORY_H */

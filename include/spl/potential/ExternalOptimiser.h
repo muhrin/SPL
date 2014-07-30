@@ -12,7 +12,7 @@
 // INCLUDES /////////////////////////////////////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_YAML
+#ifdef SPL_USE_YAML
 
 #include <string>
 
@@ -57,5 +57,5 @@ private:
 }
 }
 
-#endif // SPL_WITH_YAML
+#endif // SPL_USE_YAML
 #endif /* EXTERNAL_OPTIMISER_H */

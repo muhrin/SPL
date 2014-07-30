@@ -22,7 +22,7 @@
 #include <CGAL/Segment_2.h>
 #include <CGAL/Cartesian_converter.h>
 
-#define DEBUG_DONT_CREATE_ARRANGEMENT
+//#define DEBUG_VORONOI_PATH_UTILITY
 
 // FORWARD DECLARATIONS ///////
 
@@ -32,11 +32,14 @@ namespace spl {
 namespace analysis {
 namespace detail {
 
-template< typename Map, typename Label>
-  class MapLabeller : CGAL::Arr_observer< Map>
+template< typename MapTraits>
+  class MapLabeller : CGAL::Arr_observer< typename MapTraits::Arrangement>
   {
+    typedef typename MapTraits::Arrangement Map;
+    typedef typename MapTraits::Bezier Bezier;
   public:
-    typedef std::pair< boost::optional< Label>, boost::optional< Label> > EdgeLabels;
+    typedef std::pair< boost::optional< typename MapTraits::Label>,
+        boost::optional< typename MapTraits::Label> > EdgeLabels;
 
     MapLabeller(Map * const map) :
         myMap(map)
@@ -55,11 +58,25 @@ template< typename Map, typename Label>
       myEdgeLabels = labels;
     }
 
+    void
+    setNextEdgeBezier(const Bezier & bezier)
+    {
+      myNextEdgeBezier = bezier;
+    }
+
   private:
     virtual void
     after_create_edge(typename Map::Halfedge_handle e)
     {
       assignLabels(myEdgeLabels, e);
+      if(myNextEdgeBezier)
+      {
+        e->data().bezier = *myNextEdgeBezier;
+        if(e->data().bezier->control[0] != e->source()->point())
+          e->data().bezier->reverse();
+        //SSLIB_ASSERT(e->data().bezier->control[0] == e->source()->point());
+        myNextEdgeBezier.reset();
+      }
     }
 
     virtual void
@@ -93,7 +110,8 @@ template< typename Map, typename Label>
       // labels.first = halfedge
       // labels.second = halfedge.twin()
 
-      if(e->curve().source().is_same(e->source()->point()))
+      //if(e->curve().source().is_same(e->source()->point()))
+      if(e->curve().source() == e->source()->point())
       {
         e->data().label = labels.first;
         e->twin()->data().label = labels.second;
@@ -110,6 +128,7 @@ template< typename Map, typename Label>
     EdgeLabels mySplitEdgeLabels;
     boost::optional<
         std::pair< typename Map::Vertex_handle, typename Map::Vertex_handle> > myUpcomingEdge;
+    boost::optional< Bezier> myNextEdgeBezier;
   };
 
 template< typename MapTraits, typename VD>
@@ -122,7 +141,9 @@ template< typename MapTraits, typename VD>
     typedef typename MapTraits::ArrPoint Point;
     typedef VoronoiPathArrangement< VD> PathArrangement;
     typedef typename PathArrangement::Path Path;
-    typedef MapLabeller< Map, Label> EdgeLabeller;
+    typedef MapLabeller< MapTraits> EdgeLabeller;
+    typedef typename MapTraits::Bezier MapBezier;
+    typedef BezierCurve< typename Delaunay::Geom_traits> Bezier;
 
     typedef std::map< typename VD::Vertex_handle, typename Map::Vertex_handle> MeetingVertices;
     typedef std::map< typename Delaunay::Edge, typename Map::Vertex_handle> BoundaryVertices;
@@ -130,61 +151,50 @@ template< typename MapTraits, typename VD>
 
     class PathDrawer
     {
-      typedef typename Path::Point PathPoint;
-
     public:
       explicit
       PathDrawer(Map * const map) :
           myMap(map)
       {
       }
-      void
-      moveTo(const PathPoint & p)
-      {
-        //std::cout << "(Path.MOVETO, " << point(p) << "),\n";
-        updatePos(TO_EXACT(p));
-      }
-      void
-      lineTo(const PathPoint & p)
-      {
-        //std::cout << "(Path.LINETO, " << point(p) << "),\n";
 
-        const Point pts[] =
-          { myPos, TO_EXACT(p) };
-        if(pts[1] != myPos)
-        {
-#ifndef DEBUG_DONT_CREATE_ARRANGEMENT
-          CGAL::insert(*myMap, Curve(pts, pts + 2));
+      void
+      moveTo(const Point & p)
+      {
+#ifdef DEBUG_VORONOI_PATH_UTILITY
+        std::cout << "(Path.MOVETO, " << point(p) << "),\n";
 #endif
-          updatePos(pts[1]);
+        updatePos(p);
+      }
+
+      void
+      lineTo(const Point & p)
+      {
+#ifdef DEBUG_VORONOI_PATH_UTILITY
+        std::cout << "(Path.LINETO, " << point(p) << "),\n";
+#endif
+
+        if(myPos != p)
+        {
+          CGAL::insert(*myMap, Curve(myPos, p));
+          updatePos(p);
         }
       }
-      template< typename InputIterator>
-        void
-        curveTo(InputIterator first, InputIterator last)
-        {
-//          for(InputIterator it = first; it != last; ++it)
-//            std::cout << "(Path.CURVE4, " << point(*it) << "),\n";
 
-          std::vector< Point> pts(1, myPos);
-          BOOST_FOREACH(const typename Path::Point & p,
-              boost::make_iterator_range(first, last))
-            pts.push_back(TO_EXACT(p));
-
-#ifndef DEBUG_DONT_CREATE_ARRANGEMENT
-          CGAL::insert(*myMap, Curve(pts.begin(), pts.end()));
+      void
+      curveTo(const MapBezier & bezier)
+      {
+#ifdef DEBUG_VORONOI_PATH_UTILITY
+        for(size_t i = 1; i < 4; ++i)
+          std::cout << "(Path.CURVE4, " << point(bezier.control[i]) << "),\n";
 #endif
-          updatePos(pts.back());
-        }
+
+        CGAL::insert(*myMap, Curve(myPos, bezier.control[3]));
+        updatePos(bezier.control[3]);
+      }
 
     private:
       typedef typename MapTraits::ArrTraits::Curve_2 Curve;
-      typedef CGAL::Cartesian_converter< typename Delaunay::Geom_traits,
-          typename MapTraits::RatKernel> IkToEk;
-
-      // Use this to convert the number type used by the Voronoi diagram paths
-      // to the rational type used by the arrangement
-      static const IkToEk TO_EXACT;
 
       void
       updatePos(const Point & p)
@@ -193,10 +203,11 @@ template< typename MapTraits, typename VD>
       }
 
       std::string
-      point(const PathPoint & pt)
+      point(const Point & pt)
       {
         std::stringstream ss;
-        ss << "(" << pt.x() << ", " << pt.y() << ")";
+        ss << "(" << CGAL::to_double(pt.x()) << ", " << CGAL::to_double(pt.y())
+            << ")";
         return ss.str();
       }
 
@@ -219,35 +230,42 @@ template< typename MapTraits, typename VD>
       PathDrawer draw(map);
 
       if(path.isClosed())
-        draw.moveTo(curve.vertexBack().end);
+        draw.moveTo(TO_EXACT(curve.vertexBack().end));
       else
-        draw.moveTo(curve.vertexFront().point());
+        draw.moveTo(TO_EXACT(curve.vertexFront().point()));
+
       for(size_t i = 0; i < curve.numVertices() - 1; ++i)
       {
         const typename Path::Curve::Vertex & vi = curve.vertex(i);
 
         if(vi.getBezier())
         {
-          const PathPoint (&control)[3] = vi.getBezier()->control;
-          draw.curveTo(control, control + 3);
+          const typename MapTraits::Bezier & bezier = toMapType(
+              *vi.getBezier());
+          labeller.setNextEdgeBezier(bezier);
+          draw.curveTo(bezier);
         }
         else
         {
-          draw.lineTo(vi.point());
-          draw.lineTo(vi.end);
+          if(i != 0)
+            draw.lineTo(TO_EXACT(vi.point()));
+          draw.lineTo(TO_EXACT(vi.end));
         }
       }
-      const typename Path::Curve::Vertex & lastVtx = curve.vertexBack();
-      if(lastVtx.getBezier())
+
+      const typename Path::Curve::Vertex & lastVertex = curve.vertexBack();
+      if(lastVertex.getBezier())
       {
-        const PathPoint (&control)[3] = lastVtx.getBezier()->control;
-        draw.curveTo(control, control + 3);
+        const typename MapTraits::Bezier & bezier = toMapType(
+            *lastVertex.getBezier());
+        labeller.setNextEdgeBezier(bezier);
+        draw.curveTo(bezier);
       }
       else
       {
-        draw.lineTo(lastVtx.point());
+        draw.lineTo(TO_EXACT(lastVertex.point()));
         if(path.isClosed())
-          draw.lineTo(lastVtx.point());
+          draw.lineTo(TO_EXACT(lastVertex.point()));
       }
     }
 
@@ -288,7 +306,9 @@ template< typename MapTraits, typename VD>
 
       // Create the drawer
       PathDrawer draw(map);
-      draw.moveTo(cl->vertex(delaunay.ccw(cl->index(infiniteVertex)))->point());
+      draw.moveTo(
+          TO_EXACT(
+              cl->vertex(delaunay.ccw(cl->index(infiniteVertex)))->point()));
 
       const typename PathArrangement::BoundaryVerticesConst & boundaryVertices =
           arrangement.getBoundaryVertices();
@@ -314,14 +334,14 @@ template< typename MapTraits, typename VD>
                   it->second.path()->curve().vertexBack().point();
 
           // Insert the edge segment into the arrangement
-          draw.lineTo(p1);
+          draw.lineTo(TO_EXACT(p1));
 
           labeller.setEdgeLabels(
               EdgeLabels(boost::optional< Label>(),
                   cl->vertex(delaunay.cw(edge.second))->info()));
         }
 
-        draw.lineTo(cl->vertex(delaunay.cw(edge.second))->point());
+        draw.lineTo(TO_EXACT(cl->vertex(delaunay.cw(edge.second))->point()));
 
         ++cl;
       } while(cl != start);
@@ -353,11 +373,30 @@ template< typename MapTraits, typename VD>
     MeetingVertices meeting;
     BoundaryVertices boundary;
     PathVertices pathVertices;
+
+  private:
+    typedef CGAL::Cartesian_converter< typename Delaunay::Geom_traits,
+        typename MapTraits::Kernel> IkToEk;
+
+    // Use this to convert the number type used by the Voronoi diagram paths
+    // to the rational type used by the arrangement
+    static const IkToEk TO_EXACT;
+
+    typename MapTraits::Bezier
+    toMapType(const Bezier & bezier)
+    {
+      typename MapTraits::Bezier arrBezier;
+      arrBezier.alpha = TO_EXACT(bezier.alpha);
+      arrBezier.beta = TO_EXACT(bezier.beta);
+      for(size_t i = 0; i < 4; ++i)
+        arrBezier.control[i] = TO_EXACT(bezier.control[i]);
+      return arrBezier;
+    }
   };
 
 template< typename MapTraits, typename VD>
-  const typename MapBuilder< MapTraits, VD>::PathDrawer::IkToEk MapBuilder<
-      MapTraits, VD>::PathDrawer::TO_EXACT =  typename MapBuilder< MapTraits, VD>::PathDrawer::IkToEk();
+  const typename MapBuilder< MapTraits, VD>::IkToEk MapBuilder< MapTraits, VD>::TO_EXACT =
+      typename MapBuilder< MapTraits, VD>::IkToEk();
 
 }
 

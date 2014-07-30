@@ -2,8 +2,8 @@
 
 #include "spl/version.h"
 
-#cmakedefine SPL_WITH_YAML
-#cmakedefine SPL_WITH_CGAL
+#cmakedefine SPL_USE_YAML
+#cmakedefine SPL_USE_CGAL
 
 #cmakedefine SSLIB_ENABLE_THREAD_AWARE
 

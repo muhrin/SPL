@@ -7,7 +7,7 @@
 
 #include "spl/analysis/ConvexHullStructures.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #define DEBUG_CONVEX_HULL_STRUCTURES
 
@@ -236,4 +236,4 @@ ConvexHullStructures::getFormationEnthalpy(const ConvexHull::PointId id) const
 }
 }
 
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL

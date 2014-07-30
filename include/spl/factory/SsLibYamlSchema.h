@@ -12,7 +12,7 @@
 // INCLUDES /////////////////////////////////////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_YAML
+#ifdef SPL_USE_YAML
 
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
@@ -413,7 +413,7 @@ SCHEMER_MAP(BuilderSchema, Builder)
   element("overlap", &Builder::overlap);
 }
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 struct VoronoiSlabRegionBasis
 {
@@ -518,12 +518,12 @@ SCHEMER_MAP(VoronoiSlabGeneratorType, VoronoiSlabGenerator)
   element("unitCell", &VoronoiSlabGenerator::unitCell);
 }
 
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL
 
 struct StructureGenerator
 {
   boost::optional< Builder> builder;
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
   boost::optional< VoronoiSlabGenerator> voronoiSlab;
 #endif
 };
@@ -531,7 +531,7 @@ struct StructureGenerator
 SCHEMER_MAP(StructureGeneratorSchema, StructureGenerator)
 {
   element("builder", &StructureGenerator::builder);
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
   element("voronoiSlab", &StructureGenerator::voronoiSlab);
 #endif
 }
@@ -568,6 +568,6 @@ SCHEMER_MAP(ComparatorSchema, Comparator)
 }
 }
 
-#endif /* SPL_WITH_YAML */
+#endif /* SPL_USE_YAML */
 #endif /* SSLIB_YAML_SCHEMA_H */
 

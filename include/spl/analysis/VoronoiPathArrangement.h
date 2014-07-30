@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <vector>
 
@@ -84,17 +84,6 @@ template< typename VD>
     }
 
   private:
-    struct CommonVoronoiVertices
-    {
-      enum Value
-      {
-        FORWARDS, BACKWARDS, NEITHER
-      };
-    };
-
-    typename CommonVoronoiVertices::Value
-    commonVoronoiVertices(const Path & p1, const Path & p2) const;
-
     const Voronoi & myVoronoi;
     std::vector< Path> myPaths;
   };
@@ -104,5 +93,5 @@ template< typename VD>
 
 #include "spl/analysis/detail/VoronoiPathArrangement.h"
 
-#endif /* SPL_WITH_CGAL */
+#endif /* SPL_USE_CGAL */
 #endif /* VORONOI_PATH_ARRANGEMENT_H */

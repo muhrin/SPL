@@ -10,7 +10,13 @@
 
 #include "spl/common/Structure.h"
 #include "spl/io/BoostFilesystem.h"
+#include "spl/io/CastepReader.h"
+#include "spl/io/CellReaderWriter.h"
 #include "spl/io/ResourceLocator.h"
+#include "spl/io/ResReaderWriter.h"
+#include "spl/io/StructureReadWriteManager.h"
+#include "spl/io/SplReaderWriter.h"
+#include "spl/io/XyzReaderWriter.h"
 
 #include <boost/foreach.hpp>
 #ifdef SSLIB_ENABLE_THREAD_AWARE
@@ -24,6 +30,17 @@ namespace io {
 
 namespace fs = boost::filesystem;
 namespace properties = common::structure_properties;
+
+StructureReadWriteManager::StructureReadWriteManager()
+{
+  // Add all spl readers/writers to the manager
+  insert(makeUniquePtr(new CastepReader()));
+  insert(makeUniquePtr(new CellReaderWriter()));
+  insert(makeUniquePtr(new ResReaderWriter()));
+  insert(makeUniquePtr(new SplReaderWriter()));
+  insert(makeUniquePtr(new XyzReaderWriter()));
+  setDefaultWriter(SplReaderWriter::DEFAULT_EXTENSION);
+}
 
 StructureReadWriteManager::WritersIterator
 StructureReadWriteManager::beginWriters()

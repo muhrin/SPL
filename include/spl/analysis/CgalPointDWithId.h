@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <CGAL/Kernel_d/Point_d.h>
 #include <CGAL/Origin.h>
@@ -107,5 +107,5 @@ CgalPointDWithId<Kernel> operator +(const CGAL::Origin & o, const CGAL::Vector_d
 }
 
 
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL
 #endif /* CGAL_POINT_D_WITH_ID_H */

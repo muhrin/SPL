@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <spl/analysis/VoronoiPathArrangement.h>
 
@@ -32,5 +32,5 @@ template< typename VD>
 
 #include "spl/analysis/detail/VoronoiPathDecompose.h"
 
-#endif /* SPL_WITH_CGAL */
+#endif /* SPL_USE_CGAL */
 #endif /* VORONOI_PATH_DECOMPOSE_H */

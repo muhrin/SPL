@@ -1,7 +1,7 @@
 /*
- * VoronoiPathTracerTest.cpp
+ * MatplotlibMapOutputterTest.cpp
  *
- *  Created on: Jun 19, 2014
+ *  Created on: Jun 27, 2014
  *      Author: Martin Uhrin
  */
 
@@ -11,12 +11,13 @@
 #include <vector>
 
 #include <spl/analysis/MapArrangementTraits.h>
+#include <spl/analysis/MatplotlibMapOutputter.h>
 #include <spl/analysis/VoronoiPathTracer.h>
 #include <spl/math/Random.h>
 
 using namespace spl;
 
-BOOST_AUTO_TEST_SUITE(VoronoiPathTracer)
+BOOST_AUTO_TEST_SUITE(MatplotlibMapOutputter)
 
 typedef analysis::MapArrangementTraits< int> MapTraits;
 typedef analysis::VoronoiPathTracer< MapTraits> Tracer;
@@ -36,32 +37,10 @@ BOOST_AUTO_TEST_CASE(SimpleTest)
             math::randu< int>(0, 2)));
 
   const Map map = Tracer::processPath(points.begin(), points.end());
-
   BOOST_CHECK(map.is_valid());
-}
 
-BOOST_AUTO_TEST_CASE(GridTest)
-{
-  // SETTINGS
-  static const size_t GRID_SIZE = 10;
-  static const size_t POINT_TYPES = 3;
-
-  // Create a bunch of points at random positions with random labels
-  std::vector< Tracer::PointLabel> points;
-  for(size_t i = 0; i < GRID_SIZE; ++i)
-  {
-    for(size_t j = 0; j < GRID_SIZE; ++j)
-    {
-      points.push_back(
-          std::make_pair(
-              Tracer::Point(static_cast< double>(i), static_cast< double>(j)),
-              math::randu< int>(0, POINT_TYPES)));
-    }
-  }
-
-  const Map map = Tracer::processPath(points.begin(), points.end());
-
-  BOOST_CHECK(map.is_valid());
+  analysis::MatplotlibMapOutputter< MapTraits> outputter;
+  outputter.outputArrangement(map, &std::cout);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

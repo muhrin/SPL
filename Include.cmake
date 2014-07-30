@@ -3,10 +3,7 @@
 
 set(sslib_Header_Files__analysis
   include/spl/analysis/AbsConvexHullGenerator.h
-  include/spl/analysis/AnchorArrangement.h
-  include/spl/analysis/AnchorArrangementOutputter.h
-  include/spl/analysis/ArrangementMapOutputter.h
-  include/spl/analysis/ArrangementSmoothing.h
+  include/spl/analysis/BezierCurve.h
   include/spl/analysis/CgalCustomKernel.h
   include/spl/analysis/CgalPointDWithId.h
   include/spl/analysis/ConvexHull.h
@@ -14,7 +11,6 @@ set(sslib_Header_Files__analysis
   include/spl/analysis/ConvexHullOutputter.h
   include/spl/analysis/ConvexHullStructures.h
   include/spl/analysis/DynamicConvexHullGenerator.h
-  include/spl/analysis/GnuplotAnchorArrangementPlotter.h
   include/spl/analysis/GnuplotConvexHullPlotter.h
   include/spl/analysis/Histogram.h
   include/spl/analysis/MapArrangementTraits.h
@@ -23,7 +19,6 @@ set(sslib_Header_Files__analysis
   include/spl/analysis/StructureConvexHullInfoSupplier.h
   include/spl/analysis/StructureTriangulation.h
   include/spl/analysis/TraceCurve.h
-  include/spl/analysis/VectorAnchorArrangementOutputter.h
   include/spl/analysis/VoronoiEdgeTracer.h
   include/spl/analysis/VoronoiPath.h
   include/spl/analysis/VoronoiPathArrangement.h
@@ -36,13 +31,9 @@ source_group("Header Files\\analysis" FILES ${sslib_Header_Files__analysis})
 ## analysis/detail
 
 set(sslib_Header_Files__analysis__detail
-  include/spl/analysis/detail/AnchorArrangement.h
-  include/spl/analysis/detail/ArrangementSmoothing.h
   include/spl/analysis/detail/ConvexHullStructures.h
-  include/spl/analysis/detail/GnuplotAnchorArrangementPlotter.h
   include/spl/analysis/detail/MatplotlibMapOutputter.h
   include/spl/analysis/detail/TraceCurve.h
-  include/spl/analysis/detail/VectorAnchorArrangementOutputter.h
   include/spl/analysis/detail/VoronoiEdgeTracer.h
   include/spl/analysis/detail/VoronoiPath.h
   include/spl/analysis/detail/VoronoiPathArrangement.h
@@ -293,8 +284,8 @@ source_group("Header Files\\yaml\\detail" FILES ${sslib_Header_Files__yaml__deta
 
 set(sslib_Header_Files__
   include/spl/OptionalTypes.h
-  include/spl/SSLibConfig.h.in
-  ${PROJECT_BINARY_DIR}/include/spl/SSLibConfig.h
+  include/spl/config.h.in
+  ${PROJECT_BINARY_DIR}/include/spl/config.h
   include/spl/SSLibAssert.h
   include/spl/SSLib.h
   include/spl/Types.h

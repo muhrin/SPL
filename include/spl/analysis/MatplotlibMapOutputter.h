@@ -11,25 +11,31 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
+
+#include <map>
+
+#include <boost/range/iterator_range.hpp>
 
 #include "spl/analysis/ArrangementMapOutputter.h"
 
 // DEFINITION ///////////////////////
 
 namespace spl {
-
-// FORWARD DECLARATIONS ///////
-
 namespace analysis {
 
 template< typename MapTraits>
   class MatplotlibMapOutputter : public ArrangementMapOutputter< MapTraits>
   {
   public:
+    typedef typename MapTraits::Label Label;
     typedef typename MapTraits::Arrangement Arrangement;
-    typedef std::map< typename MapTraits::Label, std::string> LabelNames;
 
+  private:
+    typedef std::map< Label,
+        typename ArrangementMapOutputter< MapTraits>::LabelProperties> LabelProperties;
+
+  public:
     virtual
     ~MatplotlibMapOutputter()
     {
@@ -38,13 +44,16 @@ template< typename MapTraits>
     virtual void
     outputArrangement(const Arrangement & map, std::ostream * const os) const;
     virtual void
-    outputArrangement(const Arrangement & map, const LabelNames & labelNames,
-        std::ostream * const os) const;
+    outputArrangement(const Arrangement & map,
+        const LabelProperties & labelProperties, std::ostream * const os) const;
     virtual std::string
     fileExtension() const;
 
   private:
+    typedef typename MapTraits::ArrTraits::Point_2 Point;
     typedef typename Arrangement::Face Face;
+    typedef typename MapTraits::Bezier Bezier;
+    typedef std::map< Label, std::string> ColourMap;
 
     class FacePath;
 
@@ -54,27 +63,24 @@ template< typename MapTraits>
     static const std::string PLOT;
 
     void
-    out(const Arrangement & map, const LabelNames * const names,
+    out(const Arrangement & map, const LabelProperties * const labelProperties,
         std::ostream * const os) const;
     void
-    drawFace(const Face & face, std::ostream * const os) const;
+    drawFace(const Face & face, std::ostream * const os,
+        const std::string & label, const std::string & colour) const;
+    ColourMap
+    getColourMap(const LabelProperties * const labelProperties,
+        const boost::iterator_range< typename Arrangement::Face_const_iterator> & faces) const;
     void
-    drawCurveTo(const typename MapTraits::ArrTraits::Curve_2 & curve,
-        FacePath * const draw) const;
-
-    template< typename HalfedgeCirculator>
-    HalfedgeCirculator
-    nextCurveHalfedge(const HalfedgeCirculator & start) const
-    {
-      const typename MapTraits::ArrTraits::Curve_2 & c = start->curve().supporting_curve();
-      HalfedgeCirculator cl = start;
-      ++cl;
-      while(cl != start && cl->curve().supporting_curve().is_same(c))
-      {
-        ++cl;
-      }
-      return cl;
-    }
+    printProperties(const LabelProperties * const properties,
+        const ColourMap & colourMap, std::ostream * const os) const;
+    std::string
+    toHexString(const int colour) const;
+    void
+    drawText(const Point pt, const std::string & label,
+        std::ostream * const os) const;
+    int
+    rgbColour(const int red, const int green, const int blue) const;
   };
 
 }
@@ -82,5 +88,5 @@ template< typename MapTraits>
 
 #include "spl/analysis/detail/MatplotlibMapOutputter.h"
 
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL
 #endif /* MATPLOTLIB_MAP_OUTPUTTER_H */

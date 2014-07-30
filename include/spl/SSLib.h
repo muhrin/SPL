@@ -5,12 +5,12 @@
  *      Author: Martin Uhrin
  */
 
-#ifndef SSLIB_H
-#define SSLIB_H
+#ifndef SPL__SPL_H
+#define SPL__SPL_H
 
 // INCLUDES ///////////////////////////////////////////////
 
-#include "spl/SSLibConfig.h"
+#include "spl/config.h"
 #include "spl/Types.h"
 #include "spl/SSLibAssert.h"
 
@@ -23,5 +23,4 @@
 
 
 
-
-#endif /* SSLIB_H */
+#endif /* SPL__SPL_H */

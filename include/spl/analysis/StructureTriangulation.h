@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <list>
 #include <ostream>
@@ -107,5 +107,5 @@ void StructureTriangulation::drawDual(Stream & os) const
 }
 
 
-#endif /* SPL_WITH_CGAL */
+#endif /* SPL_USE_CGAL */
 #endif /* STRUCTURE_TRIANGULATION_H */

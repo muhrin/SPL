@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <boost/filesystem/path.hpp>
 
@@ -120,5 +120,5 @@ private:
 }
 }
 
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL
 #endif // GNUPLOT_CONVEX_HULL_PLOTTER_H

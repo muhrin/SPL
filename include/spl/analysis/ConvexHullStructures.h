@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <map>
 
@@ -143,5 +143,5 @@ template< typename InputIterator>
 
 #include "spl/analysis/detail/ConvexHullStructures.h"
 
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL
 #endif /* STABLE_COMPOSITIONS_H */

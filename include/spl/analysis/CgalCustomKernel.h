@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <CGAL/Cartesian.h>
 #include <CGAL/Cartesian_d.h>
@@ -69,5 +69,5 @@ struct CgalCustomKernel : public CGAL::Type_equality_wrapper<
 }
 
 
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL
 #endif /* CGAL_CUSTOM_KERNEL_H */

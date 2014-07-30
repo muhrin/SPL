@@ -11,12 +11,12 @@
 // INCLUDES //////////////////////////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_YAML
+#ifdef SPL_USE_YAML
 
 #include "spl/yaml/HelperTypes.h"
 #include "spl/yaml/TranscodeFactory.h"
 #include "spl/yaml/TranscodeGeneral.h"
 #include "spl/yaml/TranscodeIo.h"
 
-#endif /* SPL_WITH_YAML */
+#endif /* SPL_USE_YAML */
 #endif /* YAML_TRANSCODE_H */

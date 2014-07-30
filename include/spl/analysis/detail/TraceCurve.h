@@ -11,9 +11,11 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <boost/optional.hpp>
+
+#include "spl/analysis/BezierCurve.h"
 
 // FORWARD DECLARATIONS ///////
 
@@ -26,6 +28,7 @@ template< typename VD>
   class TraceCurve< VD>::Vertex
   {
     typedef typename Kernel::FT FT;
+    typedef BezierCurve< Kernel> Bezier;
   public:
     struct Type
     {
@@ -33,13 +36,6 @@ template< typename VD>
       {
         CORNER, CURVE
       };
-    };
-    struct Bezier
-    {
-      FT alpha;
-      FT beta;
-      Point start;
-      Point control[3];
     };
     Vertex() :
         myType(Type::CORNER)
@@ -150,5 +146,5 @@ template< typename VD>
 }
 }
 
-#endif /* SPL_WITH_CGAL */
+#endif /* SPL_USE_CGAL */
 #endif /* TRACE_CURVE_DETAIL_H */

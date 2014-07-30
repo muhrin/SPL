@@ -7,7 +7,7 @@
 
 #include "spl/analysis/ConvexHull.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <list>
 
@@ -668,4 +668,4 @@ ConvexHull::printPoint(const PointD & p) const
 }
 }
 
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL

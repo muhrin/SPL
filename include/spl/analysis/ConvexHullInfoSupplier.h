@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include "spl/analysis/ConvexHull.h"
 
@@ -38,5 +38,5 @@ public:
 }
 }
 
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL
 #endif /* CONVEX_HULL_INFO_SUPPLIER_H */

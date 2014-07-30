@@ -8,7 +8,7 @@
 // INCLUEDES /////////////
 #include "spl/build_cell/VoronoiSlabRegions.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <boost/foreach.hpp>
 
@@ -503,4 +503,4 @@ OrderedBasis::nextBasisAtomIndex(const Voronoi & vd,
 }
 }
 
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL

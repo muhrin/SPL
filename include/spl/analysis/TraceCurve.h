@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <vector>
 
@@ -56,5 +56,5 @@ template< typename VD>
 
 #include "spl/analysis/detail/TraceCurve.h"
 
-#endif /* SPL_WITH_CGAL */
+#endif /* SPL_USE_CGAL */
 #endif /* TRACE_CURVE_H */

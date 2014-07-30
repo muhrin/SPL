@@ -11,7 +11,7 @@
 // INCLUDES //////////////////////////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_YAML
+#ifdef SPL_USE_YAML
 
 #include <armadillo>
 
@@ -148,5 +148,5 @@ template< typename T>
 
 #include "spl/yaml/detail/TranscodeGeneral.h"
 
-#endif /* SPL_WITH_YAML */
+#endif /* SPL_USE_YAML */
 #endif /* TRANSCODE_GENERAL_H */

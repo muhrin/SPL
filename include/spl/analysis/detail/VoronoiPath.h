@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <ostream>
 
@@ -157,8 +157,6 @@ template< typename VD>
             delaunayEdge)
     {
       SSLIB_ASSERT(myDelaunayEdge != typename Delaunay::Edge());
-      std::cout << path.vertex(mySource).point() << " "
-          << path.vertex(myTarget).point() - path.vertex(mySource).point() << "\n";
     }
 
     void
@@ -166,20 +164,7 @@ template< typename VD>
     {
       myDelaunayEdge = edge;
     }
-    void
-    reverse()
-    {
-      SSLIB_ASSERT(isValid());
-      const size_t n = myPath->numVertices();
 
-      const size_t newSource = n - target() - 1;
-      const size_t newTarget = n - source() - 1;
-
-      // Swap source and target and wrap around
-      mySource = newSource;
-      myTarget = newTarget;
-      setDelaunayEdge(myPath->getVoronoi()->dual().mirror_edge(delaunayEdge()));
-    }
     void
     setPath(const Path & path)
     {
@@ -387,17 +372,6 @@ template< typename VD>
   VoronoiPath< VD>::edgeBack() const
   {
     return myEdges.back();
-  }
-
-template< typename VD>
-  void
-  VoronoiPath< VD>::reverse()
-  {
-    std::reverse(myVertices.begin(), myVertices.end());
-    std::reverse(myEdges.begin(), myEdges.end());
-
-    BOOST_FOREACH(Edge & edge, myEdges)
-      edge.reverse();
   }
 
 template< typename VD>
@@ -626,5 +600,5 @@ template< typename VD>
 }
 }
 
-#endif /* SPL_WITH_CGAL */
+#endif /* SPL_USE_CGAL */
 #endif /* VORONOI_PATH_DETAIL_H */

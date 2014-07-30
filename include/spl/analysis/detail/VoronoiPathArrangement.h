@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include <boost/foreach.hpp>
 
@@ -110,23 +110,6 @@ template< typename VD>
 
     if(path.empty())
       return myPaths.end();
-
-//    // Check if we have any paths like this already
-//    BOOST_FOREACH(const Path & p, myPaths)
-//    {
-//      const typename CommonVoronoiVertices::Value common =
-//          commonVoronoiVertices(p, path);
-//      if(common == CommonVoronoiVertices::FORWARDS)
-//      {
-//        // TODO: Merge the labels
-//        return myPaths.end();
-//      }
-//      else if(common == CommonVoronoiVertices::BACKWARDS)
-//      {
-//        // TODO: Merge the labels
-//        return myPaths.end();
-//      }
-//    }
 
     return myPaths.insert(myPaths.end(), path);
   }
@@ -309,62 +292,13 @@ template< typename VD>
     {
       BOOST_FOREACH(const typename Path::Vertex & v,
           boost::make_iterator_range(p.verticesBegin(), p.verticesEnd()))
-      {
         std::cout << v.point() << "\n";
-      }
       std::cout << "\n" << std::endl;
     }
   }
 
-template< typename VD>
-  typename VoronoiPathArrangement< VD>::CommonVoronoiVertices::Value
-  VoronoiPathArrangement< VD>::commonVoronoiVertices(const Path & p1,
-      const Path & p2) const
-  {
-    const size_t n1 = p1.numVertices();
-    const size_t n2 = p2.numVertices();
-    if(n1 != n2)
-      return CommonVoronoiVertices::NEITHER;
-    if(n1 == 2)
-    {
-      bool allBoundary = true;
-      for(size_t i = 0; i < 2; ++i)
-        allBoundary &= p1.vertex(i).isBoundary() && p2.vertex(i).isBoundary();
-      if(allBoundary)
-        return CommonVoronoiVertices::NEITHER;
-    }
-
-    // Check forwards
-    bool pathsSame = true;
-    for(size_t i = 0; i < n1; ++i)
-    {
-      if(p1.vertex(i).voronoiVertex() != p2.vertex(i).voronoiVertex())
-      {
-        pathsSame = false;
-        break;
-      }
-    }
-    if(pathsSame)
-      return CommonVoronoiVertices::FORWARDS;
-
-    // Check backwards
-    pathsSame = true;
-    for(size_t i = 0; i < n1; ++i)
-    {
-      if(p1.vertex(i).voronoiVertex() != p2.vertex(n1 - 1 - i).voronoiVertex())
-      {
-        pathsSame = false;
-        break;
-      }
-    }
-    if(pathsSame)
-      return CommonVoronoiVertices::BACKWARDS;
-
-    return CommonVoronoiVertices::NEITHER;
-  }
-
 }
 }
 
-#endif /* SPL_WITH_CGAL */
+#endif /* SPL_USE_CGAL */
 #endif /* VORONOI_PATH_ARRANGEMENT_DETAIL_H */

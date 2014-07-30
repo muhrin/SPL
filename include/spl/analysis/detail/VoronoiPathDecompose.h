@@ -213,15 +213,7 @@ template< typename VD>
       if(spansBoundary< Delaunay>(dual) && visited.find(dual) == visited.end()
           && visited.find(delaunay.mirror_edge(dual)) == visited.end())
       {
-//        std::cout << "#GENERATING PATH " << arrangement->numPaths() << " ";
-
         Path path(voronoi);
-
-//        if(it->has_source())
-//          std::cout << it->source()->point();
-//        if(it->has_target())
-//          std::cout << " : "<< it->target()->point();
-//        std::cout << std::endl;
 
         // Trace the path out in one direction
         detail::visitBoundaryHaledges(voronoi, *it,
@@ -235,65 +227,10 @@ template< typename VD>
           visited.insert(edge.delaunayEdge());
 
         arrangement->insertPath(path);
-
-//        std::cout << "\n\n\n";
       }
     }
   }
 
-template< typename VD>
-  void
-  decomposeBoundaryPaths(const VD & voronoi,
-      VoronoiPathArrangement< VD> * const arrangement)
-  {
-    typedef VD Voronoi;
-    typedef typename Voronoi::Delaunay_graph Delaunay;
-    typedef VoronoiPathArrangement< VD> Arrangement;
-    typedef typename Arrangement::Path Path;
-
-    const Delaunay & delaunay = voronoi.dual();
-
-    typename Delaunay::Face_circulator start = delaunay.incident_faces(
-        delaunay.infinite_vertex());
-    typename Delaunay::Face_circulator cl = start;
-
-    // First move the circulator to the first spanning edge
-    // i.e. the first one that has an internal path that meets the
-    // boundary if it exists (otherwise just end up at start)
-    do
-    {
-      if(spansBoundary< Delaunay>(
-          typename Delaunay::Edge(cl, cl->index(delaunay.infinite_vertex()))))
-        break;
-      --cl;
-    } while(cl != start);
-
-    // Set the start here and circulate from this point forward
-    start = cl;
-
-    Path current(voronoi);
-    do
-    {
-      const typename Delaunay::Edge edge(cl,
-          cl->index(delaunay.infinite_vertex()));
-      current.push_back(edge);
-
-      if(spansBoundary< Delaunay>(edge))
-      {
-        arrangement->insertBoundaryPath(current);
-        // Start the new path and include this edge in it
-        current = Path(voronoi);
-        current.push_back(edge);
-      }
-      ++cl;
-    } while(cl != start);
-
-    const typename Delaunay::Edge edge(cl,
-        cl->index(delaunay.infinite_vertex()));
-    current.push_back(edge);
-
-    arrangement->insertBoundaryPath(current);
-  }
 
 }
 
@@ -303,7 +240,6 @@ template< typename VD>
       VoronoiPathArrangement< VD> * const arrangement)
   {
     detail::decomposeInternalPaths(voronoi, arrangement);
-    //detail::decomposeBoundaryPaths(voronoi, arrangement);
   }
 
 }

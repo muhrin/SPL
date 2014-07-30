@@ -7,7 +7,7 @@
 
 #include "spl/analysis/StructureConvexHullInfoSupplier.h"
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 
 #include "spl/common/Structure.h"
 
@@ -39,4 +39,4 @@ StructureConvexHullInfoSupplier::getLabel(const ConvexHull & convexHull,
 }
 }
 
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL

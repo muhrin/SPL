@@ -12,7 +12,7 @@
 // INCLUDES /////////////////////////////////////////////
 #include "spl/SSLib.h"
 
-#ifdef SPL_WITH_YAML
+#ifdef SPL_USE_YAML
 
 // DEFINES //////////////////////////////////////////////
 
@@ -117,4 +117,4 @@ template< typename T>
 }
 
 #endif /* HELPER_TYPES_H */
-#endif /* SPL_WITH_YAML */
+#endif /* SPL_USE_YAML */

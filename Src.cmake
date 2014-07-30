@@ -2,8 +2,6 @@
 
 set(sslib_Source_Files__analysis
   src/analysis/AbsConvexHullGenerator.cpp
-  src/analysis/AnchorArrangement.cpp
-  src/analysis/ArrangementSmoothing.cpp
   src/analysis/ConvexHull.cpp
   src/analysis/ConvexHullStructures.cpp
   src/analysis/DynamicConvexHullGenerator.cpp

@@ -51,6 +51,7 @@
 
 namespace spl {
 namespace analysis {
+namespace detail {
 
 template< typename MapTraits>
   class VoronoiPathTracer
@@ -58,7 +59,7 @@ template< typename MapTraits>
     typedef typename MapTraits::Label Label;
     typedef typename MapTraits::Arrangement Map;
 
-    typedef typename MapTraits::K K; // The kernel type
+    typedef CGAL::Exact_predicates_inexact_constructions_kernel K; // The kernel type
     typedef typename K::FT FT; // The field type
 
     // typedefs for defining the adaptor
@@ -262,7 +263,6 @@ template< typename MapTraits>
   {
     typename VoronoiPathTracer< MapTraits>::PathArrangement arr(voronoi);
     decomposePaths(voronoi, &arr);
-    //return tracing->pathArrangement;
 
     BOOST_FOREACH(Path & path,
         boost::make_iterator_range(arr.pathsBegin(), arr.pathsEnd()))
@@ -876,13 +876,15 @@ template< typename MapTraits>
   void
   VoronoiPathTracer< MapTraits>::smooth(Path * const path) const
   {
+    using CGAL::squared_distance;
+
     const std::vector< size_t> & optimal = path->getOptimalPath();
     const size_t start = path->isClosed() ? 0 : 1, end = optimal.size() - 2;
     const ptrdiff_t n = path->isClosed() ? optimal.size() - 1 : optimal.size();
 
     typename Path::Curve & curve = path->curve();
     Vector v_ik, perp;
-    Point b_i, b_k, closest, mid, c, p4;
+    Point b_i, b_k, closest, c, p4;
     FT alpha, gamma;
 
     if(!path->isClosed())
@@ -902,13 +904,11 @@ template< typename MapTraits>
       b_k = detail::interval(0.5, p_j, p_k);
 
       v_ik = p_k - p_i;
-      mid = p_i + v_ik;
 
       closest = detail::closestPoint(Segment(b_i, b_k),
           path->vertex(optimal[i]).domain());
       gamma = CGAL::sqrt(
-          CGAL::squared_distance(p_i, closest)
-              / CGAL::squared_distance(p_i, p_j));
+          squared_distance(p_i, closest) / squared_distance(p_i, p_j));
       alpha = 4 * gamma / 3;
 
       curve.vertex(j).end = detail::interval(0.5, p_k, p_j); // TEMP: Startpoint
@@ -920,16 +920,18 @@ template< typename MapTraits>
         else if(alpha > 1)
           alpha = 1;
 
-        typename Path::Curve::Vertex::Bezier bezier;
+        BezierCurve< K> bezier;
         bezier.alpha = alpha;
 
-        bezier.control[0] = detail::interval(0.5 * (1 + alpha), p_i, p_j); // Control point 1 & 2
-        bezier.control[1] = detail::interval(0.5 * (1 + alpha), p_k, p_j);
-        bezier.control[2] = detail::interval(0.5, p_k, p_j); // Endpoint
+        bezier.control[0] = b_i; // Startpoint
+        bezier.control[1] = detail::interval(0.5 * (1 + alpha), p_i, p_j); // Control point 1 & 2
+        bezier.control[2] = detail::interval(0.5 * (1 + alpha), p_k, p_j);
+        bezier.control[3] = detail::interval(0.5, p_k, p_j); // Endpoint
 
         curve.vertex(j).setBezier(bezier);
       }
     }
+
     if(!path->isClosed())
       curve.vertexBack().end = curve.vertexBack().point();
   }
@@ -1046,25 +1048,29 @@ template< typename MapTraits>
     return (CGAL::Linear_algebraCd< FT>::transpose(v) * Q * v)(0, 0);
   }
 
-template< class MapTraits, class PointIterator>
-  typename MapTraits::Arrangement
-  processPath(PointIterator first, PointIterator last)
-  {
-    typedef VoronoiPathTracer< MapTraits> Tracer;
+}
 
-    // Create the Voronoi diagram for the tracer to work on
-    typename Tracer::Delaunay tempDelaunay;
-    tempDelaunay.insert(first, last);
-    typename Tracer::Voronoi voronoi(tempDelaunay, true);
+template< typename MapTraits>
+  template< class PointIterator>
+    typename MapTraits::Arrangement
+    VoronoiPathTracer< MapTraits>::processPath(PointIterator first,
+        PointIterator last)
+    {
+      typedef detail::VoronoiPathTracer< MapTraits> Tracer;
 
-    // Create the path arrangement
-    Tracer tracer;
-    const typename Tracer::PathArrangement & pathArrangement =
-        tracer.generatePaths(voronoi);
+      // Create the Voronoi diagram for the tracer to work on
+      typename Tracer::Delaunay tempDelaunay;
+      tempDelaunay.insert(first, last);
+      typename Tracer::Voronoi voronoi(tempDelaunay, true);
 
-    // Finally create the map from the arrangement
-    return analysis::toMap< MapTraits>(pathArrangement);
-  }
+      // Create the path arrangement
+      Tracer tracer;
+      const typename Tracer::PathArrangement & pathArrangement =
+          tracer.generatePaths(voronoi);
+
+      // Finally create the map from the arrangement
+      return analysis::toMap< MapTraits>(pathArrangement);
+    }
 
 }
 }

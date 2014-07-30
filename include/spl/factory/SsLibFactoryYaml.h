@@ -83,21 +83,21 @@ public:
 
   build_cell::IStructureGeneratorPtr
   createStructureGenerator(const builder::StructureGenerator & options) const;
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
   UniquePtr< build_cell::VoronoiSlabGenerator>::Type
   createVoronoiSlabGenerator(
       const builder::VoronoiSlabGenerator & options) const;
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL
 
   const GenShapeFactory &
   getShapeFactory() const;
 
 private:
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
   UniquePtr< build_cell::VoronoiSlabGenerator::SlabRegion::Basis>::Type
   createVoronoiSlabRegionBasis(
       const builder::VoronoiSlabRegionBasis & options) const;
-#endif // SPL_WITH_CGAL
+#endif // SPL_USE_CGAL
 
   const GenShapeFactory myShapeFactory;
 };

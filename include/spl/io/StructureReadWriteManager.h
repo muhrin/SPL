@@ -45,8 +45,8 @@ class StructureReadWriteManager : boost::noncopyable
 {
   typedef std::map< std::string, IStructureWriter *> WritersMap;
   typedef std::map< std::string, IStructureReader *> ReadersMap;
-public:
 
+public:
   typedef UniquePtr< IStructureWriter>::Type WriterPtr;
   typedef UniquePtr< IStructureReader>::Type ReaderPtr;
   typedef WritersMap::iterator WritersIterator;
@@ -57,6 +57,8 @@ public:
   typedef boost::iterator_range< WritersConstIterator> WritersConstRange;
   typedef boost::iterator_range< ReadersIterator> ReadersRange;
   typedef boost::iterator_range< ReadersConstIterator> ReadersConstRange;
+
+  StructureReadWriteManager();
 
   WritersIterator
   beginWriters();
@@ -154,7 +156,8 @@ private:
 #endif
 };
 
-}}
+}
+}
 
 #include "spl/io/detail/StructureReadWriteManager.h"
 
