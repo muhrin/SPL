@@ -10,17 +10,11 @@
 
 #include <boost/functional/hash.hpp>
 
-namespace spl {
-namespace utility {
-
-
-}
-}
-
-
 namespace arma {
-::std::size_t hash_value(const vec & v)
+
+std::size_t hash_value(const vec & v)
 {
   return ::boost::hash_range(v.begin(), v.end());
 }
+
 }

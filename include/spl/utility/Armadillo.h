@@ -56,7 +56,8 @@ template< typename K>
 }
 
 namespace arma {
-::std::size_t
+
+std::size_t
 hash_value(const vec & v);
 
 template< typename T>
