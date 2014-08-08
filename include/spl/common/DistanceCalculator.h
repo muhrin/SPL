@@ -26,7 +26,7 @@ class DistanceCalculator : private boost::noncopyable
 public:
   static const size_t DEFAULT_MAX_OUTPUTS = 10000;
   // The maximum number of cell multiples to consider in each cell vector direction
-  static const unsigned int DEFAULT_MAX_CELL_MULTIPLES = 100;
+  static const unsigned int DEFAULT_MAX_CELL_MULTIPLES = 500;
 
   virtual
   ~DistanceCalculator()

@@ -286,6 +286,7 @@ set(sslib_Header_Files__
   include/spl/OptionalTypes.h
   include/spl/config.h.in
   ${PROJECT_BINARY_DIR}/include/spl/config.h
+  include/spl/logging.h
   include/spl/SSLibAssert.h
   include/spl/SSLib.h
   include/spl/Types.h

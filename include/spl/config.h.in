@@ -4,6 +4,7 @@
 
 #cmakedefine SPL_USE_YAML
 #cmakedefine SPL_USE_CGAL
+#cmakedefine SPL_USE_BOOST_LOG
 
 #cmakedefine SSLIB_ENABLE_THREAD_AWARE
 

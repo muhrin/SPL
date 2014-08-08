@@ -13,6 +13,7 @@
 #include "spl/config.h"
 #include "spl/Types.h"
 #include "spl/SSLibAssert.h"
+#include "spl/logging.h"
 
 // DEFINES ///////////////////////////////////////////////
 #ifndef NULL

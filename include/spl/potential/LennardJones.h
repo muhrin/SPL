@@ -55,7 +55,7 @@ public:
   typedef PotentialData DataType;
 
   static const unsigned int MAX_INTERACTION_VECTORS = 50000;
-  static const unsigned int MAX_CELL_MULTIPLES = 500;
+  static const unsigned int MAX_CELL_MULTIPLES = 30;
 
   LennardJones();
 

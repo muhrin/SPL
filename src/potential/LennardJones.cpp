@@ -196,7 +196,6 @@ LennardJones::evaluate(const common::Structure & structure,
 {
   using namespace utility::cart_coords_enum;
   using std::vector;
-  using std::pow;
   using std::sqrt;
 
   const size_t numParticles = structure.getNumAtoms();
@@ -239,10 +238,15 @@ LennardJones::evaluate(const common::Structure & structure,
 
       imageVectors.clear();
       if(!distCalc.getVecsBetween(posI, posJ, params.cutoff, imageVectors,
-          MAX_INTERACTION_VECTORS, MAX_CELL_MULTIPLES))
+          MAX_INTERACTION_VECTORS))
       {
         // We reached the maximum number of interaction vectors so indicate that there was a problem
         problemDuringCalculation = true;
+        // Try evaluating with a smaller cutoff to try and get a full set
+        // of interaction vectors
+        imageVectors.clear();
+        distCalc.getVecsBetween(posI, posJ, 0.5 * params.cutoff, imageVectors,
+            MAX_INTERACTION_VECTORS);
       }
 
       // Used as a prefactor depending if the particles i and j are in fact the same

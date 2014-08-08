@@ -15,7 +15,7 @@
 #include "spl/potential/OptimisationSettings.h"
 
 #define TPSD_GEOM_OPTIMISER_DEBUG (SSLIB_DEBUG & 0)
-//#define TPSD_GEOM_OPTIMISER_TIMING
+#define TPSD_GEOM_OPTIMISER_TIMING
 
 #if TPSD_GEOM_OPTIMISER_DEBUG
 #  include <sstream>
@@ -70,8 +70,8 @@ const double TpsdGeomOptimiser::DEFAULT_STRESS_TOLERANCE = 5e-5;
 const unsigned int TpsdGeomOptimiser::CHECK_CELL_EVERY_N_STEPS = 20;
 const double TpsdGeomOptimiser::CELL_MIN_NORM_VOLUME = 0.02;
 const double TpsdGeomOptimiser::CELL_MAX_ANGLE_SUM = 360.0;
-const double TpsdGeomOptimiser::DEFAULT_MAX_DELTA_POS_FACTOR = 0.5;
-const double TpsdGeomOptimiser::DEFAULT_MAX_DELTA_LATTICE_FACTOR = 0.1;
+const double TpsdGeomOptimiser::DEFAULT_MAX_DELTA_POS_FACTOR = 0.6;
+const double TpsdGeomOptimiser::DEFAULT_MAX_DELTA_LATTICE_FACTOR = 0.2;
 static const double INITIAL_STEPSIZE = 0.001;
 
 // IMPLEMENTATION //////////////////////////////////////////////////////////

@@ -16,11 +16,18 @@ include(cmake/utility.cmake)
 # Boost #
 # Disable auto-linking
 add_definitions(-DBOOST_ALL_NO_LIB)
+# Check if we can find boost log first
+set(SPL_BOOST_COMPONENTS system filesystem regex)
+find_package(Boost COMPONENTS log QUIET)
+if(Boost_LOG_FOUND)
+  set(SPL_BOOST_COMPONENTS ${SPL_BOOST_COMPONENTS} log)
+endif(Boost_LOG_FOUND)
 if(SSLIB_ENABLE_THREAD_AWARE)
-  find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem regex thread QUIET)
-else()
-  find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem regex QUIET)
+  set(SPL_BOOST_COMPONENTS ${SPL_BOOST_COMPONENTS} thread)
 endif(SSLIB_ENABLE_THREAD_AWARE)
+
+# Finally try to find boost and all the components we need
+find_package(Boost 1.36.0 REQUIRED COMPONENTS ${SPL_BOOST_COMPONENTS} QUIET)
 
 #
 # Armadillo #
@@ -31,7 +38,7 @@ endif()
 
 #
 # CGAL #
-find_package(CGAL QUIET COMPONENTS Core)
+find_package(CGAL QUIET COMPONENTS Core QUIET)
 if(CGAL_FOUND)
   include( ${CGAL_USE_FILE} )
 endif(CGAL_FOUND)
@@ -50,6 +57,7 @@ set(SSLIB_ENABLE_THREAD_AWARE TRUE CACHE BOOL "Enable awareness of multithreaded
 
 set(SPL_USE_CGAL ${CGAL_FOUND} CACHE INTERNAL "Build SPL with CGAL support.")
 set(SPL_USE_YAML ${YamlCpp_FOUND} CACHE INTERNAL "Build SPL with Yaml support.")
+set(SPL_USE_BOOST_LOG ${Boost_LOG_FOUND} CACHE INTERNAL "Use boost log for logging.")
 
 configure_file(
   "${PROJECT_SOURCE_DIR}/include/spl/config.h.in"
