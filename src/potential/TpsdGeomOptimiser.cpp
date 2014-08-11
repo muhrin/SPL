@@ -14,8 +14,8 @@
 #include "spl/common/UnitCell.h"
 #include "spl/potential/OptimisationSettings.h"
 
-#define TPSD_GEOM_OPTIMISER_DEBUG (SSLIB_DEBUG & 0)
-#define TPSD_GEOM_OPTIMISER_TIMING
+//#define TPSD_GEOM_OPTIMISER_DEBUG (SSLIB_DEBUG & 0)
+//#define TPSD_GEOM_OPTIMISER_TIMING
 
 #if TPSD_GEOM_OPTIMISER_DEBUG
 #  include <sstream>
