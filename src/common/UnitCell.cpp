@@ -182,13 +182,13 @@ const double (&
       const arma::vec3 C = getCVec();
 
       // This doesn't work:
-      //::arma::vec3 diag = A;
-      //if(::arma::dot(A, B) > 0.0)
+      //arma::vec3 diag = A;
+      //if(arma::dot(A, B) > 0.0)
       //  diag += B;
       //else
       //  diag -= B;
 
-      //if(::arma::dot(diag, C) > 0.0)
+      //if(arma::dot(diag, C) > 0.0)
       //  diag += C;
       //else
       //  diag -= C;
@@ -309,7 +309,7 @@ const double (&
     }
 
     arma::vec3 &
-    UnitCell::wrapVecInplace(::arma::vec3 & cart) const
+    UnitCell::wrapVecInplace(arma::vec3 & cart) const
     {
       cartToFracInplace(cart);
       wrapVecFracInplace(cart);
@@ -326,7 +326,7 @@ const double (&
     }
 
     arma::vec3 &
-    UnitCell::wrapVecFracInplace(::arma::vec3 & frac) const
+    UnitCell::wrapVecFracInplace(arma::vec3 & frac) const
     {
       frac -= arma::floor(frac);
       return frac;
@@ -343,14 +343,14 @@ const double (&
     bool
     UnitCell::niggliReduce()
     {
-// Borrowed from David Lonie's XtalOpt here:
-// http://github.com/dlonie/XtalComp/blob/master/xtalcomp.cpp#L1538
-//
-// Implements the niggli reduction algorithm detailed in:
-// Grosse-Kunstleve RW, Sauter NK, Adams PD. Numerically stable
-// algorithms for the computation of reduced unit cells. Acta
-// Crystallographica Section A Foundations of
-// Crystallography. 2003;60(1):1-6.
+      // Borrowed from David Lonie's XtalOpt here:
+      // http://github.com/dlonie/XtalComp/blob/master/xtalcomp.cpp#L1538
+      //
+      // Implements the niggli reduction algorithm detailed in:
+      // Grosse-Kunstleve RW, Sauter NK, Adams PD. Numerically stable
+      // algorithms for the computation of reduced unit cells. Acta
+      // Crystallographica Section A Foundations of
+      // Crystallography. 2003;60(1):1-6.
 
       using namespace utility::cell_params_enum;
       using namespace spl::utility;
@@ -482,25 +482,15 @@ const double (&
             i = -1;
           }
           else if(!(xi < 0))
-          {
             p = &i;
-          }
           if(eta > 0)
-          {
             j = -1;
-          }
           else if(!(eta < 0))
-          {
             p = &j;
-          }
           if(zeta > 0)
-          {
             k = -1;
-          }
           else if(!(zeta < 0))
-          {
             p = &k;
-          }
           if(i * j * k < 0)
           {
             if(!p)
@@ -629,7 +619,7 @@ const double (&
         return false;
       }
 
-      SSLIB_ASSERT_MSG(::arma::det(cob) == 1,
+      SSLIB_ASSERT_MSG(arma::det(cob) == 1,
           "Determinant of change of basis matrix must be 1.");
 
       // Update cell
@@ -646,11 +636,10 @@ const double (&
       // Apply COB matrix:
       /* Eigen::Matrix3d invCob;
        cob.computeInverse(&invCob);
-       for (QList<Eigen::Vector3d>::iterator
-       it = fcoords.begin(),
-       it_end = fcoords.end();
-       it != it_end; ++it) {
-       *it = invCob * (*it);
+       for (QList<Eigen::Vector3d>::iterator it = fcoords.begin(), it_end = fcoords.end();
+         it != it_end; ++it)
+       {
+         *it = invCob * (*it);
        }
        setCurrentFractionalCoords(currentAtomicSymbols(), fcoords);*/
 
@@ -683,18 +672,14 @@ const double (&
     UnitCell::sendUnitCellChangedMsg()
     {
       BOOST_FOREACH(UnitCellListener * const l, myListeners)
-      {
         l->onUnitCellChanged(*this);
-      }
     }
 
     void
     UnitCell::sendUnitCellVolChangedMsg(const double oldVol)
     {
       BOOST_FOREACH(UnitCellListener * const l, myListeners)
-      {
         l->onUnitCellVolumeChanged(*this, oldVol, getVolume());
-      }
     }
 
     bool

@@ -44,7 +44,7 @@ class DistanceCalculator;
 
 class Structure : public utility::PropertiesObject, Atom::Listener
 {
-  typedef ::boost::ptr_vector< Atom> AtomsContainer;
+  typedef boost::ptr_vector< Atom> AtomsContainer;
 public:
   typedef common::Atom StructureAtom;
   typedef AtomsContainer::iterator AtomIterator;
@@ -124,10 +124,10 @@ public:
   const DistanceCalculator &
   getDistanceCalculator() const;
 
-  ::boost::optional< ::std::string>
+  boost::optional< std::string>
   getVisibleProperty(const VisibleProperty & property) const;
   void
-  setVisibleProperty(VisibleProperty & property, const ::std::string & value);
+  setVisibleProperty(VisibleProperty & property, const std::string & value);
 
   bool
   makePrimitive();
@@ -139,7 +139,7 @@ public:
   scale(const double scaleFactor);
 
   void
-  print(::std::ostream & os) const;
+  print(std::ostream & os) const;
 
 private:
   virtual void
@@ -154,7 +154,7 @@ private:
   std::string myName;
 
   /** The unit cell for this crystal structure. */
-  ::boost::optional< UnitCell> myCell;
+  boost::optional< UnitCell> myCell;
 
   /** The atoms contained in this group */
   AtomsContainer myAtoms;

@@ -429,9 +429,7 @@ Structure::getPrimitiveCopy() const
 void
 Structure::scale(const double scaleFactor)
 {
-  UnitCell * const unitCell = getUnitCell();
-
-  if(unitCell)
+  if(UnitCell * const unitCell = getUnitCell())
   {
     const double volume = unitCell->getVolume();
     ::arma::mat atomPositions;
@@ -439,10 +437,6 @@ Structure::scale(const double scaleFactor)
     unitCell->cartsToFracInplace(atomPositions); // Generate fractional positions
     unitCell->setVolume(volume * scaleFactor); // Scale the unit cell
     setAtomPositions(unitCell->fracsToCartInplace(atomPositions)); // Use the scaled cell to convert back to cart
-  }
-  else
-  {
-    // TODO: Implement cluster scaling
   }
 }
 

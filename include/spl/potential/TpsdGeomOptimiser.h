@@ -77,6 +77,7 @@ private:
   static const double CELL_MIN_NORM_VOLUME;
   static const double CELL_MAX_ANGLE_SUM;
   static const double MAX_STEPSIZE;
+  static const int MAX_FAILED_POTENTIAL_EVALUATIONS;
 
   bool
   cellReasonable(const common::UnitCell & unitCell) const;
@@ -87,11 +88,6 @@ private:
   bool
   hasConverged(const double deltaEnergyPerIon, const double maxForceSq,
       const double maxStress, const OptimisationSettings & options) const;
-
-  bool
-  capStepsize(const common::Structure & structure,
-      const arma::mat * const deltaPos, const arma::mat * const deltaLatticeCar,
-      const OptimisationSettings & settings, double * const stepsize) const;
 
   PotentialPtr myPotential;
 };

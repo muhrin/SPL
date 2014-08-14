@@ -19,6 +19,13 @@
 
 // NAMESPACES ////////////////////////////////
 
+//#define LJ_DEBUGGING
+
+#ifdef LJ_DEBUGGING
+#  include <iomanip>
+#endif
+
+
 namespace spl {
 namespace potential {
 
@@ -238,7 +245,7 @@ LennardJones::evaluate(const common::Structure & structure,
 
       imageVectors.clear();
       if(!distCalc.getVecsBetween(posI, posJ, params.cutoff, imageVectors,
-          MAX_INTERACTION_VECTORS))
+          MAX_INTERACTION_VECTORS, MAX_CELL_MULTIPLES))
       {
         // We reached the maximum number of interaction vectors so indicate that there was a problem
         problemDuringCalculation = true;
@@ -246,7 +253,7 @@ LennardJones::evaluate(const common::Structure & structure,
         // of interaction vectors
         imageVectors.clear();
         distCalc.getVecsBetween(posI, posJ, 0.5 * params.cutoff, imageVectors,
-            MAX_INTERACTION_VECTORS);
+            MAX_INTERACTION_VECTORS, MAX_CELL_MULTIPLES);
       }
 
       // Used as a prefactor depending if the particles i and j are in fact the same
@@ -269,6 +276,11 @@ LennardJones::evaluate(const common::Structure & structure,
           // Update system values
           // energy
           data.internalEnergy += selfInteraction * energyForce.first;
+#ifdef LJ_DEBUGGING
+          std::cout << std::setprecision(16)
+              << selfInteraction * energyForce.first << "\n";
+#endif
+
           // force
           data.forces.col(i) -= f;
           if(i != j)
@@ -285,6 +297,15 @@ LennardJones::evaluate(const common::Structure & structure,
       }
     }
   }
+
+#ifdef LJ_DEBUGGING
+  for(size_t i = 0; i < data.forces.n_cols; ++i)
+  {
+    for(size_t j = 0; j < 3; ++j)
+      std::cout << data.forces(j, i) << " ";
+    std::cout << "\n";
+  }
+#endif
 
 // Symmetrise stress matrix and convert to absolute values
   data.stressMtx = arma::symmatu(data.stressMtx);

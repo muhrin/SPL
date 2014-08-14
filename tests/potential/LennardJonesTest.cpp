@@ -80,12 +80,8 @@ BOOST_AUTO_TEST_CASE(Energy)
   params.push_back((*toString)(N));
   params.push_back((*toString)(CUTOFF));
 
-  // Combining rules
-  params.push_back("none");
-  params.push_back("none");
-
   std::string err;
-  lj.setParams(params, &err);
+  BOOST_REQUIRE(lj.setParams(params, &err));
 
   BOOST_CHECK(params == lj.getParams());
 
