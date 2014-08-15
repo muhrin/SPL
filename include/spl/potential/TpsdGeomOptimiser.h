@@ -88,6 +88,10 @@ private:
   bool
   hasConverged(const double deltaEnergyPerIon, const double maxForceSq,
       const double maxStress, const OptimisationSettings & options) const;
+  bool
+  capStepsize(const common::Structure & structure,
+      const arma::mat * const deltaPos, const arma::mat * const deltaLatticeCar,
+      const OptimisationSettings & settings, double * const stepsize) const;
 
   PotentialPtr myPotential;
 };
