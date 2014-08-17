@@ -97,8 +97,8 @@ XyzReaderWriter::writeStructure(spl::common::Structure & str,
   }
   // End atoms ///////////
 
-  str.setProperty(properties::io::LAST_ABS_FILE_PATH,
-      io::ResourceLocator(io::absolute(filepath)));
+  str.properties()[properties::io::LAST_ABS_FILE_PATH] = io::ResourceLocator(
+      io::absolute(filepath));
 
   if(strFile.is_open())
     strFile.close();
@@ -177,13 +177,13 @@ XyzReaderWriter::readAtoms(std::istream * const is,
     {
       if(++it == end)
         continue;
-      pos(0) = boost::lexical_cast<double>(*it);
+      pos(0) = boost::lexical_cast< double>(*it);
       if(++it == end)
         continue;
-      pos(1) = boost::lexical_cast<double>(*it);
+      pos(1) = boost::lexical_cast< double>(*it);
       if(++it == end)
         continue;
-      pos(2) = boost::lexical_cast<double>(*it);
+      pos(2) = boost::lexical_cast< double>(*it);
     }
     catch(const boost::bad_lexical_cast & /*e*/)
     {

@@ -116,7 +116,7 @@ SplReaderWriter::writeStructure(common::Structure & str,
     strFile << out.c_str() << std::endl;
     strFile.close();
 
-    str.setProperty(properties::io::LAST_ABS_FILE_PATH, uniqueLoc);
+    str.properties()[properties::io::LAST_ABS_FILE_PATH] = uniqueLoc;
   }
 }
 
@@ -169,8 +169,8 @@ SplReaderWriter::readStructure(const ResourceLocator & locator) const
 
   if(structure.get())
   {
-    structure->setProperty(properties::io::LAST_ABS_FILE_PATH,
-        ResourceLocator(io::absolute(filepath), locatorId));
+    structure->properties()[properties::io::LAST_ABS_FILE_PATH] =
+        ResourceLocator(io::absolute(filepath), locatorId);
   }
 
   return structure;
@@ -209,8 +209,8 @@ SplReaderWriter::readStructures(StructuresContainer & outStructures,
 
       if(structure.get())
       {
-        structure->setProperty(properties::io::LAST_ABS_FILE_PATH,
-            ResourceLocator(io::absolute(filepath), structureId));
+        structure->properties()[properties::io::LAST_ABS_FILE_PATH] =
+            ResourceLocator(io::absolute(filepath), structureId);
         outStructures.push_back(structure.release());
         ++numLoaded;
       }
@@ -228,8 +228,8 @@ SplReaderWriter::readStructures(StructuresContainer & outStructures,
 
         if(structure.get())
         {
-          structure->setProperty(properties::io::LAST_ABS_FILE_PATH,
-              ResourceLocator(io::absolute(filepath), structureId));
+          structure->properties()[properties::io::LAST_ABS_FILE_PATH] =
+              ResourceLocator(io::absolute(filepath), structureId);
           outStructures.push_back(structure.release());
           ++numLoaded;
         }

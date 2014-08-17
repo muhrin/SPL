@@ -143,8 +143,8 @@ ResReaderWriter::writeStructure(spl::common::Structure & str,
 
   strFile << "\nEND\n";
 
-  str.setProperty(properties::io::LAST_ABS_FILE_PATH,
-      io::ResourceLocator(io::absolute(filepath)));
+  str.properties()[properties::io::LAST_ABS_FILE_PATH] = io::ResourceLocator(
+      io::absolute(filepath));
 
   if(strFile.is_open())
     strFile.close();
@@ -177,8 +177,8 @@ ResReaderWriter::readStructure(const ResourceLocator & resourceLocator) const
   {
     str.reset(new common::Structure());
 
-    str->setProperty(properties::io::LAST_ABS_FILE_PATH,
-        io::ResourceLocator(io::absolute(filepath)));
+    str->properties()[properties::io::LAST_ABS_FILE_PATH] = io::ResourceLocator(
+        io::absolute(filepath));
 
     std::string line;
     for(getline(strFile, line); strFile.good(); getline(strFile, line))

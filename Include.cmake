@@ -214,6 +214,7 @@ set(sslib_Header_Files__utility
   include/spl/utility/DistanceMatrixComparator.h
   include/spl/utility/EdgeMap.h
   include/spl/utility/GenericBufferedComparator.h
+  include/spl/utility/HasProperties.h
   include/spl/utility/HeterogeneousMap.h
   include/spl/utility/HeterogeneousMapEx.h
   include/spl/utility/HeterogeneousMapKey.h
@@ -233,7 +234,6 @@ set(sslib_Header_Files__utility
   include/spl/utility/Outcome.h
   include/spl/utility/PermutationRange.h
   include/spl/utility/PromotableType.h
-  include/spl/utility/PropertiesObject.h
   include/spl/utility/Range.h
   include/spl/utility/SharedHandle.h
   include/spl/utility/SortedDistanceComparator.h

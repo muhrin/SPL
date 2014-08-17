@@ -121,8 +121,7 @@ OptimisationData::loadFromStructure(const common::Structure & structure)
   setOptimisationDataValue(internalEnergy, structure,
       properties::general::ENERGY_INTERNAL);
   setOptimisationDataValue(enthalpy, structure, properties::general::ENTHALPY);
-  setOptimisationDataValue(pressure, structure,
-      properties::general::PRESSURE);
+  setOptimisationDataValue(pressure, structure, properties::general::PRESSURE);
 }
 
 template< typename T>
@@ -131,9 +130,9 @@ template< typename T>
       utility::Key< T> & key, const boost::optional< T> & value) const
   {
     if(value)
-      structure.setProperty(key, *value);
+      structure.properties()[key] = *value;
     else
-      structure.eraseProperty(key);
+      structure.properties().erase(key);
   }
 
 template< typename T>
@@ -141,7 +140,7 @@ template< typename T>
   OptimisationData::setOptimisationDataValue(boost::optional< T> & value,
       const common::Structure & structure, const utility::Key< T> & key) const
   {
-    const T * structureValue = structure.getProperty(key);
+    const T * structureValue = structure.properties().find(key);
     if(!structureValue)
       return false;
 

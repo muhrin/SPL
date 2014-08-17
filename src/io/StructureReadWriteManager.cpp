@@ -400,14 +400,14 @@ StructureReadWriteManager::postRead(common::Structure & structure,
     structure.setName(name);
   }
 
-  structure.setProperty(properties::io::LAST_ABS_FILE_PATH, locator);
+  structure.properties()[properties::io::LAST_ABS_FILE_PATH] = locator;
 }
 
 void
 StructureReadWriteManager::postWrite(common::Structure & structure,
     const ResourceLocator & locator) const
 {
-  structure.setProperty(properties::io::LAST_ABS_FILE_PATH, locator);
+  structure.properties()[properties::io::LAST_ABS_FILE_PATH] = locator;
 }
 
 }

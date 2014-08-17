@@ -27,7 +27,7 @@
 #include "spl/common/StructureProperties.h"
 #include "spl/common/Types.h"
 #include "spl/common/UnitCell.h"
-#include "spl/utility/PropertiesObject.h"
+#include "spl/utility/HasProperties.h"
 #include "spl/utility/NamedProperty.h"
 
 std::ostream &
@@ -42,7 +42,7 @@ namespace common {
 class AtomsFormula;
 class DistanceCalculator;
 
-class Structure : public utility::PropertiesObject, Atom::Listener
+class Structure : public utility::HasProperties, Atom::Listener
 {
   typedef boost::ptr_vector< Atom> AtomsContainer;
 public:

@@ -176,9 +176,8 @@ ConvexHullStructures::populateFormationEnthalpies()
 {
   BOOST_FOREACH(Structures::reference s, myStructures)
   {
-    s.first->setProperty(
-        common::structure_properties::general::FORMATION_ENTHALPY,
-        getFormationEnthalpy(s.second));
+    s.first->properties()[common::structure_properties::general::FORMATION_ENTHALPY] =
+        getFormationEnthalpy(s.second);
   }
 }
 
@@ -190,8 +189,8 @@ ConvexHullStructures::populateHullDistances()
   {
     dist = myConvexHull.distanceToHull(s.second);
     if(dist)
-      s.first->setProperty(common::structure_properties::general::HULL_DISTANCE,
-          *dist);
+      s.first->properties()[common::structure_properties::general::HULL_DISTANCE] =
+          *dist;
   }
 }
 
@@ -217,7 +216,8 @@ ConvexHullStructures::getLabel(const ConvexHull & convexHull,
 
   SSLIB_ASSERT(&convexHull == &myConvexHull);
 
-  const IdsIterator it = ::std::find(IdsIterator(myStructures.begin(), TAKE_SECOND),
+  const IdsIterator it = ::std::find(
+      IdsIterator(myStructures.begin(), TAKE_SECOND),
       IdsIterator(myStructures.end(), TAKE_SECOND), pointId);
 
   if(it.base() == myStructures.end())

@@ -549,8 +549,7 @@ struct SortedDistance
 
 SCHEMER_MAP(SortedDistanceSchema, SortedDistance)
 {
-  element("tol", &SortedDistance::tolerance)->defaultValue(
-      utility::SortedDistanceComparator::DEFAULT_TOLERANCE);
+  element("tol", &SortedDistance::tolerance)->defaultValue(3e-4);
   element("volAgnostic", &SortedDistance::volumeAgnostic)->defaultValue(false);
   element("usePrimitive", &SortedDistance::usePrimitive)->defaultValue(false);
 }

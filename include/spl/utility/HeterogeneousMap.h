@@ -26,11 +26,11 @@ namespace utility {
 
 class HeterogeneousMap
 {
-  typedef ::std::map< KeyId *, ::boost::any> AnyMap;
+  typedef std::map< KeyId *, boost::any> AnyMap;
 public:
 
   template< typename Type>
-    struct value_type : public ::std::pair< Key< Type>, Type>
+    struct value_type : public std::pair< Key< Type>, Type>
     {
     };
 
@@ -87,9 +87,9 @@ public:
 
 private:
 
-  ::std::pair< AnyMap::iterator, bool>
+  std::pair< AnyMap::iterator, bool>
   insert(const AnyMap::value_type & value);
-  ::std::pair< AnyMap::iterator, bool>
+  std::pair< AnyMap::iterator, bool>
   insert(const AnyMap::value_type & value, const bool overwrite);
 
   size_t

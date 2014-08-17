@@ -92,10 +92,12 @@ BOOST_AUTO_TEST_CASE(InfoLineStream)
   BOOST_CHECK_CLOSE_FRACTION(*infoLine.pressure, -0.01455109, DOUBLE_CLOSENESS);
 
   BOOST_REQUIRE(infoLine.volume.is_initialized());
-  BOOST_CHECK_CLOSE_FRACTION(*infoLine.volume, 4622.6610614649080, DOUBLE_CLOSENESS);
+  BOOST_CHECK_CLOSE_FRACTION(*infoLine.volume, 4622.6610614649080,
+      DOUBLE_CLOSENESS);
 
   BOOST_REQUIRE(infoLine.enthalpy.is_initialized());
-  BOOST_CHECK_CLOSE_FRACTION(*infoLine.enthalpy, -334.713226852853, DOUBLE_CLOSENESS);
+  BOOST_CHECK_CLOSE_FRACTION(*infoLine.enthalpy, -334.713226852853,
+      DOUBLE_CLOSENESS);
 
   BOOST_REQUIRE(infoLine.numAtoms.is_initialized());
   BOOST_CHECK_EQUAL(*infoLine.numAtoms, 194);
@@ -137,8 +139,10 @@ BOOST_AUTO_TEST_CASE(InfoLineStructure)
   BOOST_REQUIRE(infoLine.name.is_initialized());
   BOOST_CHECK_EQUAL(*infoLine.name, NAME);
 
+  spl::utility::HeterogeneousMap & properties = structure.properties();
+
   // Pressure
-  structure.setProperty(properties::general::PRESSURE, PRESSURE);
+  properties[properties::general::PRESSURE] = PRESSURE;
   infoLine.set(structure);
   BOOST_REQUIRE(infoLine.pressure.is_initialized());
   BOOST_CHECK_EQUAL(*infoLine.pressure, PRESSURE);
@@ -150,7 +154,7 @@ BOOST_AUTO_TEST_CASE(InfoLineStructure)
   BOOST_CHECK_EQUAL(*infoLine.volume, structure.getUnitCell()->getVolume());
 
   // ENTHALPY
-  structure.setProperty(properties::general::ENTHALPY, ENTHALPY);
+  properties[properties::general::ENTHALPY] = ENTHALPY;
   infoLine.set(structure);
   BOOST_REQUIRE(infoLine.enthalpy.is_initialized());
   BOOST_CHECK_EQUAL(*infoLine.enthalpy, ENTHALPY);
@@ -163,13 +167,13 @@ BOOST_AUTO_TEST_CASE(InfoLineStructure)
   BOOST_CHECK_EQUAL(*infoLine.numAtoms, structure.getNumAtoms());
 
   // SPACE GROUP
-  structure.setProperty(properties::general::SPACEGROUP_SYMBOL, SPACE_GROUP);
+  properties[properties::general::SPACEGROUP_SYMBOL] = SPACE_GROUP;
   infoLine.set(structure);
   BOOST_REQUIRE(infoLine.spaceGroup.is_initialized());
   BOOST_CHECK_EQUAL(*infoLine.spaceGroup, SPACE_GROUP);
 
   // TIMES FOUND
-  structure.setProperty(properties::searching::TIMES_FOUND, TIMES_FOUND);
+  properties[properties::searching::TIMES_FOUND] = TIMES_FOUND;
   infoLine.set(structure);
   BOOST_REQUIRE(infoLine.timesFound.is_initialized());
   BOOST_CHECK_EQUAL(*infoLine.timesFound, TIMES_FOUND);
@@ -178,23 +182,23 @@ BOOST_AUTO_TEST_CASE(InfoLineStructure)
   ssc::Structure newStructure;
   infoLine.populate(&newStructure);
   BOOST_CHECK_EQUAL(*infoLine.name, newStructure.getName());
+  spl::utility::HeterogeneousMap & newProperties = newStructure.properties();
 
-  BOOST_REQUIRE(newStructure.getProperty(properties::general::PRESSURE));
+  BOOST_REQUIRE(newProperties.find(properties::general::PRESSURE));
   BOOST_CHECK_EQUAL(*infoLine.pressure,
-      *newStructure.getProperty(properties::general::PRESSURE));
+      newProperties[properties::general::PRESSURE]);
 
-  BOOST_REQUIRE(newStructure.getProperty(properties::general::ENTHALPY));
+  BOOST_REQUIRE(newProperties.find(properties::general::ENTHALPY));
   BOOST_CHECK_EQUAL(*infoLine.enthalpy,
-      *newStructure.getProperty(properties::general::ENTHALPY));
+      newProperties[properties::general::ENTHALPY]);
 
-  BOOST_REQUIRE(
-      newStructure.getProperty(properties::general::SPACEGROUP_SYMBOL));
+  BOOST_REQUIRE(newProperties.find(properties::general::SPACEGROUP_SYMBOL));
   BOOST_CHECK_EQUAL(*infoLine.spaceGroup,
-      *newStructure.getProperty(properties::general::SPACEGROUP_SYMBOL));
+      newProperties[properties::general::SPACEGROUP_SYMBOL]);
 
-  BOOST_REQUIRE(newStructure.getProperty(properties::searching::TIMES_FOUND));
+  BOOST_REQUIRE(newProperties.find(properties::searching::TIMES_FOUND));
   BOOST_CHECK_EQUAL(*infoLine.timesFound,
-      *newStructure.getProperty(properties::searching::TIMES_FOUND));
+      newProperties[properties::searching::TIMES_FOUND]);
 }
 
 void

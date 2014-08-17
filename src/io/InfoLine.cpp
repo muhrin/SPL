@@ -42,26 +42,19 @@ InfoLine::set(const common::Structure & str)
   if(!str.getName().empty())
     name = str.getName();
 
-  // Presssure
-  {
-    const double * const sPressure = str.getProperty(
-        properties::general::PRESSURE);
-    if(sPressure)
-      pressure = *sPressure;
-  }
+  if(const double * const sPressure = str.properties().find(
+      properties::general::PRESSURE))
+    pressure = *sPressure;
 
-  // Volume
-  {
-    const common::UnitCell * const cell = str.getUnitCell();
-    if(cell)
-      volume = cell->getVolume();
-  }
+  if(const common::UnitCell * const cell = str.getUnitCell())
+    volume = cell->getVolume();
 
   // Enthalpy
+  if(const double * sEnthalpy = str.properties().find(
+      properties::general::ENTHALPY))
   {
-    const double * sEnthalpy = str.getProperty(properties::general::ENTHALPY);
     if(!sEnthalpy)
-      sEnthalpy = str.getProperty(properties::general::ENERGY_INTERNAL);
+      sEnthalpy = str.properties().find(properties::general::ENERGY_INTERNAL);
     if(sEnthalpy)
       enthalpy = *sEnthalpy;
   }
@@ -70,20 +63,14 @@ InfoLine::set(const common::Structure & str)
   numAtoms = str.getNumAtoms();
 
   // Space group
-  {
-    const std::string * const sg = str.getProperty(
-        properties::general::SPACEGROUP_SYMBOL);
-    if(sg)
-      spaceGroup = *sg;
-  }
+  if(const std::string * const sg = str.properties().find(
+      properties::general::SPACEGROUP_SYMBOL))
+    spaceGroup = *sg;
 
   // Times found
-  {
-    const unsigned int * const xFound = str.getProperty(
-        properties::searching::TIMES_FOUND);
-    if(xFound)
-      timesFound = *xFound;
-  }
+  if(const unsigned int * const xFound = str.properties().find(
+      properties::searching::TIMES_FOUND))
+    timesFound = *xFound;
 }
 
 void
@@ -92,10 +79,15 @@ InfoLine::populate(common::Structure * const structure) const
   if(name)
     structure->setName(*name);
 
-  structure->setProperty(properties::general::PRESSURE, pressure);
-  structure->setProperty(properties::general::ENTHALPY, enthalpy);
-  structure->setProperty(properties::general::SPACEGROUP_SYMBOL, spaceGroup);
-  structure->setProperty(properties::searching::TIMES_FOUND, timesFound);
+  utility::HeterogeneousMap & properties = structure->properties();
+  if(pressure)
+    properties[properties::general::PRESSURE] = *pressure;
+  if(enthalpy)
+    properties[properties::general::ENTHALPY] = *enthalpy;
+  if(spaceGroup)
+    properties[properties::general::SPACEGROUP_SYMBOL] = *spaceGroup;
+  if(timesFound)
+    properties[properties::searching::TIMES_FOUND] = *timesFound;
 }
 
 std::ostream &

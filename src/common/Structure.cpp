@@ -76,7 +76,7 @@ Structure::~Structure()
 Structure &
 Structure::operator =(const Structure & rhs)
 {
-  PropertiesObject::operator =(rhs);
+  HasProperties::operator =(rhs);
 
   myName = rhs.myName;
 
@@ -114,12 +114,10 @@ Structure::updateWith(const Structure & structure)
   // Update the atoms
   clearAtoms();
   BOOST_FOREACH(const Atom & atom, structure.myAtoms)
-  {
     newAtom(atom);
-  }
 
   // Update the properties
-  getProperties().insert(structure.getProperties(), true);
+  properties().insert(structure.properties(), true);
 }
 
 const std::string &
@@ -316,14 +314,14 @@ Structure::getDistanceCalculator() const
 ::boost::optional< ::std::string>
 Structure::getVisibleProperty(const VisibleProperty & property) const
 {
-  return property.getValue(getProperties());
+  return property.getValue(properties());
 }
 
 void
 Structure::setVisibleProperty(VisibleProperty & property,
     const ::std::string & value)
 {
-  property.setValue(getProperties(), value);
+  property.setValue(properties(), value);
 }
 
 bool

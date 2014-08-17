@@ -181,7 +181,7 @@ ConvexHull::distanceToHull(const common::Structure & structure) const
     return OptionalDouble();
 
   // Check if the structure has a value for the property that will form the 'depth' of the hull
-  const double * const value = structure.getProperty(myConvexProperty);
+  const double * const value = structure.properties().find(myConvexProperty);
   if(!value)
     return OptionalDouble();
 
@@ -270,7 +270,7 @@ ConvexHull::generateEntry(const common::Structure & structure)
     return -1;
 
   // Check if the structure has a value for the property that will form the 'depth' of the hull
-  const double * const value = structure.getProperty(myConvexProperty);
+  const double * const value = structure.properties().find(myConvexProperty);
   if(!value)
     return -1;
 
