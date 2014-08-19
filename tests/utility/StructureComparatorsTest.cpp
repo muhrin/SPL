@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
     comparators.push_back(new ssu::SortedDistanceComparator(constructInfo));
   }
   //comparators.push_back(new ssu::SortedDistanceComparatorEx());
-  //comparators.push_back(new ssu::DistanceMatrixComparator());
+  comparators.push_back(new ssu::DistanceMatrixComparator());
   const size_t NUM_COMPARATORS = comparators.size();
   const size_t MAX_STRUCTURES = 100;
   const double ALLOWED_FAIL_RATE = 0.02;
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE(SupercellTest)
     comparators.push_back(new ssu::SortedDistanceComparator(constructInfo));
   }
   //comparators.push_back(new ssu::SortedDistanceComparatorEx());
-  //comparators.push_back(new ssu::DistanceMatrixComparator());
+  comparators.push_back(new ssu::DistanceMatrixComparator());
   const size_t NUM_COMPARATORS = comparators.size();
   const size_t SUPERCELL_DIMS[] =
     { 1, 1, 2 };

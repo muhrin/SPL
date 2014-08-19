@@ -232,7 +232,6 @@ set(sslib_Header_Files__utility
   include/spl/utility/MultiRange.h
   include/spl/utility/NamedProperty.h
   include/spl/utility/Outcome.h
-  include/spl/utility/PermutationRange.h
   include/spl/utility/PromotableType.h
   include/spl/utility/Range.h
   include/spl/utility/SharedHandle.h
