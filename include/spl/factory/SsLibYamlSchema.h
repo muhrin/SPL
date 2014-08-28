@@ -23,7 +23,6 @@
 #include "spl/potential/CombiningRules.h"
 #include "spl/potential/OptimisationSettings.h"
 #include "spl/potential/TpsdGeomOptimiser.h"
-#include "spl/utility/SortedDistanceComparator.h"
 #include "spl/yaml/Transcode.h"
 
 // DEFINES //////////////////////////////////////////////
@@ -561,7 +560,8 @@ struct Comparator
 
 SCHEMER_MAP(ComparatorSchema, Comparator)
 {
-  element("sortedDist", &Comparator::sortedDist);
+  element("sortedDist", &Comparator::sortedDist)->defaultValue(
+      *schemer::getDefault< SortedDistanceSchema>());
 }
 
 }

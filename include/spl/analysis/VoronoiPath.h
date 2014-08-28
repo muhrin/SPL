@@ -53,6 +53,8 @@ template< typename VD>
     typedef std::vector< Vertex> Vertices;
     typedef std::vector< Edge> Edges;
     typedef typename Delaunay::Edge DelaunayEdge;
+    typedef typename GeomTraits::FT FT;
+
   public:
     typedef typename Vertices::iterator VertexIterator;
     typedef typename Vertices::const_iterator VertexConstIterator;

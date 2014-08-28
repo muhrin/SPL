@@ -502,6 +502,7 @@ template< typename VD>
   const typename VoronoiPath< VD>::LineAndCentroid &
   VoronoiPath< VD>::leastSquaresLine(const size_t i, const size_t j) const
   {
+    SSLIB_ASSERT(i != j);
     SSLIB_ASSERT(inRange(i));
     SSLIB_ASSERT(inRange(j));
 
@@ -515,8 +516,17 @@ template< typename VD>
       pts.push_back(vertex(wrapIndex(i + d)).point());
 
     LineAndCentroid & line = mySubpathLines[Subpath(i, j)];
-    CGAL::linear_least_squares_fitting_2(pts.begin(), pts.end(), line.first,
-        line.second, CGAL::Dimension_tag< 0>());
+    FT quality = CGAL::linear_least_squares_fitting_2(pts.begin(), pts.end(),
+        line.first, line.second, CGAL::Dimension_tag< 0>());
+    if(pts.size() > 1 && (quality == 0 || quality != quality))
+    {
+      std::vector< Segment> segments;
+      for(size_t i = 0; i < pts.size() - 1; ++i)
+        segments.push_back(Segment(pts[i], pts[i + 1]));
+
+      quality = CGAL::linear_least_squares_fitting_2(segments.begin(),
+          segments.end(), line.first, line.second, CGAL::Dimension_tag< 1>());
+    }
 
     return line;
   }

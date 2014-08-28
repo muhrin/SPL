@@ -16,8 +16,6 @@
 #include <map>
 #include <ostream>
 
-#include <boost/optional.hpp>
-
 // DEFINITION ///////////////////////
 
 namespace spl {
@@ -31,12 +29,7 @@ template< typename MapTraits>
   {
   public:
     typedef typename MapTraits::Arrangement Arrangement;
-
-    struct LabelProperties
-    {
-      boost::optional< std::string> name;
-      boost::optional< int> colour;
-    };
+    typedef typename MapTraits::Label LabelType;
 
     virtual
     ~ArrangementMapOutputter()
@@ -44,14 +37,31 @@ template< typename MapTraits>
     }
 
     virtual void
-    outputArrangement(const Arrangement & map,
-        std::ostream * const os) const = 0;
-    virtual void
-    outputArrangement(const Arrangement & map,
-        const std::map< typename MapTraits::Label, LabelProperties> & labelsInfo,
-        std::ostream * const os) const = 0;
-    virtual std::string
-    fileExtension() const = 0;
+    outputArrangement(const Arrangement & map) const = 0;
+
+    virtual bool
+    setSeedName(const std::string & seedName)
+    {
+      return false;
+    }
+
+    virtual bool
+    setColourMap(const std::map< LabelType, int> & colourMap)
+    {
+      return false;
+    }
+
+    virtual bool
+    setXLabel(const std::string & xLabel)
+    {
+      return false;
+    }
+
+    virtual bool
+    setYLabel(const std::string & yLabel)
+    {
+      return false;
+    }
   };
 
 }

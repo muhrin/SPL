@@ -9,6 +9,8 @@
 #define MATPLOTLIB_MAP_OUTPUTTER_DETAIL_H
 
 // INCLUDES ///////////////////
+#include <fstream>
+
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -94,31 +96,60 @@ template< typename MapTraits>
 
 template< typename MapTraits>
   void
-  MatplotlibMapOutputter< MapTraits>::outputArrangement(const Arrangement & map,
-      std::ostream * const os) const
+  MatplotlibMapOutputter< MapTraits>::outputArrangement(
+      const Arrangement & map) const
   {
-    out(map, NULL, os);
+    std::string outFile = "map.py";
+    if(!mySeedName.empty())
+      outFile = mySeedName + "_map.py";
+    std::ofstream os(outFile.c_str());
+    if(os.is_open())
+    {
+      outputArrangement(map, &os);
+      os.close();
+    }
   }
 
 template< typename MapTraits>
   void
   MatplotlibMapOutputter< MapTraits>::outputArrangement(const Arrangement & map,
-      const LabelProperties & labelProperties, std::ostream * const os) const
+      std::ostream * const os) const
   {
-    out(map, &labelProperties, os);
+    out(map, os);
   }
 
 template< typename MapTraits>
-  std::string
-  MatplotlibMapOutputter< MapTraits>::fileExtension() const
+  bool
+  MatplotlibMapOutputter< MapTraits>::setSeedName(const std::string & seedName)
   {
-    return "py";
+    mySeedName = seedName;
+  }
+
+template< typename MapTraits>
+  bool
+  MatplotlibMapOutputter< MapTraits>::setColourMap(
+      const std::map< Label, int> & colourMap)
+  {
+    myColourMap = colourMap;
+  }
+
+template< typename MapTraits>
+  bool
+  MatplotlibMapOutputter< MapTraits>::setXLabel(const std::string & label)
+  {
+    myXLabel = label;
+  }
+
+template< typename MapTraits>
+  bool
+  MatplotlibMapOutputter< MapTraits>::setYLabel(const std::string & label)
+  {
+    myYLabel = label;
   }
 
 template< typename MapTraits>
   void
   MatplotlibMapOutputter< MapTraits>::out(const Arrangement & map,
-      const LabelProperties * const labelProperties,
       std::ostream * const os) const
   {
     const boost::iterator_range< typename Arrangement::Face_const_iterator> faces(
@@ -129,8 +160,8 @@ template< typename MapTraits>
         << "import matplotlib.pyplot as plt\n\n"
         << "fig, ax = plt.subplots()\n\n";
 
-    const ColourMap & colourMap = getColourMap(labelProperties, faces);
-    printProperties(labelProperties, colourMap, os);
+    const ColourMap & colourMap = getColourMap(faces);
+    printProperties(colourMap, os);
 
     std::string colour, labelName;
     BOOST_FOREACH(const Face & face, faces)
@@ -148,22 +179,22 @@ template< typename MapTraits>
         colour = ss.str();
       }
 
-      if(labelProperties && face.data().label)
+      if(face.data().label)
       {
-        const typename LabelProperties::const_iterator it =
-            labelProperties->find(*face.data().label);
-        if(it != labelProperties->end() && it->second.name)
-        {
-          std::stringstream ss;
-          ss << "labels['" << *face.data().label << "']['name']";
-          labelName = ss.str();
-        }
+        std::stringstream ss;
+        ss << *face.data().label;
+        labelName = ss.str();
       }
 
       drawFace(face, os, labelName, colour);
     }
 
     *os << "\nax.autoscale_view()\n";
+    *os << "ax.set_aspect(aspect='equal')\n";
+    if(!myXLabel.empty())
+      *os << "ax.set_xlabel('" << myXLabel << "')\n";
+    if(!myYLabel.empty())
+      *os << "ax.set_ylabel('" << myYLabel << "')\n";
     *os << "plt.show()\n";
   }
 
@@ -213,7 +244,6 @@ template< typename MapTraits>
 
       if(!label.empty())
       {
-        //drawText(*poly.vertices_begin(), label, os);
         drawText(CGAL::centroid(poly.vertices_begin(), poly.vertices_end()),
             label, os);
       }
@@ -223,7 +253,6 @@ template< typename MapTraits>
 template< typename MapTraits>
   typename MatplotlibMapOutputter< MapTraits>::ColourMap
   MatplotlibMapOutputter< MapTraits>::getColourMap(
-      const LabelProperties * const labelProperties,
       const boost::iterator_range< typename Arrangement::Face_const_iterator> & faces) const
   {
     // Use algorithm described here:
@@ -233,18 +262,9 @@ template< typename MapTraits>
     static const int MIX_GREEN = 255;
     static const int MIX_BLUE = 255;
 
-    std::map< Label, std::string> colourMap;
+    ColourMap colourMap = myColourMap;
 
-    if(labelProperties && !labelProperties->empty())
-    {
-      // Put in all the colours from the labels info
-      BOOST_FOREACH(typename LabelProperties::const_reference i, *labelProperties)
-      {
-        if(i.second.colour)
-          colourMap[i.first] = toHexString(*i.second.colour);
-      }
-    }
-
+    // Autogenerate colours for the labels that the user hasn't specified
     BOOST_FOREACH(const Face & face, faces)
     {
       const boost::optional< Label> & label = face.data().label;
@@ -257,7 +277,7 @@ template< typename MapTraits>
           const int green = (math::randu< int>(256) + MIX_GREEN) / 2;
           const int blue = (math::randu< int>(256) + MIX_BLUE) / 2;
 
-          colourMap[*label] = toHexString(rgbColour(red, green, blue));
+          colourMap[*label] = rgbColour(red, green, blue);
         }
       }
     }
@@ -267,29 +287,20 @@ template< typename MapTraits>
 template< typename MapTraits>
   void
   MatplotlibMapOutputter< MapTraits>::printProperties(
-      const LabelProperties * const properties, const ColourMap & colourMap,
-      std::ostream * const os) const
+      const ColourMap & colourMap, std::ostream * const os) const
   {
     SSLIB_ASSERT(os);
+
     if(colourMap.empty())
       return;
 
-    typename LabelProperties::const_iterator it;
     *os << "labels = dict()\n";
     BOOST_FOREACH(typename ColourMap::const_reference c, colourMap)
     {
       *os << "labels['" << c.first << "'] = {";
-      *os << "'colour': '" << c.second << "'";
-      if(properties)
-      {
-        it = properties->find(c.first);
-        if(it != properties->end() && it->second.name)
-          *os << ", 'name': '" << *it->second.name << "'";
-
-      }
+      *os << "'colour': '" << toHexString(c.second) << "'";
       *os << "}\n";
     }
-
     *os << "\n";
   }
 
@@ -323,7 +334,7 @@ template< typename MapTraits>
     std::vector< string> params;
     params.push_back(lexical_cast< string>(pt.x()));
     params.push_back(lexical_cast< string>(pt.y()));
-    params.push_back(label);
+    params.push_back("'" + label + "'");
     params.push_back("horizontalalignment='center'");
     params.push_back("verticalalignment='center'");
     *os << boost::algorithm::join(params, ", ") << ")\n";

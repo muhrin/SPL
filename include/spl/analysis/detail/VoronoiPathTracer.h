@@ -751,26 +751,48 @@ template< typename MapTraits>
     const size_t n = optimal.size();
     SSLIB_ASSERT(n >= 2);
 
-    if(!path->isClosed())
-      curve.pushBack(path->vertexFront().point());
-
-    const size_t first = path->isClosed() ? 0 : 1;
-    size_t i, j, k;
-    for(size_t d = first; d < n - 1; ++d)
+    if((path->isClosed() && n == path->numVertices())
+        || (path->isClosed() && n == path->numVertices() + 1))
     {
-      i = optimal[path->isClosed() ? mod(d - 1, n) : d - 1];
-      j = optimal[d];
-      k = optimal[d + 1];
-
-      typename CGAL::Linear_algebraCd< FT>::Matrix Q = path->quadraticForm(i,
-          j);
-      Q += path->quadraticForm(j, k);
-
-      curve.pushBack(joinLines(Q, path->vertex(j).domain()));
+      // If the optimal path is just the path itself, then insert
+      // all vertices
+      for(size_t i = 0; i < n - 1; ++i)
+        curve.pushBack(path->vertex(optimal[i]).point());
     }
+    else
+    {
+      if(!path->isClosed())
+        curve.pushBack(path->vertexFront().point());
 
-    if(!path->isClosed())
-      curve.pushBack(path->vertexBack().point());
+      const size_t first = path->isClosed() ? 0 : 1;
+      size_t i, j, k;
+      for(ptrdiff_t d = first; d < n - 1; ++d)
+      {
+        if(path->isClosed())
+        {
+          if(d == 0)
+            // Need to do this because optimal stores the start and end
+            // points explicitly, even if they are the same
+            i = optimal[mod(d - 2, n)];
+          else
+            i = optimal[mod(d - 1, n)];
+        }
+        else
+          i = optimal[d - 1];
+
+        j = optimal[d];
+        k = optimal[d + 1];
+
+        typename CGAL::Linear_algebraCd< FT>::Matrix Q = path->quadraticForm(i,
+            j);
+        Q += path->quadraticForm(j, k);
+
+        curve.pushBack(joinLines(Q, path->vertex(j).domain()));
+      }
+
+      if(!path->isClosed())
+        curve.pushBack(path->vertexBack().point());
+    }
   }
 
 template< typename MapTraits>

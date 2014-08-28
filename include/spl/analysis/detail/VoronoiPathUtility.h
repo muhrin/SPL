@@ -188,9 +188,12 @@ template< typename MapTraits, typename VD>
         for(size_t i = 1; i < 4; ++i)
           std::cout << "(Path.CURVE4, " << point(bezier.control[i]) << "),\n";
 #endif
-
-        CGAL::insert(*myMap, Curve(myPos, bezier.control[3]));
-        updatePos(bezier.control[3]);
+        // TODO: Check why this condition sometimes happens
+        if(myPos != bezier.control[3])
+        {
+          CGAL::insert(*myMap, Curve(myPos, bezier.control[3]));
+          updatePos(bezier.control[3]);
+        }
       }
 
     private:
