@@ -12,7 +12,7 @@
 // INCLUDES /////////////////////////////////////////////
 
 #include <boost/foreach.hpp>
-#ifdef SSLIB_ENABLE_THREAD_AWARE
+#ifdef SPL_ENABLE_THREAD_AWARE
 #  include <boost/thread/locks.hpp> 
 #endif
 
@@ -35,7 +35,7 @@ KeyIdEx<Data>::~KeyIdEx()
 template <class Data>
 void KeyIdEx<Data>::insertedIntoMap(HeterogeneousMapEx<Data> & map)
 {
-#ifdef SSLIB_ENABLE_THREAD_AWARE
+#ifdef SPL_ENABLE_THREAD_AWARE
   ::boost::lock_guard< ::boost::mutex> guard(myMutex);
 #endif
   myMaps.insert(&map);
@@ -44,7 +44,7 @@ void KeyIdEx<Data>::insertedIntoMap(HeterogeneousMapEx<Data> & map)
 template <class Data>
 void KeyIdEx<Data>::removedFromMap(HeterogeneousMapEx<Data> & map)
 {
-#ifdef SSLIB_ENABLE_THREAD_AWARE
+#ifdef SPL_ENABLE_THREAD_AWARE
   ::boost::lock_guard< ::boost::mutex> guard(myMutex);
 #endif
 

@@ -14,7 +14,7 @@
 
 #include <map>
 
-#ifdef SSLIB_ENABLE_THREAD_AWARE
+#ifdef SPL_ENABLE_THREAD_AWARE
 #  include <boost/thread/mutex.hpp>
 #endif
 
@@ -147,7 +147,7 @@ private:
   WritersStore myWritersStore;
   ReadersStore myReadersStore;
 
-#ifdef SSLIB_ENABLE_THREAD_AWARE
+#ifdef SPL_ENABLE_THREAD_AWARE
   // TODO: Check if std::vector is thread safe, otherwise need mutexes for
   // inserting/removing readers and writers
   // TODO: Currently we lock for all read and writes but we should be locking

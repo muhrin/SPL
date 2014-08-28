@@ -64,7 +64,7 @@ SortedDistanceComparisonData::SortedDistanceComparisonData(
   else
   {
     // No repetitions to worry about so consider all distances
-    cutoff = ::std::numeric_limits< double>::max();
+    cutoff = std::numeric_limits< double>::max();
     // Try using the number of atoms as the volume: not great, but will do for now
     volume = static_cast< double>(primitive->getNumAtoms());
   }
@@ -73,11 +73,11 @@ SortedDistanceComparisonData::SortedDistanceComparisonData(
       primitive->getDistanceCalculator();
 
   {
-    ::std::set< common::AtomSpeciesId::Value> speciesSet;
+    std::set< common::AtomSpeciesId::Value> speciesSet;
     primitive->getAtomSpecies(::std::inserter(speciesSet, speciesSet.begin()));
     const size_t numSpecies = speciesSet.size();
     species.resize(numSpecies);
-    ::std::copy(speciesSet.begin(), speciesSet.end(), species.begin());
+    std::copy(speciesSet.begin(), speciesSet.end(), species.begin());
   }
 
   initSpeciesDistancesMap();
@@ -111,7 +111,7 @@ SortedDistanceComparisonData::SortedDistanceComparisonData(
     {
       specJ = species[j];
       distVecIJ = iDistMap[specJ];
-      ::std::sort(distVecIJ->begin(), distVecIJ->end());
+      std::sort(distVecIJ->begin(), distVecIJ->end());
     }
   }
 }
@@ -129,7 +129,7 @@ SortedDistanceComparisonData::initSpeciesDistancesMap()
     {
       specJ = species[j];
       DistancesVecPtr & distVec = distMap[specJ];
-      distVec.reset(new ::std::vector< double>());
+      distVec.reset(new std::vector< double>());
       speciesDistancesMap[specJ][specI] = distVec;
     }
   }
@@ -141,9 +141,10 @@ SortedDistanceComparator::SortedDistanceComparator() :
 {
 }
 
-SortedDistanceComparator::SortedDistanceComparator(const ConstructionInfo & info) :
-    myScaleVolumes(info.volumeAgnostic), myUsePrimitive(info.usePrimitive),
-    myTolerance(info.tolerance), myCutoffFactor(info.cutoffFactor)
+SortedDistanceComparator::SortedDistanceComparator(
+    const ConstructionInfo & info) :
+    myScaleVolumes(info.volumeAgnostic), myUsePrimitive(info.usePrimitive), myTolerance(
+        info.tolerance), myCutoffFactor(info.cutoffFactor)
 {
 }
 
@@ -188,21 +189,21 @@ SortedDistanceComparator::compareStructures(
 
   const size_t numSpecies = dist1.species.size();
   if(numSpecies != dist2.species.size())
-    return ::std::numeric_limits< double>::max(); // Species mismatch
+    return std::numeric_limits< double>::max(); // Species mismatch
 
-  ::std::set< ::std::string> speciesCheck(dist1.species.begin(),
+  std::set< std::string> speciesCheck(dist1.species.begin(),
       dist1.species.end());
-  ::std::set< ::std::string>::const_iterator it;
-  BOOST_FOREACH(const ::std::string & species2, dist2.species)
+  std::set< std::string>::const_iterator it;
+  BOOST_FOREACH(const std::string & species2, dist2.species)
   {
     it = speciesCheck.find(species2);
     if(it == speciesCheck.end())
-      return ::std::numeric_limits< double>::max(); // Species mismatch
+      return std::numeric_limits< double>::max(); // Species mismatch
     else
       speciesCheck.erase(it);
   }
   if(!speciesCheck.empty())
-    return ::std::numeric_limits< double>::max(); // Species mismatch
+    return std::numeric_limits< double>::max(); // Species mismatch
 
   // Set up the adapters
   const unsigned int leastCommonMultiple = math::leastCommonMultiple(
@@ -210,7 +211,7 @@ SortedDistanceComparator::compareStructures(
   IndexAdapter adapt1(leastCommonMultiple / dist1.numAtoms);
   IndexAdapter adapt2(leastCommonMultiple / dist2.numAtoms);
 
-  ::spl::math::RunningStats stats;
+  spl::math::RunningStats stats;
   common::AtomSpeciesId::Value specI, specJ;
   for(size_t i = 0; i < numSpecies; ++i)
   {
@@ -248,21 +249,21 @@ SortedDistanceComparator::generateComparisonData(
           myCutoffFactor));
 }
 
-::boost::shared_ptr< SortedDistanceComparator::BufferedTyp>
+boost::shared_ptr< SortedDistanceComparator::BufferedTyp>
 SortedDistanceComparator::generateBuffered() const
 {
-  return ::boost::shared_ptr< IBufferedComparator>(
+  return boost::shared_ptr< IBufferedComparator>(
       new GenericBufferedComparator< SortedDistanceComparator>(*this));
 }
 
 void
-SortedDistanceComparator::calcProperties(::spl::math::RunningStats & stats,
+SortedDistanceComparator::calcProperties(spl::math::RunningStats & stats,
     const SortedDistanceComparator::DistancesVec & dist1,
     const StridedIndexAdapter< size_t> & adapt1,
     const SortedDistanceComparator::DistancesVec & dist2,
     const StridedIndexAdapter< size_t> & adapt2) const
 {
-  const size_t maxIdx = ::std::min(adapt1.inv(dist1.size()),
+  const size_t maxIdx = std::min(adapt1.inv(dist1.size()),
       adapt2.inv(dist2.size()));
 
   double d1, d2, sum;
@@ -277,7 +278,7 @@ SortedDistanceComparator::calcProperties(::spl::math::RunningStats & stats,
 #endif
     sum = d1 + d2;
     if(sum > 0.0)
-      stats.insert(2.0 * ::std::abs(d1 - d2) / sum);
+      stats.insert(2.0 * std::abs(d1 - d2) / sum);
   }
 }
 

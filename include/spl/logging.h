@@ -19,7 +19,7 @@
 
 namespace spl {
 
-#ifdef SSLIB_ENABLE_THREAD_AWARE
+#ifdef SPL_ENABLE_THREAD_AWARE
   typedef boost::log::sources::severity_logger_mt<boost::log::trivial::severity_level> Logger;
 #else
   typedef boost::log::sources::severity_logger<boost::log::trivial::severity_level> Logger;

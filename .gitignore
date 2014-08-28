@@ -1,5 +1,6 @@
 # Ignore the build directory completely
-build/
+/build/
+/build*/
 *.sln
 *.vcproj
 CMakeLocal.txt

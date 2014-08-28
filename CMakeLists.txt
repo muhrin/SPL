@@ -11,6 +11,27 @@ message(STATUS "Configuring SPL ${SPL_VERSION}")
 
 include(cmake/utility.cmake)
 
+
+## CONFIGURATION SETTINGS ##############################
+
+# Build options ###
+option(SPL_BUILD_TESTS "Build SPL tests" OFF)
+option(SPL_ENABLE_THREAD_AWARE "Enable awareness of multithreaded environment (requires Boost thread)" ON)
+
+option(SPL_USE_CGAL "Build SPL with CGAL support." OFF)
+option(SPL_USE_YAML "Build SPL with Yaml support." ON)
+option(SPL_USE_BOOST_LOG "Use boost log for logging." ON)
+
+configure_file(
+  "${PROJECT_SOURCE_DIR}/include/spl/config.h.in"
+  "${PROJECT_BINARY_DIR}/include/spl/config.h"
+)
+configure_file(
+  "${PROJECT_SOURCE_DIR}/include/spl/version.h.in"
+  "${PROJECT_BINARY_DIR}/include/spl/version.h"
+)
+
+
 ## FIND PACKAGES ########################################
 
 # Boost #
@@ -18,13 +39,12 @@ include(cmake/utility.cmake)
 add_definitions(-DBOOST_ALL_NO_LIB)
 # Check if we can find boost log first
 set(SPL_BOOST_COMPONENTS system filesystem regex)
-find_package(Boost COMPONENTS log QUIET)
-if(Boost_LOG_FOUND)
+if(SPL_USE_BOOST_LOG)
   set(SPL_BOOST_COMPONENTS ${SPL_BOOST_COMPONENTS} log)
-endif(Boost_LOG_FOUND)
-if(SSLIB_ENABLE_THREAD_AWARE)
+endif(SPL_USE_BOOST_LOG)
+if(SPL_ENABLE_THREAD_AWARE)
   set(SPL_BOOST_COMPONENTS ${SPL_BOOST_COMPONENTS} thread)
-endif(SSLIB_ENABLE_THREAD_AWARE)
+endif(SPL_ENABLE_THREAD_AWARE)
 
 # Finally try to find boost and all the components we need
 find_package(Boost 1.36.0 REQUIRED COMPONENTS ${SPL_BOOST_COMPONENTS} QUIET)
@@ -38,35 +58,16 @@ endif()
 
 #
 # CGAL #
-find_package(CGAL QUIET COMPONENTS Core QUIET)
-if(CGAL_FOUND)
+if(SPL_USE_CGAL)
+  find_package(CGAL REQUIRED COMPONENTS Core QUIET)
   include( ${CGAL_USE_FILE} )
-endif(CGAL_FOUND)
+endif(SPL_USE_CGAL)
 
 find_package(Spglib REQUIRED QUIET)
 find_package(YamlCpp QUIET)
 find_package_or_install(Schemer)
 
 ## END FIND PACKAGES ####################################
-
-## CONFIGURATION SETTINGS ##############################
-
-# Build options ###
-set(SPL_BUILD_TESTS FALSE CACHE BOOL "Build spl tests")
-set(SSLIB_ENABLE_THREAD_AWARE TRUE CACHE BOOL "Enable awareness of multithreaded environment (requires Boost thread)")
-
-set(SPL_USE_CGAL ${CGAL_FOUND} CACHE INTERNAL "Build SPL with CGAL support.")
-set(SPL_USE_YAML ${YamlCpp_FOUND} CACHE INTERNAL "Build SPL with Yaml support.")
-set(SPL_USE_BOOST_LOG ${Boost_LOG_FOUND} CACHE INTERNAL "Use boost log for logging.")
-
-configure_file(
-  "${PROJECT_SOURCE_DIR}/include/spl/config.h.in"
-  "${PROJECT_BINARY_DIR}/include/spl/config.h"
-)
-configure_file(
-  "${PROJECT_SOURCE_DIR}/include/spl/version.h.in"
-  "${PROJECT_BINARY_DIR}/include/spl/version.h"
-)
 
 # Offer the user the choice of overriding the installation directories
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")

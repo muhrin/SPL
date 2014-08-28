@@ -19,7 +19,7 @@
 #include <boost/concept/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
-#ifdef SSLIB_ENABLE_THREAD_AWARE
+#ifdef SPL_ENABLE_THREAD_AWARE
 #  include <boost/thread/mutex.hpp>
 #endif
 
@@ -48,7 +48,7 @@ private:
 
   MapsSet myMaps;
 
-#ifdef SSLIB_ENABLE_THREAD_AWARE
+#ifdef SPL_ENABLE_THREAD_AWARE
   ::boost::mutex myMutex;
 #endif
 
@@ -106,7 +106,7 @@ private:
 
   const Data myData;
 
-#ifdef SSLIB_ENABLE_THREAD_AWARE
+#ifdef SPL_ENABLE_THREAD_AWARE
   ::boost::mutex myMutex;
 #endif
 

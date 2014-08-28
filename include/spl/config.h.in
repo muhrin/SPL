@@ -6,10 +6,6 @@
 #cmakedefine SPL_USE_CGAL
 #cmakedefine SPL_USE_BOOST_LOG
 
-#cmakedefine SSLIB_ENABLE_THREAD_AWARE
+#cmakedefine SPL_ENABLE_THREAD_AWARE
 
-#cmakedefine SSLIB_DISABLE_CPP11
 
-#if __cplusplus >= 201103L && !SSLIB_DISABLE_CPP11
-#  define SSLIB_USE_CPP11
-#endif

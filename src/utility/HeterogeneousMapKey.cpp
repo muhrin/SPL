@@ -29,7 +29,7 @@ KeyId::~KeyId()
 
 void KeyId::insertedIntoMap(HeterogeneousMap & map)
 {
-#ifdef SSLIB_ENABLE_THREAD_AWARE
+#ifdef SPL_ENABLE_THREAD_AWARE
   ::boost::lock_guard< ::boost::mutex> guard(myMutex);
 #endif
   myMaps.insert(&map);
@@ -37,7 +37,7 @@ void KeyId::insertedIntoMap(HeterogeneousMap & map)
 
 void KeyId::removedFromMap(HeterogeneousMap & map)
 {
-#ifdef SSLIB_ENABLE_THREAD_AWARE
+#ifdef SPL_ENABLE_THREAD_AWARE
   ::boost::lock_guard< ::boost::mutex> guard(myMutex);
 #endif
 

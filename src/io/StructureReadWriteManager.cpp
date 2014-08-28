@@ -19,7 +19,7 @@
 #include "spl/io/XyzReaderWriter.h"
 
 #include <boost/foreach.hpp>
-#ifdef SSLIB_ENABLE_THREAD_AWARE
+#ifdef SPL_ENABLE_THREAD_AWARE
 #  include <boost/thread/locks.hpp>
 #endif
 
@@ -221,7 +221,7 @@ StructureReadWriteManager::writeStructure(common::Structure & str,
   if(!it->second->multiStructureSupport())
     locator.clearId();
 
-#ifdef SSLIB_ENABLE_THREAD_AWARE
+#ifdef SPL_ENABLE_THREAD_AWARE
   boost::lock_guard< boost::mutex> guard(myRwMutex);
 #endif
 
@@ -250,7 +250,7 @@ StructureReadWriteManager::readStructure(const ResourceLocator & locator) const
   if(it == myReaders.end())
     return structure; /*unknown extension*/
 
-#ifdef SSLIB_ENABLE_THREAD_AWARE
+#ifdef SPL_ENABLE_THREAD_AWARE
   boost::lock_guard< boost::mutex> guard(myRwMutex);
 #endif
 
@@ -282,7 +282,7 @@ StructureReadWriteManager::readStructures(StructuresContainer & outStructures,
     if(it == myReaders.end())
       return 0; /*unknown extension*/
 
-#ifdef SSLIB_ENABLE_THREAD_AWARE
+#ifdef SPL_ENABLE_THREAD_AWARE
     boost::lock_guard< boost::mutex> guard(myRwMutex);
 #endif
 
