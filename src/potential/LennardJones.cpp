@@ -25,7 +25,6 @@
 #  include <iomanip>
 #endif
 
-
 namespace spl {
 namespace potential {
 
@@ -278,7 +277,7 @@ LennardJones::evaluate(const common::Structure & structure,
           data.internalEnergy += selfInteraction * energyForce.first;
 #ifdef LJ_DEBUGGING
           std::cout << std::setprecision(16)
-              << selfInteraction * energyForce.first << "\n";
+          << selfInteraction * energyForce.first << "\n";
 #endif
 
           // force
@@ -302,7 +301,7 @@ LennardJones::evaluate(const common::Structure & structure,
   for(size_t i = 0; i < data.forces.n_cols; ++i)
   {
     for(size_t j = 0; j < 3; ++j)
-      std::cout << data.forces(j, i) << " ";
+    std::cout << data.forces(j, i) << " ";
     std::cout << "\n";
   }
 #endif
@@ -406,11 +405,11 @@ LennardJones::getSpeciesPairDistance(const SpeciesPair & pair) const
 UniquePtr< IPotentialEvaluator>::Type
 LennardJones::createEvaluator(const spl::common::Structure & structure) const
 {
-// Build the data from the structure
+  // Build the data from the structure
   UniquePtr< PotentialData>::Type data(
       new PotentialData(structure.getNumAtoms()));
 
-// Create the evaluator
+  // Create the evaluator
   return UniquePtr< IPotentialEvaluator>::Type(
       new Evaluator(*this, structure, data));
 }
@@ -424,7 +423,7 @@ LennardJones::getParameterisable()
 double
 LennardJones::equilibriumSeparation(const Params & params) const
 {
-// TODO: Update with cutoff version
+  // TODO: Update with cutoff version
   return std::pow(params.m / params.n, 1.0 / (params.m - params.n))
       * params.sigma;
 }
@@ -440,7 +439,7 @@ LennardJones::getParams(const double epsilon, const double sigma,
   params.n = n;
   params.cutoff = cutoffFactor * sigma;
 
-// Now calculate the energy and force shifts
+  // Now calculate the energy and force shifts
   params.energyShift = 0.0;
   params.forceShift = 0.0;
   std::pair< double, double> energyForce = evaluate(params.cutoff, params);

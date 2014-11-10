@@ -15,7 +15,7 @@ endif()
 set(${lib}_CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${${lib}_INSTALL_DIR})
 
 ExternalProject_Add(${lib}
-  GIT_REPOSITORY git@github.com:muhrin/schemer.git
+  GIT_REPOSITORY https://github.com/muhrin/schemer.git
   GIT_TAG master
   INSTALL_DIR ${${lib}_INSTALL_DIR}
   CMAKE_ARGS ${${lib}_CMAKE_ARGS}
