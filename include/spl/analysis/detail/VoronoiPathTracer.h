@@ -751,8 +751,9 @@ template< typename MapTraits>
     const size_t n = optimal.size();
     SSLIB_ASSERT(n >= 2);
 
-    if((path->isClosed() && n == path->numVertices())
-        || (path->isClosed() && n == path->numVertices() + 1))
+    // TODO: Check this
+    if(/*(path->isClosed() && n == path->numVertices())
+        ||*/ (path->isClosed() && n == path->numVertices() + 1))
     {
       // If the optimal path is just the path itself, then insert
       // all vertices
@@ -764,9 +765,8 @@ template< typename MapTraits>
       if(!path->isClosed())
         curve.pushBack(path->vertexFront().point());
 
-      const size_t first = path->isClosed() ? 0 : 1;
       size_t i, j, k;
-      for(ptrdiff_t d = first; d < n - 1; ++d)
+      for(ptrdiff_t d = path->isClosed() ? 0 : 1; d < n - 1; ++d)
       {
         if(path->isClosed())
         {

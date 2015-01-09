@@ -127,14 +127,25 @@ template< typename VD>
     {
       return myPath;
     }
+    typename Delaunay::Vertex_handle
+    leftDelaunayVertex() const
+    {
+      const Delaunay & delaunay = myPath->getVoronoi()->dual();
+      return myDelaunayEdge.first->vertex(delaunay.ccw(myDelaunayEdge.second));
+    }
+    typename Delaunay::Vertex_handle
+    rightDelaunayVertex() const
+    {
+      const Delaunay & delaunay = myPath->getVoronoi()->dual();
+      return myDelaunayEdge.first->vertex(delaunay.cw(myDelaunayEdge.second));
+    }
     boost::optional< Label>
     leftLabel() const
     {
       if(!isValid())
         return boost::optional< Label>();
 
-      const Delaunay & delaunay = myPath->getVoronoi()->dual();
-      return myDelaunayEdge.first->vertex(delaunay.ccw(myDelaunayEdge.second))->info();
+      return leftDelaunayVertex()->info();
     }
     boost::optional< Label>
     rightLabel() const
@@ -142,8 +153,7 @@ template< typename VD>
       if(!isValid())
         return boost::optional< Label>();
 
-      const Delaunay & delaunay = myPath->getVoronoi()->dual();
-      return myDelaunayEdge.first->vertex(delaunay.cw(myDelaunayEdge.second))->info();
+      return rightDelaunayVertex()->info();
     }
 
   private:

@@ -13,9 +13,11 @@
 #include "spl/SSLibAssert.h"
 
 #include <map>
+#include <set>
 
 #include <boost/foreach.hpp>
 #include <boost/range/iterator_range.hpp>
+#include <boost/unordered_map.hpp>
 
 #include <CGAL/Arr_observer.h>
 #include <CGAL/Point_2.h>
@@ -31,6 +33,19 @@
 namespace spl {
 namespace analysis {
 namespace detail {
+
+template< typename MapTraits, typename VD>
+  struct MapBuilder;
+
+template< typename Handle>
+  struct HandleHash : std::unary_function< Handle, std::size_t>
+  {
+    std::size_t
+    operator()(const Handle & h) const
+    {
+      return boost::hash_value(h.ptr());
+    }
+  };
 
 template< typename MapTraits>
   class MapLabeller : CGAL::Arr_observer< typename MapTraits::Arrangement>
@@ -97,6 +112,8 @@ template< typename MapTraits>
       // Assign the labels from the edge before splitting to these new edges
       assignLabels(mySplitEdgeLabels, e1);
       assignLabels(mySplitEdgeLabels, e2);
+      mySplitEdgeLabels.first.reset();
+      mySplitEdgeLabels.second.reset();
     }
 
     void
@@ -126,9 +143,149 @@ template< typename MapTraits>
     Map * const myMap;
     EdgeLabels myEdgeLabels;
     EdgeLabels mySplitEdgeLabels;
-    boost::optional<
-        std::pair< typename Map::Vertex_handle, typename Map::Vertex_handle> > myUpcomingEdge;
     boost::optional< Bezier> myNextEdgeBezier;
+  };
+
+template< typename MapTraits, typename VD>
+  class EdgeDelaunayVertexMapper : CGAL::Arr_observer<
+      typename MapTraits::Arrangement>
+  {
+    typedef typename MapTraits::Arrangement Map;
+    typedef typename VD::Delaunay_graph DG;
+    typedef typename DG::Vertex_handle DV;
+    // Left and right Delaunay vertices
+    typedef std::pair< DV, DV> DelaunayVertices;
+    typedef std::pair< typename Map::Halfedge_handle, DV> EdgeVertexPair;
+  public:
+    typedef boost::unordered_map< typename Map::Halfedge_handle, DV,
+        HandleHash< typename Map::Halfedge_handle> > EdgeVertexMap;
+
+    EdgeDelaunayVertexMapper(Map * const map) :
+        myMap(map)
+    {
+      this->attach(*myMap);
+    }
+    virtual
+    ~EdgeDelaunayVertexMapper()
+    {
+      this->detach();
+    }
+
+    void
+    setAdjacentDelaunayVertices(const DV & left, const DV & right)
+    {
+      myVertices = std::make_pair(left, right);
+    }
+    const EdgeVertexMap &
+    edgeVertexMap()
+    {
+      return myEdgeVertexMap;
+    }
+
+    void
+    populateFacePoints(const DG & delaunay)
+    {
+      BOOST_FOREACH(typename EdgeVertexMap::reference edgeVertexPair, myEdgeVertexMap)
+      {
+        const typename Map::Face_handle face = edgeVertexPair.first->face();
+        if(face->data().label)
+        {
+          std::set< DV> discoveredVertices;
+          followVertices(delaunay, face, edgeVertexPair.second,
+              &discoveredVertices);
+        }
+      }
+    }
+
+  private:
+    void
+    followVertices(const DG & delaunay, const typename Map::Face_handle face,
+        const DV vertex, std::set< DV> * const discovered)
+    {
+      //SSLIB_ASSERT(*face->data().label == vertex->info());
+
+      face->data().points.push_back(
+          MapBuilder< MapTraits, VD>::TO_EXACT(vertex->point()));
+      discovered->insert(vertex);
+
+      const typename DG::Vertex_circulator first = delaunay.incident_vertices(
+          vertex);
+      typename DG::Vertex_circulator cl = first;
+      do
+      {
+        if(cl->info() == *face->data().label && discovered->count(cl) == 0)
+          followVertices(delaunay, face, cl, discovered);
+        ++cl;
+      } while(cl != first);
+    }
+
+    virtual void
+    after_create_edge(typename Map::Halfedge_handle e)
+    {
+      if(myVertices)
+      {
+        assignLabels(e, *myVertices);
+        myVertices.reset();
+      }
+    }
+
+    virtual void
+    before_split_edge(typename Map::Halfedge_handle e,
+        typename Map::Vertex_handle v,
+        const typename Map::X_monotone_curve_2 & c1,
+        const typename Map::X_monotone_curve_2 & c2)
+    {
+      static const DV EMPTY_VERTEX;
+
+      // Try to find the halfedge being splot
+      typename EdgeVertexMap::iterator it = myEdgeVertexMap.find(e);
+      if(it != myEdgeVertexMap.end())
+      {
+        const DV leftVertex = it->second, rightVertex = myEdgeVertexMap.find(
+            e->twin())->second;
+        // Save the vertices from the edge about to be split
+        mySplitVertices = std::make_pair(leftVertex, rightVertex);
+      }
+    }
+
+    virtual void
+    after_split_edge(typename Map::Halfedge_handle e1,
+        typename Map::Halfedge_handle e2)
+    {
+      if(mySplitVertices)
+      {
+        // Assign the labels from the edge before splitting to these new edges
+        assignLabels(e1, *mySplitVertices);
+        assignLabels(e2, *mySplitVertices);
+        mySplitVertices.reset();
+      }
+    }
+
+    void
+    assignLabels(typename Map::Halfedge_handle e,
+        const DelaunayVertices & verts)
+    {
+      // Check which way around we got the halfedge.  The labels will always
+      // apply relative to the direction of the curve i.e. from
+      // curve.source() -> curve.target():
+
+      //if(e->curve().source().is_same(e->source()->point()))
+      if(e->curve().source() == e->source()->point())
+      {
+        myEdgeVertexMap.insert(std::make_pair(e, verts.first));
+        myEdgeVertexMap.insert(std::make_pair(e->twin(), verts.second));
+      }
+      else // must have the halfedge going the other way
+      {
+        myEdgeVertexMap.insert(std::make_pair(e, verts.second));
+        myEdgeVertexMap.insert(std::make_pair(e->twin(), verts.first));
+      }
+    }
+
+    Map * const myMap;
+    boost::optional< DelaunayVertices> myVertices;
+    boost::optional< DelaunayVertices> mySplitVertices;
+    EdgeVertexMap myEdgeVertexMap;
   };
 
 template< typename MapTraits, typename VD>
@@ -145,9 +302,14 @@ template< typename MapTraits, typename VD>
     typedef typename MapTraits::Bezier MapBezier;
     typedef BezierCurve< typename Delaunay::Geom_traits> Bezier;
 
-    typedef std::map< typename VD::Vertex_handle, typename Map::Vertex_handle> MeetingVertices;
-    typedef std::map< typename Delaunay::Edge, typename Map::Vertex_handle> BoundaryVertices;
-    typedef std::map< const Path *, std::vector< typename Map::Vertex_handle> > PathVertices;
+    typedef EdgeDelaunayVertexMapper< Map, VD> EdgeVertexMapper;
+
+    typedef CGAL::Cartesian_converter< typename Delaunay::Geom_traits,
+        typename MapTraits::Kernel> IkToEk;
+
+    // Use this to convert the number type used by the Voronoi diagram paths
+    // to the rational type used by the arrangement
+    static const IkToEk TO_EXACT;
 
     class PathDrawer
     {
@@ -186,7 +348,7 @@ template< typename MapTraits, typename VD>
       {
 #ifdef DEBUG_VORONOI_PATH_UTILITY
         for(size_t i = 1; i < 4; ++i)
-          std::cout << "(Path.CURVE4, " << point(bezier.control[i]) << "),\n";
+        std::cout << "(Path.CURVE4, " << point(bezier.control[i]) << "),\n";
 #endif
         // TODO: Check why this condition sometimes happens
         if(myPos != bezier.control[3])
@@ -219,7 +381,9 @@ template< typename MapTraits, typename VD>
     };
 
     void
-    placePathEdges(const Path & path, Map * const map)
+    placePathEdges(const Path & path,
+        EdgeDelaunayVertexMapper< MapTraits, VD> * const edgeVertexMapper,
+        Map * const map)
     {
       typedef typename EdgeLabeller::EdgeLabels EdgeLabels;
       typedef typename Path::Point PathPoint;
@@ -227,7 +391,12 @@ template< typename MapTraits, typename VD>
       // Set the edge labels
       EdgeLabeller labeller(map);
       if(path.numEdges() != 0)
+      {
         labeller.setEdgeLabels(EdgeLabels(path.leftLabel(), path.rightLabel()));
+        const typename Path::Edge & edge = path.edgeFront();
+        edgeVertexMapper->setAdjacentDelaunayVertices(edge.leftDelaunayVertex(),
+            edge.rightDelaunayVertex());
+      }
 
       const typename Path::Curve & curve = path.curve();
       PathDrawer draw(map);
@@ -268,6 +437,7 @@ template< typename MapTraits, typename VD>
       {
         draw.lineTo(TO_EXACT(lastVertex.point()));
         if(path.isClosed())
+          // TODO: Check this, it seems odd that it's the same call again as above
           draw.lineTo(TO_EXACT(lastVertex.point()));
       }
     }
@@ -360,31 +530,23 @@ template< typename MapTraits, typename VD>
         {
           const typename Map::Ccb_halfedge_circulator start = f.outer_ccb();
           typename Map::Ccb_halfedge_circulator cl = start;
+//          std::cout << "Start face:\n";
           do
           {
             if(cl->data().label)
             {
               f.data().label = cl->data().label;
               break;
+//              std::cout << *f.data().label << "\n";
             }
             ++cl;
           } while(cl != start);
+//          std::cout << "End\n\n";
         }
       }
     }
 
-    MeetingVertices meeting;
-    BoundaryVertices boundary;
-    PathVertices pathVertices;
-
   private:
-    typedef CGAL::Cartesian_converter< typename Delaunay::Geom_traits,
-        typename MapTraits::Kernel> IkToEk;
-
-    // Use this to convert the number type used by the Voronoi diagram paths
-    // to the rational type used by the arrangement
-    static const IkToEk TO_EXACT;
-
     typename MapTraits::Bezier
     toMapType(const Bezier & bezier)
     {
@@ -473,13 +635,16 @@ template< typename MapTraits, typename VD>
     Map map;
     Builder builder;
 
+    detail::EdgeDelaunayVertexMapper< MapTraits, VD> edgeVertexMapper(&map);
+
     // Connect the edges
     BOOST_FOREACH(const typename Builder::Path & path,
         boost::make_iterator_range(pathArrangement.pathsBegin(), pathArrangement.pathsEnd()))
-      builder.placePathEdges(path, &map);
+      builder.placePathEdges(path, &edgeVertexMapper, &map);
 
     builder.createBoundary(pathArrangement, &map);
     builder.populateFaceLabels(&map);
+    edgeVertexMapper.populateFacePoints(pathArrangement.getVoronoi().dual());
 
     SSLIB_ASSERT(map.is_valid());
 

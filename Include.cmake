@@ -15,6 +15,7 @@ set(sslib_Header_Files__analysis
   include/spl/analysis/Histogram.h
   include/spl/analysis/MapArrangementTraits.h
   include/spl/analysis/MatplotlibMapOutputter.h
+  include/spl/analysis/RawMapOutputter.h
   include/spl/analysis/SpaceGroup.h
   include/spl/analysis/StructureConvexHullInfoSupplier.h
   include/spl/analysis/StructureTriangulation.h
@@ -33,6 +34,7 @@ source_group("Header Files\\analysis" FILES ${sslib_Header_Files__analysis})
 set(sslib_Header_Files__analysis__detail
   include/spl/analysis/detail/ConvexHullStructures.h
   include/spl/analysis/detail/MatplotlibMapOutputter.h
+  include/spl/analysis/detail/RawMapOutputter.h
   include/spl/analysis/detail/TraceCurve.h
   include/spl/analysis/detail/VoronoiEdgeTracer.h
   include/spl/analysis/detail/VoronoiPath.h

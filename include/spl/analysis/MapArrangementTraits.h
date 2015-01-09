@@ -61,6 +61,7 @@ template< typename LabelType>
     struct FaceInfo
     {
       boost::optional< Label> label;
+      std::vector<typename Kernel::Point_2> points;
     };
 
     // Arrangements stuff
